@@ -11,3 +11,4 @@ python-dotenv
 python-dotenv
 flask
 python-binance
+gunicorn>=21.0.0
