@@ -7,6 +7,7 @@ from core.collectors.fred_collector import FREDCollector
 from core.collectors.polymarket_collector import PolymarketCollector
 from core.collectors.rss_collector import RSSCollector
 from core.collectors.sentiment_collector import SentimentCollector
+from core.collectors.binance_collector import BinanceCollector
 
 __all__ = [
     "BaseCollector",
@@ -17,4 +18,5 @@ __all__ = [
     "PolymarketCollector",
     "RSSCollector",
     "SentimentCollector",
+    "BinanceCollector",
 ]

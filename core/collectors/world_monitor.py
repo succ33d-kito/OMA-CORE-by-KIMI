@@ -9,12 +9,19 @@ from core.collectors.fred_collector import FREDCollector
 from core.collectors.polymarket_collector import PolymarketCollector
 from core.collectors.rss_collector import RSSCollector
 from core.collectors.sentiment_collector import SentimentCollector
+from core.collectors.binance_collector import BinanceCollector
 from core.engines.data_quality_engine import DataQualityEngine
 
 class WorldMonitor:
+    """
+    Orquestador central de collectors para OMA-CORE.
+    Integra múltiples fuentes de datos y aplica validación de calidad.
+    """
+    
     def __init__(self, enable_quality_check: bool = True, fred_api_key: Optional[str] = None):
         self.collectors: List[BaseCollector] = [
             CoinGeckoCollector(),
+            BinanceCollector(),  # NUEVO: Validación cruzada crypto
             YahooFinanceCollector(),
             FREDCollector(api_key=fred_api_key),
             PolymarketCollector(),
@@ -40,7 +47,10 @@ class WorldMonitor:
                 events = collector.collect()
                 print(f"[WorldMonitor] {collector.name}: {len(events)} eventos recolectados")
                 all_events.extend(events)
-                collector_stats[collector.name] = {"events": len(events), "stats": collector.get_stats()}
+                collector_stats[collector.name] = {
+                    "events": len(events),
+                    "stats": collector.get_stats(),
+                }
             except Exception as e:
                 print(f"[WorldMonitor] Error en {collector.name}: {e}")
                 collector_stats[collector.name] = {"events": 0, "error": str(e)}
@@ -74,10 +84,17 @@ class WorldMonitor:
         return []
 
     def get_available_sources(self) -> List[Dict]:
-        return [{"name": c.name, "confidence": c.source_confidence, "stats": c.get_stats()} for c in self.collectors]
+        return [
+            {"name": c.name, "confidence": c.source_confidence, "stats": c.get_stats()}
+            for c in self.collectors
+        ]
 
     def get_stats(self) -> Dict:
-        return {**self.stats, "sources_active": len(self.collectors), "quality_check_enabled": self.enable_quality_check}
+        return {
+            **self.stats,
+            "sources_active": len(self.collectors),
+            "quality_check_enabled": self.enable_quality_check,
+        }
 
     def add_collector(self, collector: BaseCollector):
         self.collectors.append(collector)

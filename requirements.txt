@@ -10,3 +10,4 @@ feedparser
 python-dotenv
 python-dotenv
 flask
+python-binance

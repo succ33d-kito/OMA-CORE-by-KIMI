@@ -75,6 +75,7 @@ class ScoreEngine:
     }
     
     SOURCE_CONFIDENCE = {
+        "binance": 0.96,  # NUEVO: Exchange real
         "fred": 0.98,
         "coingecko": 0.95,
         "yahoo_finance": 0.95,
@@ -93,6 +94,7 @@ class ScoreEngine:
     }
     
     SOURCE_TIER = {
+        "binance": "primary",  # NUEVO
         "fred": "official",
         "coingecko": "primary",
         "yahoo_finance": "primary",
@@ -584,7 +586,6 @@ class Pipeline:
         opportunities = self.opportunity_engine.generate_opportunities(events, min_score)
         print(f"[Pipeline] {len(opportunities)} oportunidades generadas")
         
-        # Enviar resumen de CRITICAL a Telegram (con cooldown de 4 horas)
         if self.telegram_enabled and opportunities:
             critical_opps = [o for o in opportunities if o.get("priority") == "CRITICAL"]
             if critical_opps:

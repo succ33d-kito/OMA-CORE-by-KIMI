@@ -22,6 +22,10 @@ class ValidationResult:
     errors: List[str]
 
 class DataQualityEngine:
+    """
+    Motor de validación de calidad de datos para OMA-CORE.
+    """
+    
     VALIDATION_RULES = {
         AssetClass.CRYPTO: {
             "price_min": 0.00000001, "price_max": 1000000.0,
@@ -48,18 +52,27 @@ class DataQualityEngine:
             "change_max": 2.0, "volume_min": 0, "age_max_hours": 24,
         },
     }
+    
+    # Fuentes que pueden validarse entre sí (ahora incluye Binance)
     CROSS_VALIDATION_PAIRS = {
         "BTC": ["coingecko", "yahoo_finance", "binance"],
         "ETH": ["coingecko", "yahoo_finance", "binance"],
-        "SOL": ["coingecko", "yahoo_finance"],
+        "SOL": ["coingecko", "yahoo_finance", "binance"],
+        "XRP": ["coingecko", "yahoo_finance", "binance"],
+        "BNB": ["coingecko", "yahoo_finance", "binance"],
+        "ADA": ["coingecko", "yahoo_finance", "binance"],
+        "DOGE": ["coingecko", "yahoo_finance", "binance"],
+        "AVAX": ["coingecko", "yahoo_finance", "binance"],
         "AAPL": ["yahoo_finance", "polygon"],
         "MSFT": ["yahoo_finance", "polygon"],
         "EURUSD": ["yahoo_finance", "forex"],
         "GC=F": ["yahoo_finance", "commodity"],
     }
+    
     SOURCE_ACCURACY_HISTORY = {
         "coingecko": 0.95, "yahoo_finance": 0.95, "fred": 0.98,
-        "polymarket": 0.88, "rss_reuters_business": 0.90, "rss_bloomberg": 0.90,
+        "binance": 0.96, "polymarket": 0.88,
+        "rss_reuters_business": 0.90, "rss_bloomberg": 0.90,
         "rss_coindesk": 0.80, "rss_cointelegraph": 0.80, "rss_forexlive": 0.80,
         "rss_cnbc": 0.80, "rss_marketwatch": 0.80, "sentiment_fng_crypto": 0.85,
         "gdelt": 0.70, "osiris": 0.75,
@@ -134,11 +147,19 @@ class DataQualityEngine:
         for event in events:
             result = self.validate_event(event)
             if result.is_valid:
-                event.metadata["validation"] = {"score": result.validation_score, "status": result.status.value, "checks": result.checks}
+                event.metadata["validation"] = {
+                    "score": result.validation_score,
+                    "status": result.status.value,
+                    "checks": result.checks,
+                }
                 event.confidence = event.confidence * result.validation_score
                 valid_events.append(event)
             else:
-                rejected.append({"event_id": event.id, "title": event.title, "source": event.source, "reason": result.errors + result.warnings, "validation_score": result.validation_score})
+                rejected.append({
+                    "event_id": event.id, "title": event.title,
+                    "source": event.source, "reason": result.errors + result.warnings,
+                    "validation_score": result.validation_score,
+                })
         return valid_events, rejected
 
     def _check_price_sanity(self, event: Event) -> bool:
