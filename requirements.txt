@@ -9,3 +9,4 @@ yfinance
 feedparser
 python-dotenv
 python-dotenv
+flask
