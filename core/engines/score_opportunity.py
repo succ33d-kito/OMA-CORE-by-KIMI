@@ -5,6 +5,7 @@ import math
 from core.schemas.event_schema import Event, EventType, Sentiment, Urgency, AssetClass
 from core.database.db import OMACoreDatabase
 from core.engines.data_quality_engine import DataQualityEngine
+from core.engines.telegram_notifier import TelegramNotifier
 
 
 class ScoreEngine:
@@ -550,15 +551,23 @@ class OpportunityEngine:
 
 
 class Pipeline:
-    """Pipeline completo: collect -> validate -> score -> opportunities."""
+    """Pipeline completo: collect -> validate -> score -> opportunities -> notify."""
     
-    def __init__(self, db_path="oma_core.db", enable_quality=True, fred_api_key=None):
+    def __init__(self, db_path="oma_core.db", enable_quality=True, fred_api_key=None, enable_telegram=True):
         self.db = OMACoreDatabase(db_path)
         self.score_engine = ScoreEngine(self.db)
         self.opportunity_engine = OpportunityEngine(self.db, self.score_engine)
         self.quality_engine = DataQualityEngine(self.db) if enable_quality else None
+        self.telegram = TelegramNotifier() if enable_telegram else None
+        self.telegram_enabled = enable_telegram and self.telegram.enabled if self.telegram else False
+        
+        if self.telegram_enabled:
+            print("[Pipeline] 🔔 Notificaciones de Telegram activadas")
+            self.telegram.test_connection()
+        else:
+            print("[Pipeline] 🔔 Notificaciones de Telegram desactivadas")
 
-    def run(self, events, min_score=40.0):
+    def run(self, events, min_score=40.0, cycle_number=0):
         print(f"[Pipeline] Procesando {len(events)} eventos...")
         if self.quality_engine:
             print(f"[Pipeline] Validando calidad de datos...")
@@ -574,6 +583,17 @@ class Pipeline:
         print(f"[Pipeline] {stored}/{len(events)} eventos almacenados")
         opportunities = self.opportunity_engine.generate_opportunities(events, min_score)
         print(f"[Pipeline] {len(opportunities)} oportunidades generadas")
+        
+        # Enviar resumen de CRITICAL a Telegram (con cooldown de 4 horas)
+        if self.telegram_enabled and opportunities:
+            critical_opps = [o for o in opportunities if o.get("priority") == "CRITICAL"]
+            if critical_opps:
+                print(f"[Pipeline] 🚨 {len(critical_opps)} oportunidades CRITICAL detectadas")
+                cycle_info = {"cycle": cycle_number}
+                self.telegram.send_critical_summary(critical_opps, cycle_info)
+            else:
+                print("[Pipeline] 🟢 Sin oportunidades CRITICAL")
+        
         stats = self.db.get_event_stats()
         return {
             "events_processed": len(events),
@@ -582,4 +602,6 @@ class Pipeline:
             "database_stats": stats,
             "top_opportunities": opportunities[:10],
             "source_stats": self.score_engine.get_source_stats(),
+            "telegram_enabled": self.telegram_enabled,
+            "critical_count": len([o for o in opportunities if o.get("priority") == "CRITICAL"]),
         }

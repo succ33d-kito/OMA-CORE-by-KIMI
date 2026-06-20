@@ -29,7 +29,7 @@ class OMACLI:
     def __init__(self, db_path="oma_core.db"):
         self.db = OMACoreDatabase(db_path)
         self.fred_api_key = os.getenv("FRED_API_KEY")
-        self.pipeline = Pipeline(db_path, fred_api_key=self.fred_api_key)
+        self.pipeline = Pipeline(db_path, fred_api_key=self.fred_api_key, enable_telegram=True)
         self.monitor = WorldMonitor(fred_api_key=self.fred_api_key)
     
     def print_banner(self):
@@ -108,6 +108,8 @@ class OMACLI:
         result = self.pipeline.run(unprocessed, min_score=args.min_score)
         print(f"\n{Colors.GREEN}{Colors.BOLD}✓ Pipeline completado{Colors.END}")
         print(f"   Eventos: {result['events_processed']} | Oportunidades: {result['opportunities_generated']}")
+        if result.get('telegram_enabled'):
+            print(f"   🔔 Telegram: {result.get('critical_count', 0)} CRITICAL detectadas")
         if result['top_opportunities']:
             print(f"\n{Colors.YELLOW}{Colors.BOLD}🏆 TOP OPORTUNIDADES:{Colors.END}\n")
             for i, opp in enumerate(result['top_opportunities'][:args.limit], 1):
@@ -153,6 +155,7 @@ class OMACLI:
     def cmd_watch(self, args):
         print(f"{Colors.CYAN}{Colors.BOLD}[WATCH] Monitoreo continuo{Colors.END}")
         print(f"   Intervalo: {args.interval}s | Min score: {args.min_score}")
+        print(f"   🔔 Telegram: {'Activado (resumen cada 4h)' if self.pipeline.telegram_enabled else 'Desactivado'}")
         print(f"   Presiona Ctrl+C para detener\n")
         cycle = 0
         try:
@@ -162,12 +165,14 @@ class OMACLI:
                 events = self.monitor.collect_all()
                 if events:
                     print(f"   {Colors.GREEN}✓ {len(events)} eventos recolectados{Colors.END}")
-                    result = self.pipeline.run(events, min_score=args.min_score)
+                    result = self.pipeline.run(events, min_score=args.min_score, cycle_number=cycle)
                     if result['opportunities_generated'] > 0:
                         print(f"   {Colors.YELLOW}🏆 {result['opportunities_generated']} oportunidades!{Colors.END}")
                         for opp in result['top_opportunities'][:3]:
                             p_color = Colors.RED if opp["priority"] == "CRITICAL" else Colors.YELLOW if opp["priority"] == "HIGH" else Colors.CYAN
                             print(f"      {p_color}[{opp['priority']}] {opp['title'][:80]} (Score: {opp['score']}){Colors.END}")
+                        if result.get('critical_count', 0) > 0:
+                            print(f"   🔔 {result['critical_count']} CRITICAL (resumen Telegram cada 4h)")
                 else:
                     print(f"   {Colors.BLUE}○ Sin eventos nuevos{Colors.END}")
                 time.sleep(args.interval)
@@ -206,11 +211,11 @@ class OMACLI:
             formatter_class=argparse.RawDescriptionHelpFormatter,
             epilog="""
 Ejemplos:
-  python -m core.cli.main collect
-  python -m core.cli.main process --min-score 50
-  python -m core.cli.main run
-  python -m core.cli.main watch --interval 300
-  python -m core.cli.main opportunities --limit 20
+  oma collect
+  oma process --min-score 50
+  oma run
+  oma watch --interval 300
+  oma status
             """
         )
         

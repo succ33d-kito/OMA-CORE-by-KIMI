@@ -1,0 +1,10 @@
+oma run              # Ciclo completo: collect + process
+oma collect          # Solo recolectar eventos
+oma process          # Solo procesar eventos pendientes
+oma watch            # Monitoreo continuo (default 300s)
+oma watch --interval 60   # Cada 60 segundos
+oma status           # Ver estadísticas del sistema
+oma opportunities    # Ver oportunidades activas
+oma events --hours 24 --limit 50   # Ver eventos recientes
+oma export --format json   # Exportar a JSON
+oma export --format csv    # Exportar a CSV
