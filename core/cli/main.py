@@ -5,10 +5,15 @@ import json
 import csv
 import time
 import sys
+import os
 from datetime import datetime, timezone
+from dotenv import load_dotenv
 from core.database.db import OMACoreDatabase
 from core.collectors.world_monitor import WorldMonitor
 from core.engines.score_opportunity import Pipeline
+
+# Cargar variables de entorno desde .env
+load_dotenv()
 
 class Colors:
     HEADER = "\033[95m"
@@ -23,8 +28,9 @@ class Colors:
 class OMACLI:
     def __init__(self, db_path="oma_core.db"):
         self.db = OMACoreDatabase(db_path)
-        self.pipeline = Pipeline(db_path)
-        self.monitor = WorldMonitor()
+        self.fred_api_key = os.getenv("FRED_API_KEY")
+        self.pipeline = Pipeline(db_path, fred_api_key=self.fred_api_key)
+        self.monitor = WorldMonitor(fred_api_key=self.fred_api_key)
     
     def print_banner(self):
         banner = f"""
@@ -36,7 +42,7 @@ class OMACLI:
  ██████  ██      ██ ██   ██     ██████  ██████  ██   ██ ███████ 
 {Colors.END}
 {Colors.YELLOW}  One Man Army — Create. Own. Run. Everything.{Colors.END}
-{Colors.GREEN}  Intelligence Engine v1.0 — Trading Focus{Colors.END}
+{Colors.GREEN}  Intelligence Engine v2.0 — Trading Focus{Colors.END}
 {Colors.BLUE}  —————————————————————————————————————————{Colors.END}
         """
         print(banner)

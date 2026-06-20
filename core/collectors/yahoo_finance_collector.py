@@ -1,9 +1,11 @@
 """O.M.A.-C.O.R.E. Yahoo Finance Collector"""
 import uuid
+import math
 from datetime import datetime, timezone
-from typing import List, Optional, Dict
+from typing import List, Optional
 from core.collectors.base_collector import BaseCollector
 from core.schemas.event_schema import Event, EventType, Asset, AssetClass, Sentiment, Urgency
+
 
 class YahooFinanceCollector(BaseCollector):
     WATCHLIST_STOCKS = [
@@ -39,6 +41,30 @@ class YahooFinanceCollector(BaseCollector):
                 return None
         return self._yf
 
+    def _safe_float(self, value, default=0.0):
+        """Convierte un valor a float de forma segura, manejando NaN."""
+        if value is None:
+            return default
+        try:
+            result = float(value)
+            if math.isnan(result) or math.isinf(result):
+                return default
+            return result
+        except (ValueError, TypeError):
+            return default
+
+    def _safe_int(self, value, default=0):
+        """Convierte un valor a int de forma segura, manejando NaN."""
+        if value is None:
+            return default
+        try:
+            result = float(value)
+            if math.isnan(result) or math.isinf(result):
+                return default
+            return int(result)
+        except (ValueError, TypeError):
+            return default
+
     def collect(self) -> List[Event]:
         events = []
         yf = self._get_yf()
@@ -69,10 +95,10 @@ class YahooFinanceCollector(BaseCollector):
                         continue
                     latest = ticker_data.iloc[-1]
                     prev = ticker_data.iloc[-2] if len(ticker_data) > 1 else latest
-                    close = float(latest.get("Close", 0) or 0)
-                    prev_close = float(prev.get("Close", 0) or close)
-                    volume = int(latest.get("Volume", 0) or 0)
-                    avg_volume = int(ticker_data["Volume"].mean()) if "Volume" in ticker_data.columns else volume
+                    close = self._safe_float(latest.get("Close"))
+                    prev_close = self._safe_float(prev.get("Close"), close)
+                    volume = self._safe_int(latest.get("Volume"))
+                    avg_volume = self._safe_int(ticker_data["Volume"].mean()) if "Volume" in ticker_data.columns else volume
                     if prev_close == 0:
                         continue
                     change_pct = ((close - prev_close) / prev_close) * 100
@@ -104,7 +130,7 @@ class YahooFinanceCollector(BaseCollector):
             source_url=f"https://finance.yahoo.com/quote/{symbol}",
             source_id=symbol, event_type=EventType.PRICE_MOVEMENT,
             title=f"{symbol} {'+' if change_pct > 0 else ''}{change_pct:.2f}% -- ${price:,.2f}",
-            summary=f"{name} ({symbol}) movió {change_pct:.2f}% en la sesión. Precio: ${price:,.2f}. Volumen: {volume:,}.",
+            summary=f"{name} ({symbol}) movio {change_pct:.2f}% en la sesion. Precio: ${price:,.2f}. Volumen: {volume:,}.",
             timestamp=datetime.now(timezone.utc),
             assets=[Asset(symbol=symbol, name=name, asset_class=asset_class, price_at_event=price, currency="USD")],
             keywords=[symbol, name, asset_class.value, "price-movement"],
@@ -128,7 +154,7 @@ class YahooFinanceCollector(BaseCollector):
             source_url=f"https://finance.yahoo.com/quote/{symbol}",
             source_id=symbol, event_type=EventType.VOLUME_SPIKE,
             title=f"Volumen {ratio:.1f}x promedio en {symbol}",
-            summary=f"{name} ({symbol}) muestra volumen anómalo: {volume:,} ({ratio:.1f}x del promedio de {avg_volume:,}).",
+            summary=f"{name} ({symbol}) muestra volumen anomalo: {volume:,} ({ratio:.1f}x del promedio de {avg_volume:,}).",
             timestamp=datetime.now(timezone.utc),
             assets=[Asset(symbol=symbol, name=name, asset_class=asset_class, price_at_event=price, currency="USD")],
             keywords=[symbol, "volume-spike", asset_class.value],
@@ -150,8 +176,10 @@ class YahooFinanceCollector(BaseCollector):
                     continue
                 latest = hist.iloc[-1]
                 prev = hist.iloc[-2]
-                close = float(latest["Close"])
-                prev_close = float(prev["Close"])
+                close = self._safe_float(latest["Close"])
+                prev_close = self._safe_float(prev["Close"])
+                if prev_close == 0:
+                    continue
                 change_pct = ((close - prev_close) / prev_close) * 100
                 if abs(change_pct) >= 2.0:
                     name = {
@@ -171,7 +199,7 @@ class YahooFinanceCollector(BaseCollector):
                         source_id=symbol,
                         event_type=EventType.MACRO_EVENT if symbol in ["^GSPC", "^IXIC", "^DJI", "^VIX"] else EventType.PRICE_MOVEMENT,
                         title=f"{name} {'+' if change_pct > 0 else ''}{change_pct:.2f}%",
-                        summary=f"El índice {name} ({symbol}) cerró en {close:,.2f} con un cambio de {change_pct:.2f}%.",
+                        summary=f"El indice {name} ({symbol}) cerro en {close:,.2f} con un cambio de {change_pct:.2f}%.",
                         timestamp=datetime.now(timezone.utc),
                         assets=[Asset(symbol=symbol, name=name, asset_class=AssetClass.INDEX, price_at_event=close, currency="USD")],
                         keywords=[symbol, name, "index", "macro" if symbol in ["^GSPC", "^IXIC", "^DJI", "^VIX"] else "index"],
@@ -180,5 +208,5 @@ class YahooFinanceCollector(BaseCollector):
                         metadata={"change_percent": change_pct, "price": close, "index_name": name}
                     ))
         except Exception as e:
-            print(f"[yahoo_finance] Error en índices: {e}")
+            print(f"[yahoo_finance] Error en indices: {e}")
         return events
