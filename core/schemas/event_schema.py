@@ -113,18 +113,6 @@ class Event:
     
     @classmethod
     def from_dict(cls, data):
-        # Handle metadata: could be string (JSON) or already a dict
-        metadata = data.get("metadata", "{}")
-        if isinstance(metadata, dict):
-            metadata_dict = metadata
-        elif isinstance(metadata, str):
-            try:
-                metadata_dict = json.loads(metadata)
-            except:
-                metadata_dict = {}
-        else:
-            metadata_dict = {}
-        
         event = cls(
             id=data["id"], source=data["source"],
             source_url=data.get("source_url"),
@@ -142,7 +130,7 @@ class Event:
             impact_score=data.get("impact_score"),
             relevance_score=data.get("relevance_score"),
             language=data.get("language", "en"),
-            metadata=metadata_dict,
+            metadata=data.get("metadata", {}) if isinstance(data.get("metadata"), dict) else json.loads(data.get("metadata", "{}")),
             processed=data.get("processed", False),
             enriched=data.get("enriched", False)
         )

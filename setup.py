@@ -637,9 +637,9 @@ class OpportunityEngine:
     
     def _determine_priority(self, score, conviction):
         combined = (score + conviction) / 2
-        if combined >= 75: return "CRITICAL"
-        elif combined >= 60: return "HIGH"
-        elif combined >= 45: return "MEDIUM"
+        if combined >= 92: return "CRITICAL"
+        elif combined >= 75: return "HIGH"
+        elif combined >= 55: return "MEDIUM"
         else: return "LOW"
     
     def _calculate_risk(self, event, opp_type):

@@ -1,19 +1,17 @@
 #!/usr/bin/env python3
+from dotenv import load_dotenv
+load_dotenv()
 """O.M.A.-C.O.R.E. CLI Interface"""
 import argparse
 import json
 import csv
 import time
 import sys
-import os
 from datetime import datetime, timezone
-from dotenv import load_dotenv
 from core.database.db import OMACoreDatabase
 from core.collectors.world_monitor import WorldMonitor
 from core.engines.score_opportunity import Pipeline
-
-# Cargar variables de entorno desde .env
-load_dotenv()
+from core.engines.telegram_notifier import TelegramNotifier
 
 class Colors:
     HEADER = "\033[95m"
@@ -28,9 +26,9 @@ class Colors:
 class OMACLI:
     def __init__(self, db_path="oma_core.db"):
         self.db = OMACoreDatabase(db_path)
-        self.fred_api_key = os.getenv("FRED_API_KEY")
-        self.pipeline = Pipeline(db_path, fred_api_key=self.fred_api_key, enable_telegram=True)
-        self.monitor = WorldMonitor(fred_api_key=self.fred_api_key)
+        self.pipeline = Pipeline(db_path)
+        self.monitor = WorldMonitor()
+        self.notifier = TelegramNotifier()
     
     def print_banner(self):
         banner = f"""
@@ -42,7 +40,7 @@ class OMACLI:
  ██████  ██      ██ ██   ██     ██████  ██████  ██   ██ ███████ 
 {Colors.END}
 {Colors.YELLOW}  One Man Army — Create. Own. Run. Everything.{Colors.END}
-{Colors.GREEN}  Intelligence Engine v2.0 — Trading Focus{Colors.END}
+{Colors.GREEN}  Intelligence Engine v1.0 — Trading Focus{Colors.END}
 {Colors.BLUE}  —————————————————————————————————————————{Colors.END}
         """
         print(banner)
@@ -108,8 +106,6 @@ class OMACLI:
         result = self.pipeline.run(unprocessed, min_score=args.min_score)
         print(f"\n{Colors.GREEN}{Colors.BOLD}✓ Pipeline completado{Colors.END}")
         print(f"   Eventos: {result['events_processed']} | Oportunidades: {result['opportunities_generated']}")
-        if result.get('telegram_enabled'):
-            print(f"   🔔 Telegram: {result.get('critical_count', 0)} CRITICAL detectadas")
         if result['top_opportunities']:
             print(f"\n{Colors.YELLOW}{Colors.BOLD}🏆 TOP OPORTUNIDADES:{Colors.END}\n")
             for i, opp in enumerate(result['top_opportunities'][:args.limit], 1):
@@ -155,7 +151,6 @@ class OMACLI:
     def cmd_watch(self, args):
         print(f"{Colors.CYAN}{Colors.BOLD}[WATCH] Monitoreo continuo{Colors.END}")
         print(f"   Intervalo: {args.interval}s | Min score: {args.min_score}")
-        print(f"   🔔 Telegram: {'Activado (resumen cada 4h)' if self.pipeline.telegram_enabled else 'Desactivado'}")
         print(f"   Presiona Ctrl+C para detener\n")
         cycle = 0
         try:
@@ -165,14 +160,12 @@ class OMACLI:
                 events = self.monitor.collect_all()
                 if events:
                     print(f"   {Colors.GREEN}✓ {len(events)} eventos recolectados{Colors.END}")
-                    result = self.pipeline.run(events, min_score=args.min_score, cycle_number=cycle)
+                    result = self.pipeline.run(events, min_score=args.min_score)
                     if result['opportunities_generated'] > 0:
                         print(f"   {Colors.YELLOW}🏆 {result['opportunities_generated']} oportunidades!{Colors.END}")
                         for opp in result['top_opportunities'][:3]:
                             p_color = Colors.RED if opp["priority"] == "CRITICAL" else Colors.YELLOW if opp["priority"] == "HIGH" else Colors.CYAN
                             print(f"      {p_color}[{opp['priority']}] {opp['title'][:80]} (Score: {opp['score']}){Colors.END}")
-                        if result.get('critical_count', 0) > 0:
-                            print(f"   🔔 {result['critical_count']} CRITICAL (resumen Telegram cada 4h)")
                 else:
                     print(f"   {Colors.BLUE}○ Sin eventos nuevos{Colors.END}")
                 time.sleep(args.interval)
@@ -204,18 +197,26 @@ class OMACLI:
         self.cmd_collect(args)
         print("\n" + "—" * 60 + "\n")
         self.cmd_process(args)
-    
+        
+        # Enviar resumen por Telegram
+        try:
+            opps = self.db.get_active_opportunities(limit=100)
+            stats = self.db.get_event_stats()
+            pipeline_result = {"events_processed": stats.get("total_events", 0), "events_stored": stats.get("unprocessed", 0), "opportunities_generated": len(opps)}
+            self.notifier.send_run_summary(opps, pipeline_result)
+        except Exception as e:
+            print(f"[Telegram] Error enviando resumen: {e}")
     def run(self):
         parser = argparse.ArgumentParser(
             description="O.M.A.-C.O.R.E. — Intelligence Engine CLI",
             formatter_class=argparse.RawDescriptionHelpFormatter,
             epilog="""
 Ejemplos:
-  oma collect
-  oma process --min-score 50
-  oma run
-  oma watch --interval 300
-  oma status
+  python -m core.cli.main collect
+  python -m core.cli.main process --min-score 50
+  python -m core.cli.main run
+  python -m core.cli.main watch --interval 300
+  python -m core.cli.main opportunities --limit 20
             """
         )
         
