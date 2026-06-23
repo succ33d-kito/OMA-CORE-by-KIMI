@@ -1,4 +1,16 @@
-"""O.M.A.-C.O.R.E. World Monitor"""
+"""
+DEPRECATED — Use world_monitor_v2.py (WorldMonitorV2) instead.
+This module exists only for backward compatibility.
+WorldMonitorV2 uses ALL collectors (CoinGecko, YahooFinance, Binance,
+FRED, RSS, Sentiment, Polymarket) and publishes to the OSIRIS Event Bus.
+"""
+import warnings
+warnings.warn(
+    "WorldMonitor is deprecated. Use WorldMonitorV2 from core.collectors.world_monitor_v2",
+    DeprecationWarning, stacklevel=2
+)
+
+"""O.M.A.-C.O.R.E. World Monitor (deprecated)"""
 import requests, feedparser, json, uuid
 from datetime import datetime, timezone, timedelta
 from typing import List, Dict, Optional, Any

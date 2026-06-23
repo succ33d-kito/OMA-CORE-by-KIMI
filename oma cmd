@@ -1,10 +1,28 @@
-oma run              # Ciclo completo: collect + process
-oma collect          # Solo recolectar eventos
-oma process          # Solo procesar eventos pendientes
-oma watch            # Monitoreo continuo (default 300s)
-oma watch --interval 60   # Cada 60 segundos
-oma status           # Ver estadísticas del sistema
-oma opportunities    # Ver oportunidades activas
-oma events --hours 24 --limit 50   # Ver eventos recientes
-oma export --format json   # Exportar a JSON
-oma export --format csv    # Exportar a CSV
+OSIRIS / O.M.A.-C.O.R.E. CLI Commands
+======================================
+
+python -m core.cli.main run              # Ciclo completo: collect + process + telegram
+python -m core.cli.main collect          # Solo recolectar eventos (usando WorldMonitorV2 con TODOS los collectors)
+python -m core.cli.main process          # Solo procesar eventos pendientes
+python -m core.cli.main council          # OSIRIS Agent Council (News + Macro agents → consensus → MetaCouncil)
+python -m core.cli.main council --limit 100  # Council con mas eventos
+python -m core.cli.main watch            # Monitoreo continuo (default 300s)
+python -m core.cli.main watch --interval 60  # Cada 60 segundos
+python -m core.cli.main status           # Ver estadisticas del sistema
+python -m core.cli.main opportunities    # Ver oportunidades activas
+python -m core.cli.main events --hours 24 --limit 50   # Ver eventos recientes
+python -m core.cli.main export --format json   # Exportar a JSON
+python -m core.cli.main export --format csv    # Exportar a CSV
+
+OSIRIS Structure
+================
+core/schemas/agent_schema.py     # ACP: AgentOpinion, CouncilDecision, AgentRole, CouncilTier, Recommendation
+core/event_bus/bus.py            # EventBus: pub/sub message bus with history
+core/council/council.py          # AgentCouncil: consensus engine
+core/council/meta_council.py     # MetaCouncil: cross-profile comparison
+core/agents/news_agent.py        # NewsAgent: structured news analysis → AgentOpinion
+core/agents/macro_agent.py       # MacroAgent: structured macro analysis → AgentOpinion
+core/collectors/world_monitor_v2.py  # WorldMonitorV2: unified collector orchestrator (7 collectors)
+core/profiles/models.py          # UserProfile, ProfileRegistry, Trader/Entrepreneur/Creator prefs
+core/memory/memory.py            # ShortTermMemory, LongTermMemory, MemoryStore
+core/config/config.py            # OSIRISConfig: centralized env-based config

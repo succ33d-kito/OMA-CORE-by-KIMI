@@ -1,0 +1,298 @@
+{
+  "total_failures": 41,
+  "by_category": {
+    "RISK_FAILURE": 41
+  },
+  "by_severity": {
+    "INFO": 1
+  },
+  "failures": [
+    {
+      "timestamp": "2026-06-22T23:36:55.823829+00:00",
+      "category": "RISK_FAILURE",
+      "severity": "INFO",
+      "summary": "Trade closed at loss: BTC short PnL=-26.13",
+      "detail": ""
+    },
+    {
+      "timestamp": "2026-06-22T23:36:55.823859+00:00",
+      "category": "RISK_FAILURE",
+      "severity": "INFO",
+      "summary": "Trade closed at loss: BTC short PnL=-26.16",
+      "detail": ""
+    },
+    {
+      "timestamp": "2026-06-22T23:36:57.706239+00:00",
+      "category": "RISK_FAILURE",
+      "severity": "INFO",
+      "summary": "Trade closed at loss: BTC short PnL=-26.10",
+      "detail": ""
+    },
+    {
+      "timestamp": "2026-06-22T23:36:58.900944+00:00",
+      "category": "RISK_FAILURE",
+      "severity": "INFO",
+      "summary": "Trade closed at loss: BTC long PnL=-26.26",
+      "detail": ""
+    },
+    {
+      "timestamp": "2026-06-22T23:36:58.990821+00:00",
+      "category": "RISK_FAILURE",
+      "severity": "INFO",
+      "summary": "Trade closed at loss: BTC long PnL=-26.23",
+      "detail": ""
+    },
+    {
+      "timestamp": "2026-06-22T23:37:03.161539+00:00",
+      "category": "RISK_FAILURE",
+      "severity": "INFO",
+      "summary": "Trade closed at loss: BTC short PnL=-26.31",
+      "detail": ""
+    },
+    {
+      "timestamp": "2026-06-22T23:37:03.221447+00:00",
+      "category": "RISK_FAILURE",
+      "severity": "INFO",
+      "summary": "Trade closed at loss: BTC short PnL=-26.29",
+      "detail": ""
+    },
+    {
+      "timestamp": "2026-06-22T23:37:07.187541+00:00",
+      "category": "RISK_FAILURE",
+      "severity": "INFO",
+      "summary": "Trade closed at loss: ETH long PnL=-25.64",
+      "detail": ""
+    },
+    {
+      "timestamp": "2026-06-22T23:37:15.265863+00:00",
+      "category": "RISK_FAILURE",
+      "severity": "INFO",
+      "summary": "Trade closed at loss: BTC long PnL=-26.57",
+      "detail": ""
+    },
+    {
+      "timestamp": "2026-06-22T23:37:17.990325+00:00",
+      "category": "RISK_FAILURE",
+      "severity": "INFO",
+      "summary": "Trade closed at loss: BTC short PnL=-26.60",
+      "detail": ""
+    },
+    {
+      "timestamp": "2026-06-22T23:37:18.724191+00:00",
+      "category": "RISK_FAILURE",
+      "severity": "INFO",
+      "summary": "Trade closed at loss: ETH long PnL=-26.68",
+      "detail": ""
+    },
+    {
+      "timestamp": "2026-06-22T23:37:22.883245+00:00",
+      "category": "RISK_FAILURE",
+      "severity": "INFO",
+      "summary": "Trade closed at loss: BTC long PnL=-26.62",
+      "detail": ""
+    },
+    {
+      "timestamp": "2026-06-22T23:37:22.883282+00:00",
+      "category": "RISK_FAILURE",
+      "severity": "INFO",
+      "summary": "Trade closed at loss: BTC long PnL=-26.65",
+      "detail": ""
+    },
+    {
+      "timestamp": "2026-06-22T23:37:23.289873+00:00",
+      "category": "RISK_FAILURE",
+      "severity": "INFO",
+      "summary": "Trade closed at loss: ETH short PnL=-26.75",
+      "detail": ""
+    },
+    {
+      "timestamp": "2026-06-22T23:37:24.923811+00:00",
+      "category": "RISK_FAILURE",
+      "severity": "INFO",
+      "summary": "Trade closed at loss: BTC short PnL=-26.75",
+      "detail": ""
+    },
+    {
+      "timestamp": "2026-06-22T23:37:26.777324+00:00",
+      "category": "RISK_FAILURE",
+      "severity": "INFO",
+      "summary": "Trade closed at loss: BTC short PnL=-26.70",
+      "detail": ""
+    },
+    {
+      "timestamp": "2026-06-22T23:37:30.063251+00:00",
+      "category": "RISK_FAILURE",
+      "severity": "INFO",
+      "summary": "Trade closed at loss: BTC long PnL=-26.71",
+      "detail": ""
+    },
+    {
+      "timestamp": "2026-06-22T23:37:32.124591+00:00",
+      "category": "RISK_FAILURE",
+      "severity": "INFO",
+      "summary": "Trade closed at loss: BTC short PnL=-26.64",
+      "detail": ""
+    },
+    {
+      "timestamp": "2026-06-22T23:37:33.534914+00:00",
+      "category": "RISK_FAILURE",
+      "severity": "INFO",
+      "summary": "Trade closed at loss: ETH long PnL=-26.58",
+      "detail": ""
+    },
+    {
+      "timestamp": "2026-06-22T23:37:36.867358+00:00",
+      "category": "RISK_FAILURE",
+      "severity": "INFO",
+      "summary": "Trade closed at loss: BTC long PnL=-26.65",
+      "detail": ""
+    },
+    {
+      "timestamp": "2026-06-22T23:37:37.465445+00:00",
+      "category": "RISK_FAILURE",
+      "severity": "INFO",
+      "summary": "Trade closed at loss: BTC long PnL=-17.62",
+      "detail": ""
+    },
+    {
+      "timestamp": "2026-06-22T23:37:53.784253+00:00",
+      "category": "RISK_FAILURE",
+      "severity": "INFO",
+      "summary": "Trade closed at loss: BTC short PnL=-27.33",
+      "detail": ""
+    },
+    {
+      "timestamp": "2026-06-22T23:37:55.323030+00:00",
+      "category": "RISK_FAILURE",
+      "severity": "INFO",
+      "summary": "Trade closed at loss: BTC short PnL=-39.43",
+      "detail": ""
+    },
+    {
+      "timestamp": "2026-06-22T23:37:56.609975+00:00",
+      "category": "RISK_FAILURE",
+      "severity": "INFO",
+      "summary": "Trade closed at loss: BTC short PnL=-32.67",
+      "detail": ""
+    },
+    {
+      "timestamp": "2026-06-22T23:37:57.025825+00:00",
+      "category": "RISK_FAILURE",
+      "severity": "INFO",
+      "summary": "Trade closed at loss: BTC long PnL=-27.48",
+      "detail": ""
+    },
+    {
+      "timestamp": "2026-06-22T23:37:57.139122+00:00",
+      "category": "RISK_FAILURE",
+      "severity": "INFO",
+      "summary": "Trade closed at loss: BTC short PnL=-27.51",
+      "detail": ""
+    },
+    {
+      "timestamp": "2026-06-22T23:37:57.178287+00:00",
+      "category": "RISK_FAILURE",
+      "severity": "INFO",
+      "summary": "Trade closed at loss: ETH short PnL=-39.39",
+      "detail": ""
+    },
+    {
+      "timestamp": "2026-06-22T23:37:57.631282+00:00",
+      "category": "RISK_FAILURE",
+      "severity": "INFO",
+      "summary": "Trade closed at loss: BTC short PnL=-38.18",
+      "detail": ""
+    },
+    {
+      "timestamp": "2026-06-22T23:37:58.850635+00:00",
+      "category": "RISK_FAILURE",
+      "severity": "INFO",
+      "summary": "Trade closed at loss: BTC long PnL=-18.30",
+      "detail": ""
+    },
+    {
+      "timestamp": "2026-06-22T23:37:58.891452+00:00",
+      "category": "RISK_FAILURE",
+      "severity": "INFO",
+      "summary": "Trade closed at loss: BTC long PnL=-18.29",
+      "detail": ""
+    },
+    {
+      "timestamp": "2026-06-22T23:37:58.925810+00:00",
+      "category": "RISK_FAILURE",
+      "severity": "INFO",
+      "summary": "Trade closed at loss: BTC long PnL=-27.53",
+      "detail": ""
+    },
+    {
+      "timestamp": "2026-06-22T23:37:59.750366+00:00",
+      "category": "RISK_FAILURE",
+      "severity": "INFO",
+      "summary": "Trade closed at loss: BTC short PnL=-9.28",
+      "detail": ""
+    },
+    {
+      "timestamp": "2026-06-22T23:38:00.327824+00:00",
+      "category": "RISK_FAILURE",
+      "severity": "INFO",
+      "summary": "Trade closed at loss: BTC short PnL=-9.30",
+      "detail": ""
+    },
+    {
+      "timestamp": "2026-06-22T23:38:01.087008+00:00",
+      "category": "RISK_FAILURE",
+      "severity": "INFO",
+      "summary": "Trade closed at loss: BTC short PnL=-9.29",
+      "detail": ""
+    },
+    {
+      "timestamp": "2026-06-22T23:38:04.242846+00:00",
+      "category": "RISK_FAILURE",
+      "severity": "INFO",
+      "summary": "Trade closed at loss: BTC long PnL=-27.62",
+      "detail": ""
+    },
+    {
+      "timestamp": "2026-06-22T23:38:05.736333+00:00",
+      "category": "RISK_FAILURE",
+      "severity": "INFO",
+      "summary": "Trade closed at loss: BTC long PnL=-27.58",
+      "detail": ""
+    },
+    {
+      "timestamp": "2026-06-22T23:38:06.154657+00:00",
+      "category": "RISK_FAILURE",
+      "severity": "INFO",
+      "summary": "Trade closed at loss: BTC long PnL=-26.75",
+      "detail": ""
+    },
+    {
+      "timestamp": "2026-06-22T23:38:07.393203+00:00",
+      "category": "RISK_FAILURE",
+      "severity": "INFO",
+      "summary": "Trade closed at loss: ETH short PnL=-26.75",
+      "detail": ""
+    },
+    {
+      "timestamp": "2026-06-22T23:38:07.710235+00:00",
+      "category": "RISK_FAILURE",
+      "severity": "INFO",
+      "summary": "Trade closed at loss: BTC short PnL=-26.75",
+      "detail": ""
+    },
+    {
+      "timestamp": "2026-06-22T23:38:09.538632+00:00",
+      "category": "RISK_FAILURE",
+      "severity": "INFO",
+      "summary": "Trade closed at loss: BTC short PnL=-27.48",
+      "detail": ""
+    },
+    {
+      "timestamp": "2026-06-22T23:38:09.868017+00:00",
+      "category": "RISK_FAILURE",
+      "severity": "INFO",
+      "summary": "Trade closed at loss: BTC long PnL=-27.33",
+      "detail": ""
+    }
+  ]
+}

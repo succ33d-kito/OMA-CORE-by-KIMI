@@ -9,9 +9,13 @@ import time
 import sys
 from datetime import datetime, timezone
 from core.database.db import OMACoreDatabase
-from core.collectors.world_monitor import WorldMonitor
+from core.collectors.world_monitor_v2 import WorldMonitorV2
 from core.engines.score_opportunity import Pipeline
 from core.engines.telegram_notifier import TelegramNotifier
+from core.event_bus import EventBus, EventTopic
+from core.council import AgentCouncil, MetaCouncil
+from core.agents import NewsAgent, MacroAgent
+from core.schemas.agent_schema import CouncilDecision as CouncilDecisionSchema
 
 class Colors:
     HEADER = "\033[95m"
@@ -27,8 +31,13 @@ class OMACLI:
     def __init__(self, db_path="oma_core.db"):
         self.db = OMACoreDatabase(db_path)
         self.pipeline = Pipeline(db_path)
-        self.monitor = WorldMonitor()
+        self.monitor = WorldMonitorV2()
         self.notifier = TelegramNotifier()
+        self.event_bus = EventBus()
+        self.agent_council = AgentCouncil(self.event_bus)
+        self.meta_council = MetaCouncil(self.event_bus)
+        self.news_agent = NewsAgent(event_bus=self.event_bus)
+        self.macro_agent = MacroAgent(event_bus=self.event_bus)
     
     def print_banner(self):
         banner = f"""
@@ -193,6 +202,42 @@ class OMACLI:
             else:
                 print(f"{Colors.YELLOW}⚠ No hay oportunidades{Colors.END}")
     
+    def cmd_council(self, args):
+        print(f"{Colors.CYAN}{Colors.BOLD}[COUNCIL] Running OSIRIS Agent Council...{Colors.END}\n")
+        unprocessed = self.db.get_unprocessed_events(limit=args.limit)
+        if not unprocessed:
+            print(f"{Colors.YELLOW}⚠ No events to analyze.{Colors.END}")
+            return
+        print(f"{Colors.BLUE}📥 {len(unprocessed)} events for council analysis{Colors.END}\n")
+
+        news_opinions = self.news_agent.analyze_batch(unprocessed)
+        print(f"{Colors.GREEN}✓ NewsAgent: {len(news_opinions)} opinions{Colors.END}")
+        macro_opinions = self.macro_agent.analyze_batch(unprocessed)
+        print(f"{Colors.GREEN}✓ MacroAgent: {len(macro_opinions)} opinions{Colors.END}")
+
+        all_opinions = news_opinions + macro_opinions
+        if not all_opinions:
+            print(f"{Colors.YELLOW}⚠ No opinions generated.{Colors.END}")
+            return
+
+        for opinion in all_opinions:
+            self.agent_council.submit_opinion(opinion)
+
+        event_ids = set(o.event_id for o in all_opinions)
+        decisions = []
+        for event_id in event_ids:
+            decision = self.agent_council.decide(event_id)
+            if decision:
+                decisions.append(decision)
+                meta = self.meta_council.decide_best_profile(event_id, decision.opinions)
+                print(f"\n{Colors.BOLD}Event: {event_id[:12]}...{Colors.END}")
+                print(f"   Council Conviction: {decision.conviction:.1f} | Consensus: {decision.consensus_score:.1f} | Disagreement: {decision.disagreement_score:.1f}")
+                print(f"   Action: {Colors.GREEN if decision.action.value in ('buy','strong_buy','hold') else Colors.RED}{decision.action.value.upper()}{Colors.END}")
+                print(f"   Best Profile: {Colors.YELLOW}{meta.best_profile.upper()}{Colors.END} (conviction: {meta.meta_conviction:.1f})")
+                print(f"   Rationale: {decision.rationale[:200]}...")
+
+        print(f"\n{Colors.GREEN}{Colors.BOLD}✓ Council completed: {len(decisions)} decisions{Colors.END}")
+
     def cmd_run(self, args):
         self.cmd_collect(args)
         print("\n" + "—" * 60 + "\n")
@@ -248,6 +293,9 @@ Ejemplos:
         p_run.add_argument("--min-score", type=float, default=40.0)
         p_run.add_argument("--limit", type=int, default=10)
         
+        p_council = subparsers.add_parser("council", help="OSIRIS Agent Council")
+        p_council.add_argument("--limit", type=int, default=50)
+        
         args = parser.parse_args()
         self.print_banner()
         
@@ -259,7 +307,8 @@ Ejemplos:
             "collect": self.cmd_collect, "process": self.cmd_process,
             "opportunities": self.cmd_opportunities, "events": self.cmd_events,
             "status": self.cmd_status, "watch": self.cmd_watch,
-            "export": self.cmd_export, "run": self.cmd_run
+            "export": self.cmd_export, "run": self.cmd_run,
+            "council": self.cmd_council,
         }
         
         if args.command in command_map:

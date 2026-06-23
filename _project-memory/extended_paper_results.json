@@ -1,0 +1,16 @@
+{
+  "7d_return": 0.3,
+  "7d_maxdd": 1.35,
+  "30d_return": -0.58,
+  "30d_maxdd": 0.58,
+  "30d_trades": 5,
+  "guard_counts": {
+    "direction_blocks": 2512,
+    "capital_blocks": 0,
+    "emergency_blocks": 0,
+    "crash_warning_blocks": 850,
+    "knife_rejections": 0,
+    "gap_reductions": 2517,
+    "kill_switch_triggers": 0
+  }
+}
