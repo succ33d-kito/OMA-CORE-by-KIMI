@@ -19,3 +19,14 @@ _extended_demo/guard_audit_*.jsonl
 _extended_demo/execution_audit_*.jsonl
 _extended_demo/failures_*.jsonl
 _project-memory/.obsidian/
+
+# OMA runtime/generated reports
+_project-memory/crypto_consolidation/*.json
+_project-memory/crypto_consolidation/*.md
+_project-memory/extended_demo/*.md
+_extended_demo/
+_live_paper_gate/
+logs/
+backups/
+*.db
+*.db.*
