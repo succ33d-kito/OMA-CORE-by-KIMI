@@ -39,7 +39,7 @@ from core.execution.crash_detector import CrashDetector
 from core.execution.knife_detector import KnifeDetector
 from core.execution.gap_risk import GapRiskEngine
 from core.monitoring.health import HealthMonitor, HealthStatus
-from core.monitoring.telemetry import TelemetryRecorder, GuardAuditRecorder
+from core.monitoring.telemetry import TelemetryRecorder, GuardAuditRecorder, ExecutionAuditRecorder
 from core.monitoring.failure_classifier import FailureClassifier, FailureCategory, FailureSeverity
 
 OUT_DIR = "_extended_demo"
@@ -103,6 +103,7 @@ class DemoHarness:
         self.health = HealthMonitor()
         self.telemetry = TelemetryRecorder(OUT_DIR)
         self.guard_audit = GuardAuditRecorder(OUT_DIR)
+        self.execution_audit = ExecutionAuditRecorder(OUT_DIR)
         self.failures = FailureClassifier(OUT_DIR)
 
         # State
@@ -281,7 +282,7 @@ class DemoHarness:
         # Process each event
         for event in events:
             try:
-                self._process_event(event)
+                self._process_event(event, result)
                 result["events_processed"] += 1
                 self._events_processed += 1
             except Exception as e:
@@ -294,7 +295,7 @@ class DemoHarness:
 
         return result
 
-    def _process_event(self, event: Event):
+    def _process_event(self, event: Event, result: dict[str, Any]):
         symbol = event.assets[0].symbol if event.assets else None
         if symbol not in TRADE_SYMBOLS:
             return
@@ -333,17 +334,22 @@ class DemoHarness:
         signal = self.engine.process_decision(decision)
         if signal is None:
             self._guard_blocks += 1
+            result["guard_blocks"] += 1
             self._record_guard_block(event, decision)
             return
 
         self._signals_generated += 1
+        result["signals_generated"] += 1
 
         # Execute
         trade = self.engine.execute_signal(signal)
         if trade:
             self._trades_opened_total += 1
+            result["trades_opened"] += 1
         else:
             self._execution_blocks += 1
+            result["execution_blocks"] += 1
+            self._record_execution_block(event, decision, signal)
 
     def _record_guard_block(self, event: Event, decision):
         symbol = event.assets[0].symbol if event.assets else "unknown"
@@ -388,6 +394,37 @@ class DemoHarness:
             "direction_controller_decision": direction,
         })
 
+    def _record_execution_block(self, event: Event, decision, signal):
+        """Record an execution block (execute_signal returned None) to audit."""
+        symbol = event.assets[0].symbol if event.assets else "unknown"
+        direction = None
+        try:
+            direction = DIRECTION_MAP.get(decision.action).value if decision.action in DIRECTION_MAP else "unknown"
+        except Exception:
+            direction = "unknown"
+
+        portfolio = self.engine.get_portfolio_summary()
+        guard_mode = self.capital_guard.guard_mode(self.engine.capital)
+        crash_mode = self.crash_detector.crash_mode(self.engine.capital)
+
+        self.execution_audit.record({
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "cycle_id": self._cycle_id,
+            "asset": symbol,
+            "direction": direction,
+            "signal_type": decision.action.value if decision.action else "unknown",
+            "conviction": decision.conviction,
+            "risk_score": signal.risk_score if signal else None,
+            "block_reason": "execution_capacity_limit",
+            "execution_source": "PaperTradingEngine.execute_signal",
+            "open_positions": len(self.engine.positions),
+            "current_exposure": portfolio.get("exposure", None),
+            "capital_guard_mode": guard_mode.value,
+            "crash_mode": crash_mode.value,
+            "gap_risk_score": self.gap_risk.gap_risk_score(),
+            "direction_controller_state": self.direction_ctrl.summary(),
+        })
+
     @staticmethod
     def _identify_guard_source(reason: str) -> str:
         if "crash" in reason: return "CrashDetector"
@@ -425,6 +462,13 @@ class DemoHarness:
             "data_failures": self._data_failures,
             "guard_blocks": pipeline_result["guard_blocks"],
             "execution_blocks": pipeline_result["execution_blocks"],
+            # Cumulative counters for cross-reference
+            "cumulative_signals": self._signals_generated,
+            "cumulative_trades_opened": self._trades_opened_total,
+            "cumulative_trades_closed": self._trades_closed_total,
+            "cumulative_guard_blocks": self._guard_blocks,
+            "cumulative_execution_blocks": self._execution_blocks,
+            "cumulative_errors": self._runtime_errors,
         }
         self.telemetry.record(record)
 

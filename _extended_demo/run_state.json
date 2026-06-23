@@ -1,0 +1,13 @@
+{
+  "cycle_id": 43,
+  "events_processed": 86,
+  "signals_generated": 86,
+  "trades_opened_total": 3,
+  "trades_closed_total": 0,
+  "runtime_errors": 0,
+  "data_failures": 0,
+  "guard_blocks": 0,
+  "execution_blocks": 83,
+  "start_time": "2026-06-23T09:03:09.917160+00:00",
+  "last_updated": "2026-06-23T09:47:36.016880+00:00"
+}

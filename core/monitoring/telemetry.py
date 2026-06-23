@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import json
-import os
+from collections import Counter
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Optional
@@ -106,4 +106,53 @@ class GuardAuditRecorder:
             "total_blocked": len(blockers),
             "total_size_reductions": len(size_reductions),
             "guard_sources": list({e.get("guard_source", "unknown") for e in entries}),
+        }
+
+
+class ExecutionAuditRecorder:
+    """Append-only JSONL for every execution block.
+
+    Records when execute_signal() returns None due to position
+    or capacity limits. Separate from GuardAuditRecorder because
+    execution blocks are not guard interventions — they are
+    pipeline capacity limits.
+    """
+
+    def __init__(self, output_dir: str | Path) -> None:
+        self.output_dir = Path(output_dir)
+        self.output_dir.mkdir(parents=True, exist_ok=True)
+        self._file: Optional[Path] = None
+
+    @property
+    def filepath(self) -> Path:
+        if self._file is None:
+            ts = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+            self._file = self.output_dir / f"execution_audit_{ts}.jsonl"
+        return self._file
+
+    def record(self, entry: dict[str, Any]) -> None:
+        entry["_recorded_at"] = datetime.now(timezone.utc).isoformat()
+        line = json.dumps(entry, default=str) + "\n"
+        with open(self.filepath, "a") as f:
+            f.write(line)
+
+    def read_all(self) -> list[dict[str, Any]]:
+        entries: list[dict[str, Any]] = []
+        for p in sorted(self.output_dir.glob("execution_audit_*.jsonl")):
+            with open(p) as f:
+                for line in f:
+                    line = line.strip()
+                    if line:
+                        entries.append(json.loads(line))
+        return entries
+
+    def summary(self) -> dict[str, Any]:
+        entries = self.read_all()
+        if not entries:
+            return {}
+        return {
+            "total_execution_blocks": len(entries),
+            "block_reasons": list({e.get("block_reason", "unknown") for e in entries}),
+            "by_asset": dict(Counter(e.get("asset", "unknown") for e in entries).most_common()),
+            "by_reason": dict(Counter(e.get("block_reason", "unknown") for e in entries).most_common()),
         }
