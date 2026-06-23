@@ -1,0 +1,434 @@
+[
+  {
+    "event_id": "BTC_20",
+    "symbol": "BTC",
+    "risk_score": 80.0,
+    "pnl_pct": -4.58,
+    "atr_pct": 7.74,
+    "volatility": 206.8
+  },
+  {
+    "event_id": "ETH_20",
+    "symbol": "ETH",
+    "risk_score": 80.0,
+    "pnl_pct": 40.1,
+    "atr_pct": 6.49,
+    "volatility": 191.2
+  },
+  {
+    "event_id": "BTC_21",
+    "symbol": "BTC",
+    "risk_score": 80.0,
+    "pnl_pct": -11.96,
+    "atr_pct": 8.6,
+    "volatility": 207.7
+  },
+  {
+    "event_id": "ETH_21",
+    "symbol": "ETH",
+    "risk_score": 80.0,
+    "pnl_pct": 48.32,
+    "atr_pct": 6.05,
+    "volatility": 186.9
+  },
+  {
+    "event_id": "BTC_22",
+    "symbol": "BTC",
+    "risk_score": 80.0,
+    "pnl_pct": -9.35,
+    "atr_pct": 9.1,
+    "volatility": 206.3
+  },
+  {
+    "event_id": "ETH_22",
+    "symbol": "ETH",
+    "risk_score": 80.0,
+    "pnl_pct": 49.31,
+    "atr_pct": 9.53,
+    "volatility": 210.2
+  },
+  {
+    "event_id": "BTC_23",
+    "symbol": "BTC",
+    "risk_score": 80.0,
+    "pnl_pct": -11.15,
+    "atr_pct": 6.89,
+    "volatility": 201.4
+  },
+  {
+    "event_id": "BTC_24",
+    "symbol": "BTC",
+    "risk_score": 80.0,
+    "pnl_pct": -7.59,
+    "atr_pct": 6.54,
+    "volatility": 196.8
+  },
+  {
+    "event_id": "ETH_24",
+    "symbol": "ETH",
+    "risk_score": 80.0,
+    "pnl_pct": 46.8,
+    "atr_pct": 7.67,
+    "volatility": 235.7
+  },
+  {
+    "event_id": "BTC_25",
+    "symbol": "BTC",
+    "risk_score": 80.0,
+    "pnl_pct": 9.92,
+    "atr_pct": 6.59,
+    "volatility": 198.9
+  },
+  {
+    "event_id": "ETH_25",
+    "symbol": "ETH",
+    "risk_score": 80.0,
+    "pnl_pct": 50.5,
+    "atr_pct": 7.59,
+    "volatility": 230.5
+  },
+  {
+    "event_id": "BTC_26",
+    "symbol": "BTC",
+    "risk_score": 80.0,
+    "pnl_pct": 3.96,
+    "atr_pct": 6.4,
+    "volatility": 205.0
+  },
+  {
+    "event_id": "ETH_26",
+    "symbol": "ETH",
+    "risk_score": 80.0,
+    "pnl_pct": 54.43,
+    "atr_pct": 7.43,
+    "volatility": 226.2
+  },
+  {
+    "event_id": "BTC_27",
+    "symbol": "BTC",
+    "risk_score": 80.0,
+    "pnl_pct": 10.4,
+    "atr_pct": 6.35,
+    "volatility": 201.8
+  },
+  {
+    "event_id": "ETH_27",
+    "symbol": "ETH",
+    "risk_score": 80.0,
+    "pnl_pct": 55.74,
+    "atr_pct": 7.18,
+    "volatility": 234.0
+  },
+  {
+    "event_id": "BTC_28",
+    "symbol": "BTC",
+    "risk_score": 80.0,
+    "pnl_pct": 6.23,
+    "atr_pct": 11.67,
+    "volatility": 230.8
+  },
+  {
+    "event_id": "ETH_28",
+    "symbol": "ETH",
+    "risk_score": 80.0,
+    "pnl_pct": 60.31,
+    "atr_pct": 7.14,
+    "volatility": 230.1
+  },
+  {
+    "event_id": "ETH_29",
+    "symbol": "ETH",
+    "risk_score": 80.0,
+    "pnl_pct": 53.34,
+    "atr_pct": 7.86,
+    "volatility": 231.1
+  },
+  {
+    "event_id": "ETH_30",
+    "symbol": "ETH",
+    "risk_score": 80.0,
+    "pnl_pct": 59.87,
+    "atr_pct": 7.74,
+    "volatility": 227.9
+  },
+  {
+    "event_id": "BTC_31",
+    "symbol": "BTC",
+    "risk_score": 80.0,
+    "pnl_pct": 12.13,
+    "atr_pct": 11.74,
+    "volatility": 222.4
+  },
+  {
+    "event_id": "ETH_31",
+    "symbol": "ETH",
+    "risk_score": 80.0,
+    "pnl_pct": 62.05,
+    "atr_pct": 7.37,
+    "volatility": 226.3
+  },
+  {
+    "event_id": "BTC_32",
+    "symbol": "BTC",
+    "risk_score": 80.0,
+    "pnl_pct": 8.69,
+    "atr_pct": 11.01,
+    "volatility": 221.1
+  },
+  {
+    "event_id": "BTC_33",
+    "symbol": "BTC",
+    "risk_score": 80.0,
+    "pnl_pct": 8.38,
+    "atr_pct": 10.03,
+    "volatility": 223.3
+  },
+  {
+    "event_id": "ETH_33",
+    "symbol": "ETH",
+    "risk_score": 80.0,
+    "pnl_pct": 48.92,
+    "atr_pct": 9.6,
+    "volatility": 229.9
+  },
+  {
+    "event_id": "BTC_34",
+    "symbol": "BTC",
+    "risk_score": 80.0,
+    "pnl_pct": 35.91,
+    "atr_pct": 8.95,
+    "volatility": 228.9
+  },
+  {
+    "event_id": "BTC_35",
+    "symbol": "BTC",
+    "risk_score": 80.0,
+    "pnl_pct": 42.19,
+    "atr_pct": 8.24,
+    "volatility": 231.4
+  },
+  {
+    "event_id": "ETH_35",
+    "symbol": "ETH",
+    "risk_score": 80.0,
+    "pnl_pct": 47.68,
+    "atr_pct": 10.44,
+    "volatility": 225.5
+  },
+  {
+    "event_id": "BTC_36",
+    "symbol": "BTC",
+    "risk_score": 80.0,
+    "pnl_pct": 41.43,
+    "atr_pct": 10.58,
+    "volatility": 235.7
+  },
+  {
+    "event_id": "BTC_38",
+    "symbol": "BTC",
+    "risk_score": 80.0,
+    "pnl_pct": 38.45,
+    "atr_pct": 11.47,
+    "volatility": 231.3
+  },
+  {
+    "event_id": "ETH_40",
+    "symbol": "ETH",
+    "risk_score": 80.0,
+    "pnl_pct": 39.06,
+    "atr_pct": 13.55,
+    "volatility": 233.5
+  },
+  {
+    "event_id": "BTC_41",
+    "symbol": "BTC",
+    "risk_score": 80.0,
+    "pnl_pct": 3.69,
+    "atr_pct": 12.68,
+    "volatility": 233.5
+  },
+  {
+    "event_id": "BTC_43",
+    "symbol": "BTC",
+    "risk_score": 80.0,
+    "pnl_pct": -0.13,
+    "atr_pct": 9.83,
+    "volatility": 227.8
+  },
+  {
+    "event_id": "BTC_52",
+    "symbol": "BTC",
+    "risk_score": 80.0,
+    "pnl_pct": 25.37,
+    "atr_pct": 9.15,
+    "volatility": 232.1
+  },
+  {
+    "event_id": "BTC_53",
+    "symbol": "BTC",
+    "risk_score": 80.0,
+    "pnl_pct": -7.39,
+    "atr_pct": 13.3,
+    "volatility": 241.1
+  },
+  {
+    "event_id": "ETH_53",
+    "symbol": "ETH",
+    "risk_score": 80.0,
+    "pnl_pct": 74.62,
+    "atr_pct": 15.2,
+    "volatility": 259.4
+  },
+  {
+    "event_id": "BTC_54",
+    "symbol": "BTC",
+    "risk_score": 80.0,
+    "pnl_pct": -22.46,
+    "atr_pct": 15.34,
+    "volatility": 241.3
+  },
+  {
+    "event_id": "ETH_54",
+    "symbol": "ETH",
+    "risk_score": 80.0,
+    "pnl_pct": 32.0,
+    "atr_pct": 13.63,
+    "volatility": 257.3
+  },
+  {
+    "event_id": "BTC_55",
+    "symbol": "BTC",
+    "risk_score": 80.0,
+    "pnl_pct": -28.63,
+    "atr_pct": 18.4,
+    "volatility": 244.2
+  },
+  {
+    "event_id": "BTC_57",
+    "symbol": "BTC",
+    "risk_score": 80.0,
+    "pnl_pct": -40.95,
+    "atr_pct": 15.0,
+    "volatility": 245.6
+  },
+  {
+    "event_id": "BTC_65",
+    "symbol": "BTC",
+    "risk_score": 80.0,
+    "pnl_pct": -39.73,
+    "atr_pct": 12.27,
+    "volatility": 241.9
+  },
+  {
+    "event_id": "ETH_65",
+    "symbol": "ETH",
+    "risk_score": 80.0,
+    "pnl_pct": -40.14,
+    "atr_pct": 9.75,
+    "volatility": 248.8
+  },
+  {
+    "event_id": "BTC_66",
+    "symbol": "BTC",
+    "risk_score": 80.0,
+    "pnl_pct": -16.34,
+    "atr_pct": 10.85,
+    "volatility": 243.5
+  },
+  {
+    "event_id": "ETH_66",
+    "symbol": "ETH",
+    "risk_score": 80.0,
+    "pnl_pct": -6.92,
+    "atr_pct": 8.36,
+    "volatility": 255.4
+  },
+  {
+    "event_id": "BTC_67",
+    "symbol": "BTC",
+    "risk_score": 80.0,
+    "pnl_pct": 6.57,
+    "atr_pct": 8.86,
+    "volatility": 242.4
+  },
+  {
+    "event_id": "ETH_67",
+    "symbol": "ETH",
+    "risk_score": 80.0,
+    "pnl_pct": 1.7,
+    "atr_pct": 8.53,
+    "volatility": 253.5
+  },
+  {
+    "event_id": "BTC_69",
+    "symbol": "BTC",
+    "risk_score": 80.0,
+    "pnl_pct": -40.33,
+    "atr_pct": 10.02,
+    "volatility": 241.8
+  },
+  {
+    "event_id": "ETH_77",
+    "symbol": "ETH",
+    "risk_score": 80.0,
+    "pnl_pct": -21.76,
+    "atr_pct": 9.84,
+    "volatility": 248.1
+  },
+  {
+    "event_id": "ETH_78",
+    "symbol": "ETH",
+    "risk_score": 80.0,
+    "pnl_pct": -16.31,
+    "atr_pct": 9.08,
+    "volatility": 246.4
+  },
+  {
+    "event_id": "BTC_85",
+    "symbol": "BTC",
+    "risk_score": 80.0,
+    "pnl_pct": -31.01,
+    "atr_pct": 7.31,
+    "volatility": 239.4
+  },
+  {
+    "event_id": "BTC_87",
+    "symbol": "BTC",
+    "risk_score": 80.0,
+    "pnl_pct": -29.41,
+    "atr_pct": 6.95,
+    "volatility": 238.1
+  },
+  {
+    "event_id": "ETH_87",
+    "symbol": "ETH",
+    "risk_score": 80.0,
+    "pnl_pct": -0.34,
+    "atr_pct": 7.55,
+    "volatility": 240.3
+  },
+  {
+    "event_id": "BTC_88",
+    "symbol": "BTC",
+    "risk_score": 80.0,
+    "pnl_pct": -17.76,
+    "atr_pct": 7.84,
+    "volatility": 237.4
+  },
+  {
+    "event_id": "BTC_91",
+    "symbol": "BTC",
+    "risk_score": 80.0,
+    "pnl_pct": -27.64,
+    "atr_pct": 7.14,
+    "volatility": 234.2
+  },
+  {
+    "event_id": "BTC_93",
+    "symbol": "BTC",
+    "risk_score": 80.0,
+    "pnl_pct": -40.53,
+    "atr_pct": 8.25,
+    "volatility": 239.2
+  }
+]

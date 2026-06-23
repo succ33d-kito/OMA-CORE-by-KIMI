@@ -1,0 +1,802 @@
+[
+  {
+    "event_id": "BTC_20",
+    "symbol": "BTC",
+    "recommendation": "hedge",
+    "conviction": 48.9,
+    "consensus_score": 98.52,
+    "disagreement_score": 1.48,
+    "direction": "short",
+    "pnl_pct": -4.58
+  },
+  {
+    "event_id": "ETH_20",
+    "symbol": "ETH",
+    "recommendation": "hedge",
+    "conviction": 48.9,
+    "consensus_score": 98.52,
+    "disagreement_score": 1.48,
+    "direction": "short",
+    "pnl_pct": 40.1
+  },
+  {
+    "event_id": "BTC_21",
+    "symbol": "BTC",
+    "recommendation": "hedge",
+    "conviction": 48.9,
+    "consensus_score": 98.52,
+    "disagreement_score": 1.48,
+    "direction": "short",
+    "pnl_pct": -11.96
+  },
+  {
+    "event_id": "ETH_21",
+    "symbol": "ETH",
+    "recommendation": "hedge",
+    "conviction": 48.9,
+    "consensus_score": 98.52,
+    "disagreement_score": 1.48,
+    "direction": "short",
+    "pnl_pct": 48.32
+  },
+  {
+    "event_id": "BTC_22",
+    "symbol": "BTC",
+    "recommendation": "hedge",
+    "conviction": 48.9,
+    "consensus_score": 98.52,
+    "disagreement_score": 1.48,
+    "direction": "short",
+    "pnl_pct": -9.35
+  },
+  {
+    "event_id": "BTC_25",
+    "symbol": "BTC",
+    "recommendation": "hedge",
+    "conviction": 48.9,
+    "consensus_score": 98.52,
+    "disagreement_score": 1.48,
+    "direction": "short",
+    "pnl_pct": 9.92
+  },
+  {
+    "event_id": "ETH_25",
+    "symbol": "ETH",
+    "recommendation": "hedge",
+    "conviction": 48.9,
+    "consensus_score": 98.52,
+    "disagreement_score": 1.48,
+    "direction": "short",
+    "pnl_pct": 50.5
+  },
+  {
+    "event_id": "BTC_26",
+    "symbol": "BTC",
+    "recommendation": "hedge",
+    "conviction": 48.9,
+    "consensus_score": 98.52,
+    "disagreement_score": 1.48,
+    "direction": "short",
+    "pnl_pct": 3.96
+  },
+  {
+    "event_id": "ETH_26",
+    "symbol": "ETH",
+    "recommendation": "hedge",
+    "conviction": 48.9,
+    "consensus_score": 98.52,
+    "disagreement_score": 1.48,
+    "direction": "short",
+    "pnl_pct": 54.43
+  },
+  {
+    "event_id": "BTC_27",
+    "symbol": "BTC",
+    "recommendation": "hedge",
+    "conviction": 48.9,
+    "consensus_score": 98.52,
+    "disagreement_score": 1.48,
+    "direction": "short",
+    "pnl_pct": 10.4
+  },
+  {
+    "event_id": "ETH_27",
+    "symbol": "ETH",
+    "recommendation": "hedge",
+    "conviction": 48.9,
+    "consensus_score": 98.52,
+    "disagreement_score": 1.48,
+    "direction": "short",
+    "pnl_pct": 55.74
+  },
+  {
+    "event_id": "BTC_28",
+    "symbol": "BTC",
+    "recommendation": "hedge",
+    "conviction": 48.9,
+    "consensus_score": 98.52,
+    "disagreement_score": 1.48,
+    "direction": "short",
+    "pnl_pct": 6.23
+  },
+  {
+    "event_id": "ETH_28",
+    "symbol": "ETH",
+    "recommendation": "hedge",
+    "conviction": 48.9,
+    "consensus_score": 98.52,
+    "disagreement_score": 1.48,
+    "direction": "short",
+    "pnl_pct": 60.31
+  },
+  {
+    "event_id": "ETH_29",
+    "symbol": "ETH",
+    "recommendation": "hedge",
+    "conviction": 48.9,
+    "consensus_score": 98.52,
+    "disagreement_score": 1.48,
+    "direction": "short",
+    "pnl_pct": 53.34
+  },
+  {
+    "event_id": "BTC_33",
+    "symbol": "BTC",
+    "recommendation": "hedge",
+    "conviction": 48.9,
+    "consensus_score": 98.52,
+    "disagreement_score": 1.48,
+    "direction": "short",
+    "pnl_pct": 8.38
+  },
+  {
+    "event_id": "BTC_34",
+    "symbol": "BTC",
+    "recommendation": "hedge",
+    "conviction": 48.9,
+    "consensus_score": 98.52,
+    "disagreement_score": 1.48,
+    "direction": "short",
+    "pnl_pct": 35.91
+  },
+  {
+    "event_id": "BTC_35",
+    "symbol": "BTC",
+    "recommendation": "hedge",
+    "conviction": 48.9,
+    "consensus_score": 98.52,
+    "disagreement_score": 1.48,
+    "direction": "short",
+    "pnl_pct": 42.19
+  },
+  {
+    "event_id": "ETH_40",
+    "symbol": "ETH",
+    "recommendation": "hedge",
+    "conviction": 48.9,
+    "consensus_score": 98.52,
+    "disagreement_score": 1.48,
+    "direction": "short",
+    "pnl_pct": 39.06
+  },
+  {
+    "event_id": "BTC_41",
+    "symbol": "BTC",
+    "recommendation": "hedge",
+    "conviction": 48.9,
+    "consensus_score": 98.52,
+    "disagreement_score": 1.48,
+    "direction": "short",
+    "pnl_pct": 3.69
+  },
+  {
+    "event_id": "BTC_42",
+    "symbol": "BTC",
+    "recommendation": "hedge",
+    "conviction": 48.9,
+    "consensus_score": 98.52,
+    "disagreement_score": 1.48,
+    "direction": "short",
+    "pnl_pct": -2.47
+  },
+  {
+    "event_id": "BTC_52",
+    "symbol": "BTC",
+    "recommendation": "hedge",
+    "conviction": 49.3,
+    "consensus_score": 98.94,
+    "disagreement_score": 1.06,
+    "direction": "short",
+    "pnl_pct": 25.37
+  },
+  {
+    "event_id": "BTC_54",
+    "symbol": "BTC",
+    "recommendation": "sell",
+    "conviction": 90.0,
+    "consensus_score": 99.31,
+    "disagreement_score": 0.69,
+    "direction": "short",
+    "pnl_pct": -22.46
+  },
+  {
+    "event_id": "BTC_66",
+    "symbol": "BTC",
+    "recommendation": "hedge",
+    "conviction": 49.3,
+    "consensus_score": 98.94,
+    "disagreement_score": 1.06,
+    "direction": "short",
+    "pnl_pct": -16.34
+  },
+  {
+    "event_id": "BTC_150",
+    "symbol": "BTC",
+    "recommendation": "hedge",
+    "conviction": 49.8,
+    "consensus_score": 99.36,
+    "disagreement_score": 0.64,
+    "direction": "short",
+    "pnl_pct": 25.1
+  },
+  {
+    "event_id": "BTC_181",
+    "symbol": "BTC",
+    "recommendation": "hedge",
+    "conviction": 49.8,
+    "consensus_score": 99.36,
+    "disagreement_score": 0.64,
+    "direction": "short",
+    "pnl_pct": 1.69
+  },
+  {
+    "event_id": "ETH_181",
+    "symbol": "ETH",
+    "recommendation": "sell",
+    "conviction": 90.0,
+    "consensus_score": 99.84,
+    "disagreement_score": 0.16,
+    "direction": "short",
+    "pnl_pct": -36.62
+  },
+  {
+    "event_id": "BTC_182",
+    "symbol": "BTC",
+    "recommendation": "hedge",
+    "conviction": 49.8,
+    "consensus_score": 99.36,
+    "disagreement_score": 0.64,
+    "direction": "short",
+    "pnl_pct": 23.01
+  },
+  {
+    "event_id": "ETH_182",
+    "symbol": "ETH",
+    "recommendation": "sell",
+    "conviction": 90.0,
+    "consensus_score": 99.89,
+    "disagreement_score": 0.11,
+    "direction": "short",
+    "pnl_pct": -36.31
+  },
+  {
+    "event_id": "BTC_183",
+    "symbol": "BTC",
+    "recommendation": "hedge",
+    "conviction": 49.8,
+    "consensus_score": 99.36,
+    "disagreement_score": 0.64,
+    "direction": "short",
+    "pnl_pct": 49.12
+  },
+  {
+    "event_id": "ETH_183",
+    "symbol": "ETH",
+    "recommendation": "hedge",
+    "conviction": 49.8,
+    "consensus_score": 99.36,
+    "disagreement_score": 0.64,
+    "direction": "short",
+    "pnl_pct": -4.86
+  },
+  {
+    "event_id": "BTC_188",
+    "symbol": "BTC",
+    "recommendation": "buy",
+    "conviction": 90.0,
+    "consensus_score": 99.55,
+    "disagreement_score": 0.45,
+    "direction": "long",
+    "pnl_pct": -43.79
+  },
+  {
+    "event_id": "BTC_191",
+    "symbol": "BTC",
+    "recommendation": "hedge",
+    "conviction": 49.8,
+    "consensus_score": 99.36,
+    "disagreement_score": 0.64,
+    "direction": "short",
+    "pnl_pct": 8.9
+  },
+  {
+    "event_id": "BTC_205",
+    "symbol": "BTC",
+    "recommendation": "hedge",
+    "conviction": 49.8,
+    "consensus_score": 99.36,
+    "disagreement_score": 0.64,
+    "direction": "short",
+    "pnl_pct": -46.16
+  },
+  {
+    "event_id": "BTC_221",
+    "symbol": "BTC",
+    "recommendation": "hedge",
+    "conviction": 49.8,
+    "consensus_score": 99.36,
+    "disagreement_score": 0.64,
+    "direction": "short",
+    "pnl_pct": -42.0
+  },
+  {
+    "event_id": "BTC_227",
+    "symbol": "BTC",
+    "recommendation": "hedge",
+    "conviction": 49.8,
+    "consensus_score": 99.36,
+    "disagreement_score": 0.64,
+    "direction": "short",
+    "pnl_pct": -5.67
+  },
+  {
+    "event_id": "BTC_245",
+    "symbol": "BTC",
+    "recommendation": "buy",
+    "conviction": 90.0,
+    "consensus_score": 99.72,
+    "disagreement_score": 0.28,
+    "direction": "long",
+    "pnl_pct": -10.63
+  },
+  {
+    "event_id": "ETH_245",
+    "symbol": "ETH",
+    "recommendation": "sell",
+    "conviction": 90.0,
+    "consensus_score": 99.0,
+    "disagreement_score": 1.0,
+    "direction": "short",
+    "pnl_pct": 25.85
+  },
+  {
+    "event_id": "BTC_254",
+    "symbol": "BTC",
+    "recommendation": "hedge",
+    "conviction": 49.8,
+    "consensus_score": 99.36,
+    "disagreement_score": 0.64,
+    "direction": "short",
+    "pnl_pct": 30.28
+  },
+  {
+    "event_id": "BTC_256",
+    "symbol": "BTC",
+    "recommendation": "buy",
+    "conviction": 90.0,
+    "consensus_score": 99.86,
+    "disagreement_score": 0.14,
+    "direction": "long",
+    "pnl_pct": -37.35
+  },
+  {
+    "event_id": "BTC_257",
+    "symbol": "BTC",
+    "recommendation": "hedge",
+    "conviction": 49.8,
+    "consensus_score": 99.36,
+    "disagreement_score": 0.64,
+    "direction": "short",
+    "pnl_pct": 46.81
+  },
+  {
+    "event_id": "BTC_272",
+    "symbol": "BTC",
+    "recommendation": "sell",
+    "conviction": 90.0,
+    "consensus_score": 98.95,
+    "disagreement_score": 1.05,
+    "direction": "short",
+    "pnl_pct": 19.77
+  },
+  {
+    "event_id": "ETH_277",
+    "symbol": "ETH",
+    "recommendation": "hedge",
+    "conviction": 49.8,
+    "consensus_score": 99.36,
+    "disagreement_score": 0.64,
+    "direction": "short",
+    "pnl_pct": 28.66
+  },
+  {
+    "event_id": "BTC_279",
+    "symbol": "BTC",
+    "recommendation": "sell",
+    "conviction": 90.0,
+    "consensus_score": 99.05,
+    "disagreement_score": 0.95,
+    "direction": "short",
+    "pnl_pct": 24.13
+  },
+  {
+    "event_id": "ETH_281",
+    "symbol": "ETH",
+    "recommendation": "hedge",
+    "conviction": 49.8,
+    "consensus_score": 99.36,
+    "disagreement_score": 0.64,
+    "direction": "short",
+    "pnl_pct": 26.09
+  },
+  {
+    "event_id": "BTC_312",
+    "symbol": "BTC",
+    "recommendation": "sell",
+    "conviction": 90.0,
+    "consensus_score": 99.8,
+    "disagreement_score": 0.2,
+    "direction": "short",
+    "pnl_pct": -34.48
+  },
+  {
+    "event_id": "BTC_329",
+    "symbol": "BTC",
+    "recommendation": "hedge",
+    "conviction": 49.8,
+    "consensus_score": 99.36,
+    "disagreement_score": 0.64,
+    "direction": "short",
+    "pnl_pct": -70.26
+  },
+  {
+    "event_id": "BTC_330",
+    "symbol": "BTC",
+    "recommendation": "hedge",
+    "conviction": 49.8,
+    "consensus_score": 99.36,
+    "disagreement_score": 0.64,
+    "direction": "short",
+    "pnl_pct": -37.17
+  },
+  {
+    "event_id": "BTC_332",
+    "symbol": "BTC",
+    "recommendation": "hedge",
+    "conviction": 49.8,
+    "consensus_score": 99.36,
+    "disagreement_score": 0.64,
+    "direction": "short",
+    "pnl_pct": 7.59
+  },
+  {
+    "event_id": "BTC_333",
+    "symbol": "BTC",
+    "recommendation": "hedge",
+    "conviction": 49.8,
+    "consensus_score": 99.36,
+    "disagreement_score": 0.64,
+    "direction": "short",
+    "pnl_pct": 16.22
+  },
+  {
+    "event_id": "ETH_347",
+    "symbol": "ETH",
+    "recommendation": "sell",
+    "conviction": 90.0,
+    "consensus_score": 99.07,
+    "disagreement_score": 0.93,
+    "direction": "short",
+    "pnl_pct": 47.13
+  },
+  {
+    "event_id": "ETH_348",
+    "symbol": "ETH",
+    "recommendation": "sell",
+    "conviction": 90.0,
+    "consensus_score": 99.19,
+    "disagreement_score": 0.81,
+    "direction": "short",
+    "pnl_pct": 39.92
+  },
+  {
+    "event_id": "ETH_349",
+    "symbol": "ETH",
+    "recommendation": "sell",
+    "conviction": 90.0,
+    "consensus_score": 99.49,
+    "disagreement_score": 0.51,
+    "direction": "short",
+    "pnl_pct": 46.84
+  },
+  {
+    "event_id": "ETH_386",
+    "symbol": "ETH",
+    "recommendation": "sell",
+    "conviction": 90.0,
+    "consensus_score": 99.45,
+    "disagreement_score": 0.55,
+    "direction": "short",
+    "pnl_pct": 21.33
+  },
+  {
+    "event_id": "ETH_424",
+    "symbol": "ETH",
+    "recommendation": "sell",
+    "conviction": 90.0,
+    "consensus_score": 99.52,
+    "disagreement_score": 0.48,
+    "direction": "short",
+    "pnl_pct": 75.17
+  },
+  {
+    "event_id": "BTC_508",
+    "symbol": "BTC",
+    "recommendation": "hedge",
+    "conviction": 49.8,
+    "consensus_score": 99.36,
+    "disagreement_score": 0.64,
+    "direction": "short",
+    "pnl_pct": 61.5
+  },
+  {
+    "event_id": "BTC_526",
+    "symbol": "BTC",
+    "recommendation": "sell",
+    "conviction": 90.0,
+    "consensus_score": 99.41,
+    "disagreement_score": 0.59,
+    "direction": "short",
+    "pnl_pct": -24.74
+  },
+  {
+    "event_id": "BTC_539",
+    "symbol": "BTC",
+    "recommendation": "sell",
+    "conviction": 90.0,
+    "consensus_score": 99.62,
+    "disagreement_score": 0.38,
+    "direction": "short",
+    "pnl_pct": -75.45
+  },
+  {
+    "event_id": "BTC_543",
+    "symbol": "BTC",
+    "recommendation": "hedge",
+    "conviction": 49.8,
+    "consensus_score": 99.36,
+    "disagreement_score": 0.64,
+    "direction": "short",
+    "pnl_pct": -37.85
+  },
+  {
+    "event_id": "ETH_563",
+    "symbol": "ETH",
+    "recommendation": "sell",
+    "conviction": 90.0,
+    "consensus_score": 99.99,
+    "disagreement_score": 0.01,
+    "direction": "short",
+    "pnl_pct": 70.15
+  },
+  {
+    "event_id": "ETH_565",
+    "symbol": "ETH",
+    "recommendation": "sell",
+    "conviction": 90.0,
+    "consensus_score": 99.87,
+    "disagreement_score": 0.13,
+    "direction": "short",
+    "pnl_pct": 68.76
+  },
+  {
+    "event_id": "BTC_616",
+    "symbol": "BTC",
+    "recommendation": "hedge",
+    "conviction": 49.8,
+    "consensus_score": 99.36,
+    "disagreement_score": 0.64,
+    "direction": "short",
+    "pnl_pct": -74.45
+  },
+  {
+    "event_id": "BTC_619",
+    "symbol": "BTC",
+    "recommendation": "hedge",
+    "conviction": 49.8,
+    "consensus_score": 99.36,
+    "disagreement_score": 0.64,
+    "direction": "short",
+    "pnl_pct": -77.87
+  },
+  {
+    "event_id": "BTC_623",
+    "symbol": "BTC",
+    "recommendation": "sell",
+    "conviction": 90.0,
+    "consensus_score": 99.83,
+    "disagreement_score": 0.17,
+    "direction": "short",
+    "pnl_pct": -109.15
+  },
+  {
+    "event_id": "BTC_624",
+    "symbol": "BTC",
+    "recommendation": "hedge",
+    "conviction": 49.8,
+    "consensus_score": 99.36,
+    "disagreement_score": 0.64,
+    "direction": "short",
+    "pnl_pct": -68.35
+  },
+  {
+    "event_id": "BTC_625",
+    "symbol": "BTC",
+    "recommendation": "hedge",
+    "conviction": 49.8,
+    "consensus_score": 99.36,
+    "disagreement_score": 0.64,
+    "direction": "short",
+    "pnl_pct": -66.19
+  },
+  {
+    "event_id": "BTC_629",
+    "symbol": "BTC",
+    "recommendation": "hedge",
+    "conviction": 49.8,
+    "consensus_score": 99.36,
+    "disagreement_score": 0.64,
+    "direction": "short",
+    "pnl_pct": 13.54
+  },
+  {
+    "event_id": "ETH_629",
+    "symbol": "ETH",
+    "recommendation": "hedge",
+    "conviction": 49.8,
+    "consensus_score": 99.36,
+    "disagreement_score": 0.64,
+    "direction": "short",
+    "pnl_pct": -52.5
+  },
+  {
+    "event_id": "BTC_634",
+    "symbol": "BTC",
+    "recommendation": "sell",
+    "conviction": 90.0,
+    "consensus_score": 99.79,
+    "disagreement_score": 0.21,
+    "direction": "short",
+    "pnl_pct": -2.83
+  },
+  {
+    "event_id": "ETH_642",
+    "symbol": "ETH",
+    "recommendation": "hedge",
+    "conviction": 49.8,
+    "consensus_score": 99.36,
+    "disagreement_score": 0.64,
+    "direction": "short",
+    "pnl_pct": 0.76
+  },
+  {
+    "event_id": "ETH_645",
+    "symbol": "ETH",
+    "recommendation": "hedge",
+    "conviction": 49.8,
+    "consensus_score": 99.36,
+    "disagreement_score": 0.64,
+    "direction": "short",
+    "pnl_pct": 2.54
+  },
+  {
+    "event_id": "BTC_652",
+    "symbol": "BTC",
+    "recommendation": "sell",
+    "conviction": 90.0,
+    "consensus_score": 99.96,
+    "disagreement_score": 0.04,
+    "direction": "short",
+    "pnl_pct": 40.91
+  },
+  {
+    "event_id": "BTC_658",
+    "symbol": "BTC",
+    "recommendation": "hedge",
+    "conviction": 49.8,
+    "consensus_score": 99.36,
+    "disagreement_score": 0.64,
+    "direction": "short",
+    "pnl_pct": 31.18
+  },
+  {
+    "event_id": "ETH_712",
+    "symbol": "ETH",
+    "recommendation": "hedge",
+    "conviction": 49.8,
+    "consensus_score": 99.36,
+    "disagreement_score": 0.64,
+    "direction": "short",
+    "pnl_pct": -140.16
+  },
+  {
+    "event_id": "BTC_717",
+    "symbol": "BTC",
+    "recommendation": "hedge",
+    "conviction": 49.8,
+    "consensus_score": 99.36,
+    "disagreement_score": 0.64,
+    "direction": "short",
+    "pnl_pct": -94.22
+  },
+  {
+    "event_id": "BTC_724",
+    "symbol": "BTC",
+    "recommendation": "hedge",
+    "conviction": 49.8,
+    "consensus_score": 99.36,
+    "disagreement_score": 0.64,
+    "direction": "short",
+    "pnl_pct": -51.06
+  },
+  {
+    "event_id": "BTC_1145",
+    "symbol": "BTC",
+    "recommendation": "hedge",
+    "conviction": 49.8,
+    "consensus_score": 99.36,
+    "disagreement_score": 0.64,
+    "direction": "short",
+    "pnl_pct": 32.38
+  },
+  {
+    "event_id": "ETH_1145",
+    "symbol": "ETH",
+    "recommendation": "sell",
+    "conviction": 90.0,
+    "consensus_score": 99.11,
+    "disagreement_score": 0.89,
+    "direction": "short",
+    "pnl_pct": 70.44
+  },
+  {
+    "event_id": "BTC_1146",
+    "symbol": "BTC",
+    "recommendation": "hedge",
+    "conviction": 49.8,
+    "consensus_score": 99.36,
+    "disagreement_score": 0.64,
+    "direction": "short",
+    "pnl_pct": 30.01
+  },
+  {
+    "event_id": "BTC_1216",
+    "symbol": "BTC",
+    "recommendation": "sell",
+    "conviction": 90.0,
+    "consensus_score": 99.83,
+    "disagreement_score": 0.17,
+    "direction": "short",
+    "pnl_pct": 78.66
+  },
+  {
+    "event_id": "BTC_1217",
+    "symbol": "BTC",
+    "recommendation": "sell",
+    "conviction": 90.0,
+    "consensus_score": 99.76,
+    "disagreement_score": 0.24,
+    "direction": "short",
+    "pnl_pct": 74.31
+  }
+]

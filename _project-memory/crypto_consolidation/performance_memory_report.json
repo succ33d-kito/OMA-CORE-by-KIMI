@@ -1,0 +1,188 @@
+{
+  "summary": {
+    "total_trades_recorded": 74,
+    "total_agent_records": 148,
+    "agent_accuracies": {
+      "market_agent": 0.40540540540540543,
+      "risk_agent": 0.40540540540540543
+    },
+    "performance_by_asset": {
+      "BTC": 5.82,
+      "ETH": 7.53
+    },
+    "performance_by_direction": {
+      "long_avg_pnl": 9.32,
+      "short_avg_pnl": -14.97,
+      "long_count": 66,
+      "short_count": 8
+    },
+    "recommendation_success": {
+      "hedge": 0.0,
+      "buy": 45.5,
+      "avoid": 40.5
+    },
+    "calibration": {
+      "market_agent": {
+        "avg_confidence": 0.682,
+        "actual_accuracy": 0.405,
+        "bias": 0.277,
+        "overconfidence": true,
+        "underconfidence": false
+      },
+      "risk_agent": {
+        "avg_confidence": 0.623,
+        "actual_accuracy": 0.405,
+        "bias": 0.218,
+        "overconfidence": true,
+        "underconfidence": false
+      }
+    }
+  },
+  "closed_trades_count": 37,
+  "trades": [
+    {
+      "event_id": "ETH_20",
+      "asset": "ETH",
+      "direction": "short",
+      "pnl_pct": -14.1,
+      "exit_reason": "stop_loss"
+    },
+    {
+      "event_id": "ETH_21",
+      "asset": "ETH",
+      "direction": "short",
+      "pnl_pct": -13.6,
+      "exit_reason": "stop_loss"
+    },
+    {
+      "event_id": "BTC_20",
+      "asset": "BTC",
+      "direction": "short",
+      "pnl_pct": -16.4,
+      "exit_reason": "stop_loss"
+    },
+    {
+      "event_id": "BTC_21",
+      "asset": "BTC",
+      "direction": "short",
+      "pnl_pct": -15.8,
+      "exit_reason": "stop_loss"
+    },
+    {
+      "event_id": "BTC_55",
+      "asset": "BTC",
+      "direction": "long",
+      "pnl_pct": 58.5,
+      "exit_reason": "take_profit"
+    },
+    {
+      "event_id": "BTC_57",
+      "asset": "BTC",
+      "direction": "long",
+      "pnl_pct": 57.9,
+      "exit_reason": "take_profit"
+    },
+    {
+      "event_id": "BTC_56",
+      "asset": "BTC",
+      "direction": "long",
+      "pnl_pct": 52.2,
+      "exit_reason": "take_profit"
+    },
+    {
+      "event_id": "ETH_57",
+      "asset": "ETH",
+      "direction": "long",
+      "pnl_pct": 58.5,
+      "exit_reason": "take_profit"
+    },
+    {
+      "event_id": "BTC_64",
+      "asset": "BTC",
+      "direction": "long",
+      "pnl_pct": 40.5,
+      "exit_reason": "take_profit"
+    },
+    {
+      "event_id": "BTC_66",
+      "asset": "BTC",
+      "direction": "long",
+      "pnl_pct": 35.1,
+      "exit_reason": "take_profit"
+    },
+    {
+      "event_id": "BTC_65",
+      "asset": "BTC",
+      "direction": "long",
+      "pnl_pct": 35.7,
+      "exit_reason": "take_profit"
+    },
+    {
+      "event_id": "ETH_56",
+      "asset": "ETH",
+      "direction": "long",
+      "pnl_pct": 74.1,
+      "exit_reason": "take_profit"
+    },
+    {
+      "event_id": "ETH_63",
+      "asset": "ETH",
+      "direction": "long",
+      "pnl_pct": -19.05,
+      "exit_reason": "stop_loss"
+    },
+    {
+      "event_id": "ETH_64",
+      "asset": "ETH",
+      "direction": "long",
+      "pnl_pct": -18.9,
+      "exit_reason": "stop_loss"
+    },
+    {
+      "event_id": "ETH_69",
+      "asset": "ETH",
+      "direction": "long",
+      "pnl_pct": -19.65,
+      "exit_reason": "stop_loss"
+    },
+    {
+      "event_id": "ETH_70",
+      "asset": "ETH",
+      "direction": "long",
+      "pnl_pct": -19.35,
+      "exit_reason": "stop_loss"
+    },
+    {
+      "event_id": "BTC_101",
+      "asset": "BTC",
+      "direction": "long",
+      "pnl_pct": -20.4,
+      "exit_reason": "stop_loss"
+    },
+    {
+      "event_id": "BTC_102",
+      "asset": "BTC",
+      "direction": "long",
+      "pnl_pct": -19.8,
+      "exit_reason": "stop_loss"
+    },
+    {
+      "event_id": "BTC_104",
+      "asset": "BTC",
+      "direction": "long",
+      "pnl_pct": -20.55,
+      "exit_reason": "stop_loss"
+    },
+    {
+      "event_id": "BTC_74",
+      "asset": "BTC",
+      "direction": "long",
+      "pnl_pct": -28.95,
+      "exit_reason": "stop_loss"
+    }
+  ],
+  "issues": [
+    "Trade count mismatch: memory=74, engine=37"
+  ],
+  "memory_persistence_note": "PerformanceMemory is in-memory only. Trades live in Python object lifetime. MemoryStore.long_term.store() is called per trade but no query/load mechanism exists in current codebase. Persistence status: IN-MEMORY ONLY \u2014 data is lost on process exit."
+}

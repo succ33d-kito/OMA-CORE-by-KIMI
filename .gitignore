@@ -12,3 +12,9 @@ logs/
 # Live Paper Trading telemetry (muy grandes)
 _live_paper_gate/telemetry_*.json
 _live_paper_gate/guard_audit_*.json
+
+# Extended Demo telemetry (append-only JSONL, never committed raw)
+_extended_demo/telemetry_*.jsonl
+_extended_demo/guard_audit_*.jsonl
+_extended_demo/failures_*.jsonl
+_project-memory/.obsidian/

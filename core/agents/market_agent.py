@@ -1,12 +1,23 @@
 """OSIRIS Market Agent — Price action, momentum, volatility, trend analysis"""
-from typing import List, Optional, Dict, Any
+from typing import List, Optional, Dict, Any, Tuple
 from statistics import mean, stdev
 from math import sqrt
+from dataclasses import dataclass
 from core.schemas.agent_schema import (
     AgentOpinion, AgentRole, Recommendation
 )
 from core.schemas.event_schema import Event, EventType
 from core.event_bus import EventBus, EventTopic, bus as default_bus
+
+
+@dataclass
+class SignalCandidate:
+    direction: Recommendation
+    score: float
+    impact_score: float
+    risk_score: float
+    evidence: str
+    confidence_modifier: float = 0.5
 
 
 class MarketAgent:
@@ -86,42 +97,89 @@ class MarketAgent:
         momentum_strength = abs(momentum)
         vol_regime = "calm" if volatility < 0.02 else "normal" if volatility < 0.05 else "high"
 
+        candidates: List[SignalCandidate] = []
+
+        # LONG candidates
+        if trend == "uptrend" and momentum > 0 and rsi < 70:
+            score = 100.0 + trend_strength * 10
+            candidates.append(SignalCandidate(
+                direction=Recommendation.BUY, score=score,
+                impact_score=0.6 + trend_strength * 2,
+                risk_score=0.3,
+                evidence="Bullish structure: uptrend with room to run",
+                confidence_modifier=0.5,
+            ))
+        if rsi < 30:
+            oversold_strength = (30 - rsi) * 3
+            score = 80.0 + oversold_strength
+            risk = 0.5 if rsi < 25 else 0.4
+            candidates.append(SignalCandidate(
+                direction=Recommendation.BUY, score=score,
+                impact_score=0.5 + (30 - rsi) / 60,
+                risk_score=risk,
+                evidence=f"RSI oversold ({rsi:.1f}) — potential bounce",
+                confidence_modifier=0.5,
+            ))
+        if momentum_strength > 1.0 and momentum > 0:
+            candidates.append(SignalCandidate(
+                direction=Recommendation.BUY, score=60.0 + momentum_strength * 10,
+                impact_score=0.5, risk_score=0.3,
+                evidence=f"Momentum positive ({momentum:+.2f}%) — follow trend",
+                confidence_modifier=0.4,
+            ))
+
+        # SHORT candidates
+        if trend == "downtrend" and momentum < 0 and rsi > 30:
+            score = 100.0 + trend_strength * 10
+            candidates.append(SignalCandidate(
+                direction=Recommendation.SELL, score=score,
+                impact_score=0.6 + trend_strength * 2,
+                risk_score=0.3,
+                evidence="Bearish structure: downtrend with room to fall",
+                confidence_modifier=0.5,
+            ))
+        if rsi > 70 and self.short_style in ("rsi", "combined"):
+            overbought_strength = (rsi - 70) * 3
+            score = 80.0 + overbought_strength
+            risk = 0.5 if rsi > 75 else 0.4
+            candidates.append(SignalCandidate(
+                direction=Recommendation.SELL, score=score,
+                impact_score=0.5 + (rsi - 70) / 60,
+                risk_score=risk,
+                evidence=f"RSI overbought ({rsi:.1f}) — potential reversal",
+                confidence_modifier=0.4,
+            ))
+        if len(closes) >= 6 and closes[-1] < min(closes[-6:-1]) and self.short_style in ("mom_break", "combined"):
+            score = 75.0 + trend_strength * 8
+            candidates.append(SignalCandidate(
+                direction=Recommendation.SELL, score=score,
+                impact_score=0.5 + trend_strength * 2,
+                risk_score=0.4,
+                evidence=f"Momentum breakdown — price below 5-period low ({min(closes[-6:-1]):.4f})",
+                confidence_modifier=0.4,
+            ))
+        if momentum_strength > 1.0 and momentum < 0:
+            candidates.append(SignalCandidate(
+                direction=Recommendation.SELL, score=60.0 + momentum_strength * 10,
+                impact_score=0.5, risk_score=0.3,
+                evidence=f"Momentum negative ({momentum:+.2f}%) — follow trend",
+                confidence_modifier=0.4,
+            ))
+
+        # Select best candidate
+        selected = max(candidates, key=lambda c: c.score) if candidates else None
+
         base_recommendation = Recommendation.WATCH
 
-        if trend == "uptrend" and momentum > 0 and rsi < 70:
-            base_recommendation = Recommendation.BUY
-            impact_score = 0.6 + trend_strength * 2
-            evidence.append("Bullish structure: uptrend with room to run")
-        elif trend == "downtrend" and momentum < 0 and rsi > 30:
-            base_recommendation = Recommendation.SELL
-            impact_score = 0.6 + trend_strength * 2
-            evidence.append("Bearish structure: downtrend with room to fall")
-        elif rsi > 70 and self.short_style in ("rsi", "combined"):
-            base_recommendation = Recommendation.SELL
-            impact_score = 0.5 + (rsi - 70) / 60
-            risk_score = 0.5 if rsi > 75 else 0.4
-            evidence.append(f"RSI overbought ({rsi:.1f}) — potential reversal")
-        elif len(closes) >= 6 and closes[-1] < min(closes[-6:-1]) and self.short_style in ("mom_break", "combined"):
-            base_recommendation = Recommendation.SELL
-            impact_score = 0.5 + trend_strength * 2
-            risk_score = 0.4
-            evidence.append(f"Momentum breakdown — price below 5-period low ({min(closes[-6:-1]):.4f})")
-        elif rsi < 30:
-            base_recommendation = Recommendation.BUY
-            impact_score = 0.5 + (30 - rsi) / 60
-            risk_score = 0.5 if rsi < 25 else 0.4
-            evidence.append(f"RSI oversold ({rsi:.1f}) — potential bounce")
+        if selected is not None:
+            base_recommendation = selected.direction
+            impact_score = selected.impact_score
+            risk_score = selected.risk_score
+            evidence.append(selected.evidence)
         elif volatility > 0.05:
             base_recommendation = Recommendation.HEDGE
             risk_score = 0.7
             evidence.append(f"High volatility ({volatility*100:.1f}%) — reduce exposure")
-        elif momentum_strength > 1.0:
-            if momentum > 0:
-                base_recommendation = Recommendation.BUY
-                evidence.append(f"Momentum positive ({momentum:+.2f}%) — follow trend")
-            else:
-                base_recommendation = Recommendation.SELL
-                evidence.append(f"Momentum negative ({momentum:+.2f}%) — follow trend")
         else:
             evidence.append("No clear directional signal")
 
