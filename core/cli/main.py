@@ -32,6 +32,7 @@ from core.scientific.knowledge_lifecycle import (
     invalidate_knowledge, revise_knowledge, archive_knowledge,
     decay_confidence,
 )
+from core.config.config import load_config
 from core.scientific.criterion_evolution import (
     propose_delta, apply_delta, reject_delta,
     compute_criterion_metrics, VALID_DIMENSIONS,
@@ -52,7 +53,11 @@ class OMACLI:
         self.db = OMACoreDatabase(db_path)
         self.pipeline = Pipeline(db_path)
         self.monitor = WorldMonitorV2()
-        self.notifier = TelegramNotifier()
+        config = load_config()
+        self.notifier = TelegramNotifier(
+            token=config.telegram.bot_token,
+            chat_id=config.telegram.chat_id,
+        )
         self.event_bus = EventBus()
         self.agent_council = AgentCouncil(self.event_bus)
         self.meta_council = MetaCouncil(self.event_bus)
