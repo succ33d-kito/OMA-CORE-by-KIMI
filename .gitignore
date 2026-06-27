@@ -30,3 +30,6 @@ logs/
 backups/
 *.db
 *.db.*
+
+# Local Python virtualenv
+.venv/
