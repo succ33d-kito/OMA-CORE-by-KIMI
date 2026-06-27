@@ -723,15 +723,21 @@ class OMACLI:
         self.cmd_collect(args)
         print("\n" + "—" * 60 + "\n")
         self.cmd_process(args)
-        
-        # Enviar resumen por Telegram
+
+        # Send Telegram notification with quality gate
         try:
             opps = self.db.get_active_opportunities(limit=100)
             stats = self.db.get_event_stats()
-            pipeline_result = {"events_processed": stats.get("total_events", 0), "events_stored": stats.get("unprocessed", 0), "opportunities_generated": len(opps)}
-            self.notifier.send_run_summary(opps, pipeline_result)
+            pipeline_result = {
+                "events_processed": stats.get("total_events", 0),
+                "events_stored": stats.get("unprocessed", 0),
+                "opportunities_generated": len(opps),
+            }
+            from core.engines.telegram_notifier import get_learning_core_stats
+            learning_stats = get_learning_core_stats()
+            self.notifier.send_run_summary(opps, pipeline_result, learning_stats)
         except Exception as e:
-            print(f"[Telegram] Error enviando resumen: {e}")
+            print(f"[Telegram] Error sending notification: {e}")
     def run(self):
         parser = argparse.ArgumentParser(
             description="O.M.A.-C.O.R.E. — Intelligence Engine CLI",
