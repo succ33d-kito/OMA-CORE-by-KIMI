@@ -4,6 +4,7 @@ import math
 from datetime import datetime, timezone
 from typing import List, Optional
 from core.collectors.base_collector import BaseCollector
+from core.collectors.yahoo_data_guard import validate_quote_for_event, MAX_REASONABLE_CHANGE_PCT
 from core.schemas.event_schema import Event, EventType, Asset, AssetClass, Sentiment, Urgency
 
 
@@ -99,14 +100,22 @@ class YahooFinanceCollector(BaseCollector):
                     prev_close = self._safe_float(prev.get("Close"), close)
                     volume = self._safe_int(latest.get("Volume"))
                     avg_volume = self._safe_int(ticker_data["Volume"].mean()) if "Volume" in ticker_data.columns else volume
-                    if prev_close == 0:
+
+                    # Data integrity guard: reject invalid quotes
+                    guard = validate_quote_for_event(close, prev_close, symbol, asset_class.value if asset_class else None)
+                    if not guard["valid"]:
+                        print(f"[yahoo_finance] Data guard blocked {symbol}: {guard['reason']}")
                         continue
-                    change_pct = ((close - prev_close) / prev_close) * 100
+
+                    gf_close = guard["close"]
+                    gf_prev = guard["prev_close"]
+                    change_pct = guard["change_pct"]
+
                     threshold = self.PRICE_CHANGE_THRESHOLD_CRYPTO if "-USD" in symbol or "=X" in symbol else self.PRICE_CHANGE_THRESHOLD
                     if abs(change_pct) >= threshold:
-                        events.extend(self._create_price_event(symbol, close, change_pct, volume, asset_class))
+                        events.extend(self._create_price_event(symbol, gf_close, change_pct, volume, asset_class))
                     if avg_volume > 0 and volume / avg_volume >= self.VOLUME_SPIKE_MULTIPLIER:
-                        events.extend(self._create_volume_event(symbol, close, volume, avg_volume, asset_class))
+                        events.extend(self._create_volume_event(symbol, gf_close, volume, avg_volume, asset_class))
                 except Exception as e:
                     print(f"[yahoo_finance] Error procesando {symbol}: {e}")
                     continue
@@ -178,9 +187,15 @@ class YahooFinanceCollector(BaseCollector):
                 prev = hist.iloc[-2]
                 close = self._safe_float(latest["Close"])
                 prev_close = self._safe_float(prev["Close"])
-                if prev_close == 0:
+
+                # Data integrity guard: reject invalid quotes
+                guard = validate_quote_for_event(close, prev_close, symbol, "index")
+                if not guard["valid"]:
+                    print(f"[yahoo_finance] Data guard blocked index {symbol}: {guard['reason']}")
                     continue
-                change_pct = ((close - prev_close) / prev_close) * 100
+
+                gf_close = guard["close"]
+                change_pct = guard["change_pct"]
                 if abs(change_pct) >= 2.0:
                     name = {
                         "^GSPC": "S&P 500", "^IXIC": "NASDAQ Composite",

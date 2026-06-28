@@ -4,6 +4,7 @@ from datetime import datetime, timezone, timedelta
 import json
 from core.schemas.event_schema import Event, EventType, Sentiment, Urgency, AssetClass
 from core.database.db import OMACoreDatabase
+from core.collectors.yahoo_data_guard import detect_data_quality_issue, should_downgrade_opportunity
 
 class ScoreEngine:
     WEIGHTS = {
@@ -132,6 +133,20 @@ class OpportunityEngine:
                 continue
             opportunity = self._create_opportunity(event, score_data)
             if opportunity:
+                # Apply data quality guardrail — downgrade suspicious opportunities
+                should_downgrade, downgrade = should_downgrade_opportunity(event)
+                if should_downgrade:
+                    old_score = opportunity["score"]
+                    opportunity["score"] = min(old_score, downgrade.get("max_score", 30.0))
+                    opportunity["priority"] = downgrade.get("max_priority", "MEDIUM")
+                    opportunity["conviction"] = min(opportunity.get("conviction", 0), downgrade.get("max_conviction", 30.0))
+                    opportunity["action_suggested"] = downgrade.get("action_suggested", opportunity["action_suggested"])
+                    opportunity["risk_level"] = downgrade.get("risk_level", opportunity["risk_level"])
+                    opportunity["data_quality_reason"] = downgrade.get("data_quality_reason", "")
+                    opportunity["title"] = f"[DATA_QUALITY] {opportunity.get('title', '')}"
+                    opportunity["opportunity_type"] = "WATCHLIST_ADD"
+                    print(f"[Pipeline] Data guard downgraded {getattr(event, 'id', '')}: {downgrade.get('data_quality_reason', '')} "
+                          f"(score {old_score} -> {opportunity['score']})")
                 opportunities.append(opportunity)
                 self.db.insert_opportunity(opportunity)
                 self.db.update_event_scores(event.id, score_data["final_score"], opportunity.get("relevance", 0))

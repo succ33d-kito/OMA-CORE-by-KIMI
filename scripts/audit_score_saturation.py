@@ -160,6 +160,33 @@ def compute_type_breakdown(opps: List[Dict[str, Any]]) -> Dict[str, int]:
     return types
 
 
+def count_data_quality_issues(opps: List[Dict[str, Any]]) -> Dict[str, Any]:
+    """Count opportunities with data quality markers."""
+    result = {
+        "data_quality_issues": 0,
+        "data_quality_capped": 0,
+        "yahoo_price_zero": 0,
+        "yahoo_pct_negative_100": 0,
+        "yahoo_malformed": 0,
+    }
+    for opp in opps:
+        is_dq = opp.get("data_quality_reason", "") or opp.get("title", "").startswith("[DATA_QUALITY]")
+        if is_dq:
+            result["data_quality_issues"] += 1
+        if opp.get("score", 100) <= 30 and opp.get("priority") in ("LOW", "MEDIUM"):
+            result["data_quality_capped"] += 1
+        if opp.get("source") == "yahoo_finance":
+            desc = opp.get("description", "") or ""
+            if "$0.00" in desc or "$0" in desc.replace(",", ""):
+                result["yahoo_price_zero"] += 1
+            if "-100.00%" in desc or "-100%" in desc:
+                result["yahoo_pct_negative_100"] += 1
+            assets = opp.get("assets", "")
+            if isinstance(assets, str) and len(assets) > 1 and assets.startswith("["):
+                result["yahoo_malformed"] += 1
+    return result
+
+
 def detect_suspicious_patterns(opps: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     patterns: List[Dict[str, Any]] = []
     for opp in opps[:50]:
@@ -254,6 +281,7 @@ def run_audit(db_path: str = "oma_core.db") -> Dict[str, Any]:
     source_breakdown = compute_source_breakdown(events)
     type_breakdown = compute_type_breakdown(opps)
     suspicious = detect_suspicious_patterns(opps)
+    data_quality = count_data_quality_issues(opps)
     hypotheses = build_hypotheses(anomalies, priority, scores, source_breakdown, suspicious)
 
     result = {
@@ -264,6 +292,7 @@ def run_audit(db_path: str = "oma_core.db") -> Dict[str, Any]:
         "priority_distribution": priority,
         "score_distribution": scores,
         "asset_anomalies": anomalies,
+        "data_quality": data_quality,
         "source_breakdown": source_breakdown,
         "type_breakdown": type_breakdown,
         "suspicious_patterns": suspicious,
@@ -316,6 +345,15 @@ def print_terminal_report(result: Dict[str, Any]) -> None:
     print("--- Source Breakdown ---")
     for src, cnt in sorted(result.get("source_breakdown", {}).items(), key=lambda x: -x[1]):
         print(f"  {src}: {cnt}")
+    print()
+
+    dq = result.get("data_quality", {})
+    print("--- Data Quality ---")
+    print(f"  Issues flagged:       {dq.get('data_quality_issues')}")
+    print(f"  Score-capped (<=30):  {dq.get('data_quality_capped')}")
+    print(f"  Yahoo price $0.00:    {dq.get('yahoo_price_zero')}")
+    print(f"  Yahoo -100% change:   {dq.get('yahoo_pct_negative_100')}")
+    print(f"  Yahoo guard status:   {'ACTIVE' if dq.get('data_quality_capped', 0) > 0 else 'NOT ACTIVE'}")
     print()
 
     print("--- Type Breakdown ---")
@@ -387,6 +425,13 @@ def save_reports(result: Dict[str, Any]) -> None:
         lines.append("- **Examples**:")
         for ex in a["asset_examples"]:
             lines.append(f"  - `{ex[:80]}`")
+    lines.append("")
+
+    lines.append("## Data Quality")
+    lines.append("")
+    dq = result.get("data_quality", {})
+    for k, v in dq.items():
+        lines.append(f"- **{k}**: {v}")
     lines.append("")
 
     lines.append("## Source Breakdown")
