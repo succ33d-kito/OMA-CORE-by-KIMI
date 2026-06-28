@@ -1,4 +1,5 @@
 """O.M.A.-C.O.R.E. FRED Collector (Federal Reserve Economic Data)"""
+import os
 import uuid
 from datetime import datetime, timezone
 from typing import List, Optional, Dict
@@ -33,7 +34,10 @@ class FREDCollector(BaseCollector):
 
     def __init__(self, api_key: Optional[str] = None):
         super().__init__("fred", source_confidence=0.98)
-        self.api_key = api_key
+        self.api_key = api_key or os.getenv("FRED_API_KEY")
+        if not self.api_key:
+            print("[fred] WARNING: FRED_API_KEY not set. FRED data will not be collected. "
+                  "Set FRED_API_KEY in .env or pass api_key to FREDCollector.")
 
     def collect(self) -> List[Event]:
         events = []
