@@ -1,7 +1,7 @@
 #!/bin/bash
 # OMA-CORE Cron Job — Ejecuta pipeline completo cada hora
 
-PROJECT_DIR="/home/kito/Projects/OMA-CORE by KIMI"
+PROJECT_DIR="/home/kito/O.M.A.-C.O.R.E."
 LOG_FILE="$PROJECT_DIR/logs/cron.log"
 
 # Timestamp

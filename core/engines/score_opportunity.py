@@ -1,7 +1,8 @@
-"""O.M.A.-C.O.R.E. Score & Opportunity Engine"""
+"""O.M.A.-C.O.R.E. Score & Opportunity Engine — Sprint 13 Score Calibration"""
 from typing import List, Dict, Optional, Any
 from datetime import datetime, timezone, timedelta
 import json
+import math
 from core.schemas.event_schema import Event, EventType, Sentiment, Urgency, AssetClass
 from core.database.db import OMACoreDatabase
 from core.collectors.yahoo_data_guard import detect_data_quality_issue, should_downgrade_opportunity
@@ -12,12 +13,19 @@ class ScoreEngine:
         "asset_relevance": 0.15, "recency": 0.10, "correlation_boost": 0.10
     }
     
+    # Sprint 13: reduced multipliers to avoid premature clipping
     EVENT_MULTIPLIERS = {
-        EventType.PRICE_MOVEMENT: 1.2, EventType.VOLUME_SPIKE: 1.1, EventType.HACK_EXPLOIT: 1.5,
-        EventType.REGULATORY: 1.4, EventType.GEOPOLITICAL: 1.3, EventType.MACRO_EVENT: 1.3,
-        EventType.EARNINGS: 1.2, EventType.MERGER_ACQUISITION: 1.1, EventType.SENTIMENT_SHIFT: 1.0,
-        EventType.SOCIAL_TREND: 0.8, EventType.NEWS: 0.7, EventType.TECHNICAL_SIGNAL: 0.9,
-        EventType.WHALE_MOVEMENT: 1.3
+        EventType.PRICE_MOVEMENT: 1.05, EventType.VOLUME_SPIKE: 1.05, EventType.HACK_EXPLOIT: 1.20,
+        EventType.REGULATORY: 1.15, EventType.GEOPOLITICAL: 1.15, EventType.MACRO_EVENT: 1.15,
+        EventType.EARNINGS: 1.05, EventType.MERGER_ACQUISITION: 1.05, EventType.SENTIMENT_SHIFT: 0.95,
+        EventType.SOCIAL_TREND: 0.85, EventType.NEWS: 0.80, EventType.TECHNICAL_SIGNAL: 0.90,
+        EventType.WHALE_MOVEMENT: 1.10
+    }
+    
+    # Sprint 13: reduced urgency dominance — more room above CRITICAL
+    URGENCY_SCORES = {
+        Urgency.CRITICAL: 85, Urgency.HIGH: 60, Urgency.MEDIUM: 40,
+        Urgency.LOW: 20, Urgency.BACKGROUND: 10
     }
     
     SOURCE_CONFIDENCE = {
@@ -27,13 +35,27 @@ class ScoreEngine:
         "rss_cnbc": 0.80, "rss_bloomberg": 0.90, "osiris": 0.75
     }
     
+    # Sprint 13: logarithmic compression to prevent score clipping at 100
+    # Threshold 60: scores below 60 pass through linearly
+    # Above 60: each additional raw point adds diminishing returns
+    # Asymptotically approaches 100 (never reaches 100 except for extreme scores)
+    COMPRESSION_THRESHOLD = 60.0
+    COMPRESSION_RANGE = 40.0  # 100 - threshold
+    COMPRESSION_HALF_LIFE = 25.0  # how fast compression kicks in
+    
     def __init__(self, db):
         self.db = db
     
+    def _apply_scoring_curve(self, scaled_score):
+        if scaled_score <= self.COMPRESSION_THRESHOLD:
+            return round(scaled_score, 2)
+        excess = scaled_score - self.COMPRESSION_THRESHOLD
+        compressed = self.COMPRESSION_THRESHOLD + (excess * self.COMPRESSION_RANGE) / (excess + self.COMPRESSION_HALF_LIFE)
+        return round(min(compressed, 100), 2)
+    
     def score_event(self, event):
         scores = {}
-        urgency_scores = {Urgency.CRITICAL: 100, Urgency.HIGH: 80, Urgency.MEDIUM: 50, Urgency.LOW: 25, Urgency.BACKGROUND: 10}
-        scores["urgency"] = urgency_scores.get(event.urgency, 25)
+        scores["urgency"] = self.URGENCY_SCORES.get(event.urgency, 20)
         scores["sentiment_magnitude"] = min(abs(event.sentiment_score) * 100, 100)
         source_conf = self.SOURCE_CONFIDENCE.get(event.source, 0.5)
         scores["source_confidence"] = source_conf * 100
@@ -43,10 +65,12 @@ class ScoreEngine:
         
         raw_score = sum(scores[key] * self.WEIGHTS[key] for key in self.WEIGHTS.keys())
         multiplier = self.EVENT_MULTIPLIERS.get(event.event_type, 1.0)
-        final_score = min(raw_score * multiplier, 100.0)
+        scaled_score = raw_score * multiplier
+        final_score = self._apply_scoring_curve(scaled_score)
         
         return {
-            "raw_score": raw_score, "final_score": round(final_score, 2),
+            "raw_score": raw_score, "scaled_score": round(scaled_score, 2),
+            "final_score": final_score,
             "multiplier": multiplier, "component_scores": scores, "event_id": event.id
         }
     
@@ -168,7 +192,7 @@ class OpportunityEngine:
         action_template = self.ACTION_TEMPLATES.get(opp_type, self.ACTION_TEMPLATES["WATCHLIST_ADD"])
         
         conviction = self._calculate_conviction(event, score_data)
-        priority = self._determine_priority(score_data["final_score"], conviction)
+        priority = self._determine_priority(score_data["final_score"], conviction, event, score_data)
         risk_level = self._calculate_risk(event, opp_type)
         
         return {
@@ -187,19 +211,104 @@ class OpportunityEngine:
         }
     
     def _calculate_conviction(self, event, score_data):
-        base = score_data["final_score"] * 0.6
-        source_boost = score_data["component_scores"]["source_confidence"] * 0.2
-        asset_boost = min(len(event.assets) * 5, 15)
-        neutral_penalty = 10 if event.sentiment == Sentiment.NEUTRAL else 0
-        conviction = base + source_boost + asset_boost - neutral_penalty
-        return round(min(max(conviction, 0), 100), 2)
+        # Sprint 13: conviction is fully decoupled from score.
+        # It measures data quality, source reliability, evidence completeness,
+        # event freshness, asset specificity, and rationale strength.
+        
+        # Source reliability (0-25)
+        source_reliability = score_data["component_scores"]["source_confidence"] * 0.25
+        
+        # Evidence completeness (0-25)
+        has_price = any(
+            a.price_at_event is not None and a.price_at_event > 0
+            for a in (event.assets or [])
+        )
+        evidence = 25 if has_price else 10
+        if event.summary:
+            evidence = min(evidence + 5, 25)
+        
+        # Event freshness (0-20)
+        age_hours = (datetime.now(timezone.utc) - event.timestamp).total_seconds() / 3600
+        if age_hours < 1:
+            freshness = 20
+        elif age_hours < 6:
+            freshness = 16
+        elif age_hours < 12:
+            freshness = 12
+        elif age_hours < 24:
+            freshness = 8
+        elif age_hours < 48:
+            freshness = 4
+        else:
+            freshness = 2
+        
+        # Asset specificity (0-15)
+        specificity = min(len(event.assets) * 5, 15) if event.assets else 0
+        
+        # Rationale strength (0-15)
+        rationale = 10 if event.summary else 0
+        if event.source_url:
+            rationale += 5
+        rationale = min(rationale, 15)
+        
+        conviction = source_reliability + evidence + freshness + specificity + rationale
+        
+        # Data quality penalty (multiplicative — halves conviction for bad data)
+        is_dq, _ = detect_data_quality_issue(event)
+        if is_dq:
+            conviction = conviction * 0.5
+        
+        return round(min(max(conviction, 1), 100), 2)
     
-    def _determine_priority(self, score, conviction):
+    def _passes_critical_gate(self, event, score_data):
+        """Strong evidence gate: at least 4 of 7 conditions must be met."""
+        conditions = 0
+        
+        # 1. Validated source quality
+        if score_data["component_scores"]["source_confidence"] >= 85:
+            conditions += 1
+        
+        # 2. High urgency
+        if event.urgency in (Urgency.CRITICAL, Urgency.HIGH):
+            conditions += 1
+        
+        # 3. High sentiment magnitude with real data
+        if abs(event.sentiment_score) >= 0.5:
+            conditions += 1
+        
+        # 4. Relevant asset mapping (trading-relevant classes)
+        if event.assets and event.assets[0].asset_class in (
+            AssetClass.CRYPTO, AssetClass.STOCK, AssetClass.FOREX
+        ):
+            conditions += 1
+        
+        # 5. Non-data-quality issue
+        is_dq, _ = detect_data_quality_issue(event)
+        if not is_dq:
+            conditions += 1
+        
+        # 6. Fresh event
+        if score_data["component_scores"]["recency"] >= 75:
+            conditions += 1
+        
+        # 7. Corroborating context
+        if score_data["component_scores"]["correlation_boost"] >= 50:
+            conditions += 1
+        
+        return conditions >= 4
+    
+    def _determine_priority(self, score, conviction, event=None, score_data=None):
+        # Sprint 13: stricter CRITICAL threshold with evidence gate
         combined = (score + conviction) / 2
-        if combined >= 92: return "CRITICAL"
-        elif combined >= 75: return "HIGH"
-        elif combined >= 55: return "MEDIUM"
-        else: return "LOW"
+        if combined >= 80 and event is not None and score_data is not None:
+            if self._passes_critical_gate(event, score_data):
+                return "CRITICAL"
+        if combined >= 65:
+            return "HIGH"
+        elif combined >= 45:
+            return "MEDIUM"
+        else:
+            return "LOW"
     
     def _calculate_risk(self, event, opp_type):
         if event.event_type == EventType.HACK_EXPLOIT: return "VERY_HIGH"

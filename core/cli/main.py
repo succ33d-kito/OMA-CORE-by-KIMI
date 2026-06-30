@@ -21,10 +21,14 @@ from core.schemas.evidence_schema import Evidence, EvidenceDirection, EvidenceSt
 from core.schemas.outcome_comparison_schema import OutcomeComparison, Verdict, ErrorType, ComparisonType
 from core.schemas.knowledge_schema import Knowledge, KnowledgeStatus
 from core.schemas.criterion_delta_schema import CriterionDelta, DeltaStatus
+from core.scientific.outcome_bridge import OutcomeBridge
+from core.scientific.knowledge_extractor import KnowledgeExtractor
+from core.scientific.criterion_candidate_generator import CriterionCandidateGenerator
 from core.scientific.scientific_store import ScientificStore
 from core.scientific.hypothesis_lifecycle import transition_hypothesis, get_valid_transitions
 from core.scientific.evidence_lifecycle import activate_evidence
 from core.scientific.outcome_comparison import compare_outcome, classify_error, auto_detect_verdict
+from core.scientific.outcome_evaluator import evaluate_hypotheses, print_evaluation_report as print_evaluate_report
 from core.scientific.knowledge_lifecycle import (
     extract_knowledge, extract_from_comparison,
     transition_knowledge, can_transition,
@@ -424,6 +428,21 @@ class OMACLI:
         if not args.lab_command:
             self.cmd_lab_status(args)
             return
+        dispatch = {
+            "status": self.cmd_lab_status,
+            "compare": self.cmd_lab_compare,
+            "knowledge": self.cmd_lab_knowledge,
+            "criterion": self.cmd_lab_criterion,
+            "ingest": self.cmd_lab_ingest,
+            "evaluate": self.cmd_lab_evaluate,
+            "report": self.cmd_lab_report,
+        }
+        handler = dispatch.get(args.lab_command)
+        if handler:
+            handler(args)
+        else:
+            print(f"{Colors.RED}Unknown lab command: {args.lab_command}{Colors.END}")
+            print(f"Available: {', '.join(sorted(dispatch.keys()))}")
 
     def cmd_lab_status(self, args):
         stats = self.scientific.get_lab_stats()
@@ -453,9 +472,152 @@ class OMACLI:
         print(f"\n{Colors.BLUE}—" + "—" * 50 + f"{Colors.END}")
         print(f"{Colors.YELLOW}Usage: oma lab <command>{Colors.END}")
         print(f"  compare   Compare a hypothesis to an actual outcome")
-        print(f"  knowledge Manage knowledge items")
-        print(f"  criterion Manage criterion deltas")
+        print(f"  ingest    Bridge opportunities into hypotheses (O1)")
+        print(f"  evaluate  Evaluate hypotheses against actual outcomes (O2)")
+        print(f"  knowledge Manage knowledge items (O3)")
+        print(f"  criterion Manage criterion deltas (O4)")
+        print(f"  report    Show learning telemetry (O6)")
         print(f"  status    Show lab status")
+
+    def cmd_lab_ingest(self, args):
+        bridge = OutcomeBridge(
+            operational_db=args.operational_db or "oma_core.db",
+            scientific_db=args.scientific_db or "scientific.db",
+        )
+        result = bridge.bridge_all(
+            limit=args.limit if args.limit > 0 else None,
+            min_score=args.min_score,
+            dry_run=not args.commit,
+        )
+        print(f"{Colors.BOLD}{Colors.CYAN}═" * 55)
+        print(f"  Outcome Bridge — Opportunity → Hypothesis Ingestion")
+        print(f"═" * 55 + f"{Colors.END}")
+        print(f"  Opportunities found:  {result['opportunities_found']}")
+        print(f"  Hypotheses generated: {result['hypotheses_generated']}")
+        print(f"  Duplicates skipped:   {result.get('hypotheses_skipped_duplicates', 0)}")
+        print(f"  Mode: {'DRY RUN' if result.get('dry_run') else 'COMMIT'}")
+        if result.get('hypotheses'):
+            print(f"\n{Colors.BOLD}Generated Hypotheses:{Colors.END}")
+            for h in result['hypotheses'][:5]:
+                print(f"  [{h.status.value:12s}] {h.id[:16]}... {h.title[:60]}")
+            if len(result['hypotheses']) > 5:
+                print(f"  ... and {len(result['hypotheses']) - 5} more")
+        if result.get('dry_run'):
+            print(f"\n{Colors.YELLOW}⚠ DRY RUN — no data was modified.{Colors.END}")
+            print(f"  Pass --commit to write to scientific.db.")
+
+    def cmd_lab_evaluate(self, args):
+        store = ScientificStore(args.scientific_db or "scientific.db")
+        bridge = OutcomeBridge(
+            operational_db=args.operational_db or "oma_core.db",
+            scientific_db=args.scientific_db or "scientific.db",
+        )
+        hyp_id = args.hypothesis_id or "all"
+        actual_outcomes = {hyp_id: args.actual_outcome}
+        result = evaluate_hypotheses(
+            hypothesis_ids=[hyp_id] if hyp_id != "all" else [],
+            actual_outcomes=actual_outcomes,
+            store=store,
+            dry_run=not args.commit,
+        )
+        print_evaluate_report(result)
+
+    def cmd_lab_report(self, args):
+        store = ScientificStore(args.scientific_db or "scientific.db")
+        stats = store.get_stats()
+        bridge = OutcomeBridge(
+            operational_db=args.operational_db or "oma_core.db",
+            scientific_db=args.scientific_db or "scientific.db",
+        )
+        bridge_stats = bridge.get_stats()
+        extractor = KnowledgeExtractor(scientific_db=args.scientific_db or "scientific.db")
+        extraction_stats = extractor.get_extraction_stats()
+        generator = CriterionCandidateGenerator(scientific_db=args.scientific_db or "scientific.db")
+        candidate_stats = generator.get_candidate_stats()
+
+        hypotheses = store.list_hypotheses(limit=10000)
+        comparisons = store.list_outcome_comparisons(limit=10000)
+        knowledge_items = store.list_knowledge(limit=10000)
+        deltas = store.list_criterion_deltas(limit=10000)
+
+        total = len(hypotheses)
+        evaluated = sum(1 for c in comparisons for h in hypotheses if c.hypothesis_id == h.id)
+        confirmed = sum(1 for c in comparisons if c.verdict == Verdict.CONFIRMED)
+        rejected = sum(1 for c in comparisons if c.verdict == Verdict.REJECTED)
+        learning_rate = (confirmed / max(evaluated, 1)) * 100
+        accuracy = learning_rate
+        avg_confidence = (
+            sum(h.confidence for h in hypotheses) / max(len(hypotheses), 1)
+        )
+        avg_delay = 0.0  # No auto-detection yet
+
+        print(f"{Colors.BOLD}{Colors.CYAN}═" * 55)
+        print(f"  Scientific Learning Laboratory — Telemetry Report")
+        print(f"═" * 55 + f"{Colors.END}")
+        print(f"\n{Colors.BOLD}Operational Bridge Status:{Colors.END}")
+        print(f"  Total opportunities:     {bridge_stats['total_opportunities']}")
+        print(f"  Already bridged:         {bridge_stats['already_bridged']}")
+        print(f"  Bridgeable remaining:    {bridge_stats['bridgeable_opportunities']}")
+        print(f"\n{Colors.BOLD}Hypotheses:{Colors.END}")
+        print(f"  Total:                   {stats['total_hypotheses']}")
+        print(f"  Evaluated:               {evaluated}")
+        print(f"  Learning Rate:           {learning_rate:.1f}%")
+        print(f"  Accuracy:                {accuracy:.1f}%")
+        print(f"  Avg Confidence:          {avg_confidence:.2f}")
+        print(f"\n{Colors.BOLD}Outcome Comparisons:{Colors.END}")
+        print(f"  Total:                   {len(comparisons)}")
+        print(f"  CONFIRMED:               {confirmed}")
+        print(f"  REJECTED:                {rejected}")
+        print(f"\n{Colors.BOLD}Knowledge:{Colors.END}")
+        print(f"  Total:                   {extraction_stats['total_knowledge_items']}")
+        print(f"  Available to extract:    {extraction_stats['remaining_to_extract']}")
+        print(f"\n{Colors.BOLD}Criterion Candidates:{Colors.END}")
+        print(f"  Total deltas:            {candidate_stats['total_deltas']}")
+        print(f"  Pending review:          {candidate_stats['pending_review']}")
+        print(f"  Applied:                 {candidate_stats['applied']}")
+        print(f"  Rejected:                {candidate_stats['rejected']}")
+        print(f"\n{Colors.BOLD}Learning Summary:{Colors.END}")
+        print(f"  Hypotheses per outcome:  {total / max(len(comparisons), 1):.1f}")
+        print(f"  Knowledge hit rate:      {len(knowledge_items) / max(confirmed, 1):.1f} items/confirmed")
+        print(f"  Pending criteria:        {candidate_stats['pending_review']}")
+        if args.save:
+            from datetime import datetime
+            path = args.save
+            if path == "default":
+                path = f"learning_report_{datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S')}.md"
+            lines = [
+                "# Learning Telemetry Report",
+                "",
+                f"**Report Time**: {datetime.now(timezone.utc).isoformat()}",
+                "",
+                "## Hypotheses",
+                f"- Total: {total}",
+                f"- Evaluated: {evaluated}",
+                f"- Learning Rate: {learning_rate:.1f}%",
+                f"- Accuracy: {accuracy:.1f}%",
+                f"- Avg Confidence: {avg_confidence:.2f}",
+                "",
+                "## Outcome Comparisons",
+                f"- Total: {len(comparisons)}",
+                f"- Confirmed: {confirmed}",
+                f"- Rejected: {rejected}",
+                "",
+                "## Knowledge Objects",
+                f"- Total: {extraction_stats['total_knowledge_items']}",
+                f"- Available to extract: {extraction_stats['remaining_to_extract']}",
+                "",
+                "## Criterion Deltas",
+                f"- Total: {candidate_stats['total_deltas']}",
+                f"- Pending Review: {candidate_stats['pending_review']}",
+                f"- Applied: {candidate_stats['applied']}",
+                f"- Rejected: {candidate_stats['rejected']}",
+                "",
+                "---",
+                "*Generated by oma lab report*",
+            ]
+            with open(path, "w", encoding="utf-8") as f:
+                f.write("\n".join(lines))
+            print(f"\n{Colors.GREEN}Report saved: {path}{Colors.END}")
 
     def cmd_lab_compare(self, args):
         hyp = self.scientific.get_hypothesis(args.hypothesis_id)
@@ -839,6 +1001,26 @@ Ejemplos:
         # ── Lab commands ─────────────────────────────────────────
         p_lab = subparsers.add_parser("lab", help="Scientific Learning Laboratory")
         lab_sub = p_lab.add_subparsers(dest="lab_command")
+
+        p_lab_ingest = lab_sub.add_parser("ingest", help="Bridge opportunities → hypotheses (O1)")
+        p_lab_ingest.add_argument("--operational-db", default="oma_core.db")
+        p_lab_ingest.add_argument("--scientific-db", default="scientific.db")
+        p_lab_ingest.add_argument("--limit", type=int, default=0, help="Max opportunities to bridge")
+        p_lab_ingest.add_argument("--min-score", type=float, default=0.0, help="Minimum opportunity score")
+        p_lab_ingest.add_argument("--commit", action="store_true", help="Persist to scientific.db")
+
+        p_lab_evaluate = lab_sub.add_parser("evaluate", help="Evaluate hypotheses against outcomes (O2)")
+        p_lab_evaluate.add_argument("--hypothesis-id", "-H", help="Hypothesis ID or prefix (default: all)")
+        p_lab_evaluate.add_argument("--actual-outcome", "-O", required=True, help="What actually happened")
+        p_lab_evaluate.add_argument("--operational-db", default="oma_core.db")
+        p_lab_evaluate.add_argument("--scientific-db", default="scientific.db")
+        p_lab_evaluate.add_argument("--commit", action="store_true", help="Write comparisons to scientific.db")
+        p_lab_evaluate.add_argument("--save", action="store_true", help="Save markdown report")
+
+        p_lab_report = lab_sub.add_parser("report", help="Show learning telemetry (O6)")
+        p_lab_report.add_argument("--operational-db", default="oma_core.db")
+        p_lab_report.add_argument("--scientific-db", default="scientific.db")
+        p_lab_report.add_argument("--save", nargs="?", const="default", help="Save report to file")
 
         p_lab_compare = lab_sub.add_parser("compare", help="Compare hypothesis to outcome")
         p_lab_compare.add_argument("hypothesis_id", help="Hypothesis ID")

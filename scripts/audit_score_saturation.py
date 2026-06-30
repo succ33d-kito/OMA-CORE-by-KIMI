@@ -93,7 +93,8 @@ def compute_score_distribution(opps: List[Dict[str, Any]]) -> Dict[str, Any]:
     convs = [o.get("conviction") for o in opps if o.get("conviction") is not None]
     if not scores:
         return {"count": 0, "min": None, "max": None, "mean": None, "median": None,
-                "at_100": 0, "pct_at_100": 0, "repeated_scores": []}
+                "at_100": 0, "pct_at_100": 0, "repeated_scores": [], "histogram": {},
+                "conviction_mean": None, "conviction_histogram": {}, "score_conviction_correlation": None}
     sorted_scores = sorted(scores)
     mean = sum(scores) / len(scores)
     median = sorted_scores[len(sorted_scores) // 2] if len(sorted_scores) % 2 else \
@@ -101,6 +102,36 @@ def compute_score_distribution(opps: List[Dict[str, Any]]) -> Dict[str, Any]:
     at_100 = sum(1 for s in scores if s >= 100)
     score_counter = Counter(scores)
     repeated = {str(k): v for k, v in score_counter.items() if v > 1}
+    
+    # Histogram buckets
+    buckets = [(0, 20), (20, 40), (40, 50), (50, 60), (60, 70), (70, 80), (80, 90), (90, 100)]
+    histogram = {}
+    for lo, hi in buckets:
+        label = f"{lo}-{hi}" if hi < 100 else f"{lo}-100"
+        histogram[label] = sum(1 for s in scores if lo <= s < hi or (hi == 100 and s == 100))
+    
+    # Conviction histogram (same buckets)
+    conv_histogram = {}
+    for lo, hi in buckets:
+        label = f"{lo}-{hi}" if hi < 100 else f"{lo}-100"
+        conv_histogram[label] = sum(1 for c in convs if lo <= c < hi or (hi == 100 and c == 100))
+    
+    # Score vs conviction correlation (Spearman rank approximation)
+    corr = None
+    if len(scores) > 1 and len(convs) > 1:
+        n = min(len(scores), len(convs))
+        score_ranks = {v: i for i, v in enumerate(sorted(set(scores)))}
+        conv_ranks = {v: i for i, v in enumerate(sorted(set(convs)))}
+        s_ranks = [score_ranks[scores[i]] for i in range(n)]
+        c_ranks = [conv_ranks[convs[i]] for i in range(n)]
+        s_mean = sum(s_ranks) / n
+        c_mean = sum(c_ranks) / n
+        num = sum((s_ranks[i] - s_mean) * (c_ranks[i] - c_mean) for i in range(n))
+        den_s = sum((s_ranks[i] - s_mean) ** 2 for i in range(n)) ** 0.5
+        den_c = sum((c_ranks[i] - c_mean) ** 2 for i in range(n)) ** 0.5
+        if den_s > 0 and den_c > 0:
+            corr = round(num / (den_s * den_c), 4)
+    
     return {
         "count": len(scores),
         "min": min(scores),
@@ -110,7 +141,10 @@ def compute_score_distribution(opps: List[Dict[str, Any]]) -> Dict[str, Any]:
         "at_100": at_100,
         "pct_at_100": round(at_100 / len(scores) * 100, 1) if scores else 0,
         "repeated_scores": repeated,
+        "histogram": histogram,
         "conviction_mean": round(sum(convs) / len(convs), 2) if convs else None,
+        "conviction_histogram": conv_histogram,
+        "score_conviction_correlation": corr,
     }
 
 
@@ -185,6 +219,44 @@ def count_data_quality_issues(opps: List[Dict[str, Any]]) -> Dict[str, Any]:
             if isinstance(assets, str) and len(assets) > 1 and assets.startswith("["):
                 result["yahoo_malformed"] += 1
     return result
+
+
+def detect_pre_guard_artifacts(result: Dict[str, Any]) -> Dict[str, Any]:
+    """Detect historical pre-guard data artifacts (read-only)."""
+    dq = result.get("data_quality", {})
+    anomalies = result.get("asset_anomalies", {})
+    priority = result.get("priority_distribution", {})
+    scores = result.get("score_distribution", {})
+    
+    # Estimate pre-guard artifacts:
+    #   - price_zero opportunities that predate the Yahoo guard
+    #   - opportunities with -100% change that predate the guard
+    pre_guard_price_zero = max(
+        dq.get("yahoo_price_zero", 0),
+        anomalies.get("price_zero", 0)
+    )
+    pre_guard_negative_100 = max(
+        dq.get("yahoo_pct_negative_100", 0),
+        anomalies.get("pct_negative_100", 0)
+    )
+    pre_guard_score_100 = scores.get("at_100", 0)
+    
+    estimated_pre_guard_opportunities = max(
+        pre_guard_price_zero, pre_guard_negative_100, pre_guard_score_100
+    )
+    
+    return {
+        "pre_guard_artifacts_detected": pre_guard_price_zero > 0 or pre_guard_negative_100 > 0,
+        "estimated_pre_guard_opportunity_count": estimated_pre_guard_opportunities,
+        "yahoo_price_zero_count": pre_guard_price_zero,
+        "yahoo_negative_100_count": pre_guard_negative_100,
+        "yahoo_score_100_count": pre_guard_score_100,
+        "recommendation": (
+            "Run a one-time purge script after score calibration to remove "
+            "or reclassify pre-guard artifacts. See Sprint 13 final report."
+        ),
+        "action": "READ_ONLY — no data was modified",
+    }
 
 
 def detect_suspicious_patterns(opps: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
@@ -284,6 +356,13 @@ def run_audit(db_path: str = "oma_core.db") -> Dict[str, Any]:
     data_quality = count_data_quality_issues(opps)
     hypotheses = build_hypotheses(anomalies, priority, scores, source_breakdown, suspicious)
 
+    pre_guard = detect_pre_guard_artifacts({
+        "data_quality": data_quality,
+        "asset_anomalies": anomalies,
+        "priority_distribution": priority,
+        "score_distribution": scores,
+    })
+
     result = {
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "database": db_path,
@@ -296,6 +375,7 @@ def run_audit(db_path: str = "oma_core.db") -> Dict[str, Any]:
         "source_breakdown": source_breakdown,
         "type_breakdown": type_breakdown,
         "suspicious_patterns": suspicious,
+        "pre_guard_artifacts": pre_guard,
         "hypotheses": hypotheses,
     }
     return result
@@ -325,8 +405,12 @@ def print_terminal_report(result: Dict[str, Any]) -> None:
     print(f"  Mean: {s.get('mean')}  Median: {s.get('median')}")
     print(f"  At 100: {s.get('at_100')} ({s.get('pct_at_100')}%)")
     print(f"  Repeated scores: {len(s.get('repeated_scores', {}))}")
+    print(f"  Histogram: {s.get('histogram', {})}")
     if s.get("conviction_mean") is not None:
         print(f"  Mean conviction: {s['conviction_mean']}")
+        print(f"  Conviction histogram: {s.get('conviction_histogram', {})}")
+    if s.get("score_conviction_correlation") is not None:
+        print(f"  Score/Conviction rank correlation: {s['score_conviction_correlation']}")
     print()
 
     a = result["asset_anomalies"]
@@ -354,6 +438,16 @@ def print_terminal_report(result: Dict[str, Any]) -> None:
     print(f"  Yahoo price $0.00:    {dq.get('yahoo_price_zero')}")
     print(f"  Yahoo -100% change:   {dq.get('yahoo_pct_negative_100')}")
     print(f"  Yahoo guard status:   {'ACTIVE' if dq.get('data_quality_capped', 0) > 0 else 'NOT ACTIVE'}")
+    print()
+
+    pg = result.get("pre_guard_artifacts", {})
+    print("--- Pre-Guard Artifacts (Read-Only Report) ---")
+    print(f"  Pre-guard artifacts detected: {pg.get('pre_guard_artifacts_detected')}")
+    print(f"  Estimated pre-guard count: {pg.get('estimated_pre_guard_opportunity_count')}")
+    print(f"  Price-zero artifacts: {pg.get('yahoo_price_zero_count')}")
+    print(f"  -100% change artifacts: {pg.get('yahoo_negative_100_count')}")
+    print(f"  Score 100 artifacts: {pg.get('yahoo_score_100_count')}")
+    print(f"  Recommendation: {pg.get('recommendation')}")
     print()
 
     print("--- Type Breakdown ---")
@@ -481,6 +575,12 @@ def main():
         print("[audit] ⚠️  PRIORITY SATURATION DETECTED — scoring calibration review recommended.")
     if result["score_distribution"].get("pct_at_100", 0) > 20:
         print("[audit] ⚠️  SCORE SATURATION DETECTED — >20% of scores are maxed at 100.")
+    pg = result.get("pre_guard_artifacts", {})
+    if pg.get("pre_guard_artifacts_detected"):
+        print(f"[audit] ⚠️  {pg.get('estimated_pre_guard_opportunity_count')} PRE-GUARD ARTIFACTS — see report section.")
+    corr = result.get("score_distribution", {}).get("score_conviction_correlation")
+    if corr is not None and abs(corr) > 0.7:
+        print(f"[audit] ⚠️  Score/Conviction correlation = {corr} — conviction may not be fully decoupled.")
     print("[audit] Audit complete. No data was modified.")
 
 

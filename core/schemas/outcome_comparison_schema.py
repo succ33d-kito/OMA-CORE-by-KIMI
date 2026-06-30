@@ -13,6 +13,7 @@ import json
 
 class Verdict(Enum):
     CONFIRMED = "confirmed"
+    PARTIALLY_CONFIRMED = "partially_confirmed"
     REJECTED = "rejected"
     INCONCLUSIVE = "inconclusive"
     CORRECT_BLOCK = "correct_block"

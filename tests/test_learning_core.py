@@ -109,7 +109,7 @@ class TestOutcomeComparisonEnums:
         assert Verdict.CORRECT_BLOCK.value == "correct_block"
         assert Verdict.INCORRECT_BLOCK.value == "incorrect_block"
         assert Verdict.UNKNOWN.value == "unknown"
-        assert len(Verdict) == 6
+        assert len(Verdict) == 7  # confirmed, partially_confirmed, rejected, inconclusive, correct_block, incorrect_block, unknown
 
     def test_all_error_types(self):
         assert ErrorType.WRONG_HYPOTHESIS.value == "wrong_hypothesis"

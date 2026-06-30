@@ -1,0 +1,403 @@
+{
+  "total_files": 371,
+  "py_files": 200,
+  "md_files": 141,
+  "test_files": 48,
+  "core_files": 113,
+  "script_files": 32,
+  "top_counts": {
+    "export_for_github.py": 1,
+    "smoke.log": 1,
+    "render_app.py": 1,
+    "migrate_to_postgres.py": 1,
+    "oma cmd": 1,
+    "IDEA.md": 1,
+    "scientific.db": 1,
+    "oma_core.db": 1,
+    ".env": 1,
+    "run_oma_cron.sh": 1,
+    "oma_core.db.backup_v20": 1,
+    "setup.py": 1,
+    ".gitignore": 1,
+    "requirements.txt": 1,
+    "fixtures": 1,
+    "research": 2,
+    "_project-memory": 56,
+    "docs": 93,
+    "dashboard": 3,
+    ".hermes": 2,
+    "scripts": 33,
+    "backups": 3,
+    "_live_paper_gate": 4,
+    "tests": 47,
+    "core": 113
+  },
+  "core_sub_counts": {
+    "__init__.py": 1,
+    "cli": 2,
+    "utils": 2,
+    "agents": 6,
+    "event_bus": 2,
+    "collectors": 12,
+    "execution": 10,
+    "profiles": 2,
+    "execution_engine": 22,
+    "monitoring": 4,
+    "memory": 2,
+    "scientific": 13,
+    "config": 2,
+    "markets": 9,
+    "council": 3,
+    "schemas": 9,
+    "database": 2,
+    "outcome_domain": 4,
+    "engines": 5,
+    "processors": 1
+  },
+  "ext_counts": {
+    ".py": 200,
+    ".log": 1,
+    "<none>": 3,
+    ".md": 141,
+    ".db": 2,
+    ".sh": 3,
+    ".backup_v20": 1,
+    ".txt": 1,
+    ".json": 15,
+    ".html": 2,
+    ".zip": 2
+  },
+  "commands": [
+    "collect",
+    "council",
+    "events",
+    "evidence",
+    "export",
+    "hypothesis",
+    "lab",
+    "opportunities",
+    "process",
+    "run",
+    "scientific",
+    "status",
+    "watch"
+  ],
+  "cmd_methods": [
+    "cmd_collect",
+    "cmd_council",
+    "cmd_events",
+    "cmd_evidence",
+    "cmd_evidence_add",
+    "cmd_evidence_list",
+    "cmd_export",
+    "cmd_hypothesis",
+    "cmd_hypothesis_archive",
+    "cmd_hypothesis_create",
+    "cmd_hypothesis_list",
+    "cmd_hypothesis_show",
+    "cmd_hypothesis_transition",
+    "cmd_lab",
+    "cmd_lab_compare",
+    "cmd_lab_criterion",
+    "cmd_lab_evaluate",
+    "cmd_lab_ingest",
+    "cmd_lab_knowledge",
+    "cmd_lab_report",
+    "cmd_lab_status",
+    "cmd_opportunities",
+    "cmd_process",
+    "cmd_run",
+    "cmd_scientific_status",
+    "cmd_status",
+    "cmd_watch"
+  ],
+  "req_dupes": [
+    "feedparser",
+    "yfinance",
+    "python-dotenv"
+  ],
+  "sqlite_info": [
+    {
+      "path": "scientific.db",
+      "size_bytes": 114688,
+      "objects": [
+        [
+          "idx_criterion_deltas_created",
+          "index"
+        ],
+        [
+          "idx_criterion_deltas_dimension",
+          "index"
+        ],
+        [
+          "idx_criterion_deltas_status",
+          "index"
+        ],
+        [
+          "idx_evidence_direction",
+          "index"
+        ],
+        [
+          "idx_evidence_hypothesis",
+          "index"
+        ],
+        [
+          "idx_evidence_status",
+          "index"
+        ],
+        [
+          "idx_hypotheses_created",
+          "index"
+        ],
+        [
+          "idx_hypotheses_status",
+          "index"
+        ],
+        [
+          "idx_knowledge_confidence",
+          "index"
+        ],
+        [
+          "idx_knowledge_created",
+          "index"
+        ],
+        [
+          "idx_knowledge_expires",
+          "index"
+        ],
+        [
+          "idx_knowledge_status",
+          "index"
+        ],
+        [
+          "idx_outcome_comparisons_compared_at",
+          "index"
+        ],
+        [
+          "idx_outcome_comparisons_hypothesis",
+          "index"
+        ],
+        [
+          "idx_outcome_comparisons_verdict",
+          "index"
+        ],
+        [
+          "sqlite_autoindex_criterion_deltas_1",
+          "index"
+        ],
+        [
+          "sqlite_autoindex_evidence_1",
+          "index"
+        ],
+        [
+          "sqlite_autoindex_hypotheses_1",
+          "index"
+        ],
+        [
+          "sqlite_autoindex_knowledge_1",
+          "index"
+        ],
+        [
+          "sqlite_autoindex_outcome_comparisons_1",
+          "index"
+        ],
+        [
+          "criterion_deltas",
+          "table"
+        ],
+        [
+          "evidence",
+          "table"
+        ],
+        [
+          "hypotheses",
+          "table"
+        ],
+        [
+          "knowledge",
+          "table"
+        ],
+        [
+          "outcome_comparisons",
+          "table"
+        ]
+      ],
+      "counts": [
+        [
+          "criterion_deltas",
+          0
+        ],
+        [
+          "evidence",
+          0
+        ],
+        [
+          "hypotheses",
+          0
+        ],
+        [
+          "knowledge",
+          0
+        ],
+        [
+          "outcome_comparisons",
+          0
+        ]
+      ]
+    },
+    {
+      "path": "oma_core.db",
+      "size_bytes": 1331200,
+      "objects": [
+        [
+          "idx_events_processed",
+          "index"
+        ],
+        [
+          "idx_events_source",
+          "index"
+        ],
+        [
+          "idx_events_timestamp",
+          "index"
+        ],
+        [
+          "idx_events_type",
+          "index"
+        ],
+        [
+          "idx_events_urgency",
+          "index"
+        ],
+        [
+          "idx_opp_event",
+          "index"
+        ],
+        [
+          "idx_opp_score",
+          "index"
+        ],
+        [
+          "idx_opp_status",
+          "index"
+        ],
+        [
+          "sqlite_autoindex_events_1",
+          "index"
+        ],
+        [
+          "sqlite_autoindex_opportunities_1",
+          "index"
+        ],
+        [
+          "sqlite_autoindex_user_profiles_1",
+          "index"
+        ],
+        [
+          "events",
+          "table"
+        ],
+        [
+          "opportunities",
+          "table"
+        ],
+        [
+          "user_profiles",
+          "table"
+        ]
+      ],
+      "counts": [
+        [
+          "events",
+          620
+        ],
+        [
+          "opportunities",
+          177
+        ],
+        [
+          "user_profiles",
+          0
+        ]
+      ]
+    },
+    {
+      "path": "oma_core.db.backup_v20",
+      "size_bytes": 4317184,
+      "objects": [
+        [
+          "idx_events_processed",
+          "index"
+        ],
+        [
+          "idx_events_source",
+          "index"
+        ],
+        [
+          "idx_events_timestamp",
+          "index"
+        ],
+        [
+          "idx_events_type",
+          "index"
+        ],
+        [
+          "idx_events_urgency",
+          "index"
+        ],
+        [
+          "idx_opp_event",
+          "index"
+        ],
+        [
+          "idx_opp_score",
+          "index"
+        ],
+        [
+          "idx_opp_status",
+          "index"
+        ],
+        [
+          "sqlite_autoindex_events_1",
+          "index"
+        ],
+        [
+          "sqlite_autoindex_opportunities_1",
+          "index"
+        ],
+        [
+          "sqlite_autoindex_user_profiles_1",
+          "index"
+        ],
+        [
+          "events",
+          "table"
+        ],
+        [
+          "opportunities",
+          "table"
+        ],
+        [
+          "user_profiles",
+          "table"
+        ]
+      ],
+      "counts": [
+        [
+          "events",
+          1571
+        ],
+        [
+          "opportunities",
+          692
+        ],
+        [
+          "user_profiles",
+          0
+        ]
+      ]
+    }
+  ],
+  "pytest_summary": "908 passed, 3 warnings in 143.92s",
+  "pip_check": "No broken requirements found."
+}

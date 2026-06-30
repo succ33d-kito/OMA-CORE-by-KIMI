@@ -78,9 +78,10 @@ class ScientificStore:
         conditions: str,
         invalidation_conditions: str,
         confidence: float = 0.5,
+        hypothesis_id: Optional[str] = None,
     ) -> Hypothesis:
         hyp = Hypothesis(
-            id=str(uuid.uuid4()),
+            id=hypothesis_id or str(uuid.uuid4()),
             title=title,
             description=description,
             predicted_consequence=predicted_consequence,
