@@ -1,30 +1,49 @@
 #!/bin/bash
 # OMA-CORE Cron Job — Ejecuta pipeline completo cada hora
+# Secrets are loaded from .env or the host environment.
+# Never hardcode DATABASE_URL, TELEGRAM_BOT_TOKEN, API keys, or passwords here.
+
+set -euo pipefail
 
 PROJECT_DIR="/home/kito/O.M.A.-C.O.R.E."
-LOG_FILE="$PROJECT_DIR/logs/cron.log"
+LOG_DIR="$PROJECT_DIR/logs"
+LOG_FILE="$LOG_DIR/cron.log"
 
-# Timestamp
+mkdir -p "$LOG_DIR"
+
 echo "========================================" >> "$LOG_FILE"
 echo "$(date): Iniciando OMA-CORE cron job" >> "$LOG_FILE"
 
 cd "$PROJECT_DIR"
 
-# Cargar variables de entorno
-export TELEGRAM_BOT_TOKEN=$(grep TELEGRAM_BOT_TOKEN .env | cut -d= -f2)
-export TELEGRAM_CHAT_ID=$(grep TELEGRAM_CHAT_ID .env | cut -d= -f2)
-export DATABASE_URL="postgresql://oma_user:6o32FDYDomx70doHCJCHAtZSTEw7pG34@dpg-d8rfstb6sc1c73b7oit0-a.virginia-postgres.render.com/oma_core"
+# Load local environment variables if .env exists.
+# .env must remain untracked and listed in .gitignore.
+if [ -f ".env" ]; then
+  set -a
+  source ".env"
+  set +a
+fi
 
-# Activar entorno virtual si existe
-source venv/bin/activate 2>/dev/null || source .venv/bin/activate 2>/dev/null || true
+# Activate virtual environment if available.
+if [ -f "venv/bin/activate" ]; then
+  source "venv/bin/activate"
+elif [ -f ".venv/bin/activate" ]; then
+  source ".venv/bin/activate"
+fi
 
-# Ejecutar pipeline
+PYTHON_BIN="${PYTHON_BIN:-python3}"
+
+# Run pipeline.
 echo "$(date): Ejecutando oma run..." >> "$LOG_FILE"
-python3 -m core.cli.main run >> "$LOG_FILE" 2>&1
+"$PYTHON_BIN" -m core.cli.main run >> "$LOG_FILE" 2>&1
 
-# Sincronizar con PostgreSQL
-echo "$(date): Sincronizando PostgreSQL..." >> "$LOG_FILE"
-python3 migrate_to_postgres.py >> "$LOG_FILE" 2>&1
+# Sync with PostgreSQL only if DATABASE_URL exists.
+if [ -n "${DATABASE_URL:-}" ]; then
+  echo "$(date): Sincronizando PostgreSQL..." >> "$LOG_FILE"
+  "$PYTHON_BIN" migrate_to_postgres.py >> "$LOG_FILE" 2>&1
+else
+  echo "$(date): DATABASE_URL no configurado; saltando sincronización PostgreSQL." >> "$LOG_FILE"
+fi
 
 echo "$(date): Completado" >> "$LOG_FILE"
 echo "========================================" >> "$LOG_FILE"
