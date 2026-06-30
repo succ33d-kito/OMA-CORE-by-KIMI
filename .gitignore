@@ -33,3 +33,26 @@ backups/
 
 # Local Python virtualenv
 .venv/
+
+# Local secrets
+.env
+.env.*
+!.env.example
+
+# Local databases and backups
+*.db
+*.db.*
+*.sqlite
+*.sqlite3
+*.sqlite3.*
+*.backup
+*.backup_*
+*.backup_v*
+
+# Runtime logs and telemetry
+*.log
+*.jsonl
+logs/
+_extended_demo/
+.pytest_cache/
+__pycache__/
