@@ -1,0 +1,7 @@
+{
+  "schema": "event-semantic-human-gold-v1",
+  "status": "NOT_YET_ADJUDICATED",
+  "reviewer": null,
+  "cases": [],
+  "note": "No human labels were supplied. REFERENCE.json is assistant-authored manual annotation, not human gold. Human-reviewed corrections must be versioned separately, with reviewer and reference hash. Never populate this file from classifier predictions."
+}

@@ -1,0 +1,880 @@
+{
+  "baseline_commit": "63dcb70a45b632f97fea20525117e1dc0d4c8d6c",
+  "classifier_sha256": "42a0ec0fabbd24f8df7adf9cc7bb500afef93aae702c6abcc89817c4b9cb2abc",
+  "evaluator_sha256": "488436ac9cea1cad44fe09e349ca7c864bf62adf317e4cc5fd1a39dbf2bfd8b5",
+  "hash_policy": "UTF-8 text; CRLF and CR normalized to LF",
+  "human_reviewed": false,
+  "label_status": "ASSISTANT_AUTHORED_MANUAL_REFERENCE_PENDING_HUMAN_REVIEW",
+  "metrics": {
+    "assets": {
+      "errors": [
+        {
+          "false_negative": [
+            "BTC",
+            "ETH"
+          ],
+          "false_positive": [],
+          "id": "A02"
+        },
+        {
+          "false_negative": [
+            "AAPL"
+          ],
+          "false_positive": [],
+          "id": "A03"
+        },
+        {
+          "false_negative": [],
+          "false_positive": [
+            "ADA"
+          ],
+          "id": "A04"
+        }
+      ],
+      "exact_match": 0.875,
+      "fn": 3,
+      "fp": 1,
+      "micro_f1": 0.8947368421052632,
+      "n": 24,
+      "precision": 0.9444444444444444,
+      "recall": 0.85,
+      "tp": 17
+    },
+    "entities": {
+      "capability": "NOT_IMPLEMENTED_IN_RSS; actual Event.entities default is empty",
+      "errors": [
+        {
+          "false_negative": [
+            "Canada"
+          ],
+          "false_positive": [],
+          "id": "C03"
+        },
+        {
+          "false_negative": [
+            "SEC"
+          ],
+          "false_positive": [],
+          "id": "C06"
+        },
+        {
+          "false_negative": [
+            "SEC"
+          ],
+          "false_positive": [],
+          "id": "N04"
+        },
+        {
+          "false_negative": [
+            "Fed",
+            "SEC"
+          ],
+          "false_positive": [],
+          "id": "M02"
+        },
+        {
+          "false_negative": [
+            "Apple Inc."
+          ],
+          "false_positive": [],
+          "id": "A03"
+        },
+        {
+          "false_negative": [
+            "ADA"
+          ],
+          "false_positive": [],
+          "id": "A04"
+        }
+      ],
+      "exact_match": 0.75,
+      "fn": 7,
+      "fp": 0,
+      "micro_f1": 0.0,
+      "n": 24,
+      "precision": null,
+      "recall": 0.0,
+      "tp": 0
+    },
+    "event_type_single_label": {
+      "accuracy": 0.8636363636363636,
+      "confusion_matrix": {
+        "earnings": {
+          "earnings": 1,
+          "geopolitical": 0,
+          "hack_exploit": 0,
+          "news": 0,
+          "regulatory": 0
+        },
+        "geopolitical": {
+          "earnings": 0,
+          "geopolitical": 2,
+          "hack_exploit": 0,
+          "news": 0,
+          "regulatory": 0
+        },
+        "hack_exploit": {
+          "earnings": 0,
+          "geopolitical": 0,
+          "hack_exploit": 1,
+          "news": 0,
+          "regulatory": 0
+        },
+        "news": {
+          "earnings": 0,
+          "geopolitical": 0,
+          "hack_exploit": 3,
+          "news": 12,
+          "regulatory": 0
+        },
+        "regulatory": {
+          "earnings": 0,
+          "geopolitical": 0,
+          "hack_exploit": 0,
+          "news": 0,
+          "regulatory": 3
+        }
+      },
+      "macro_f1": 0.8577777777777778,
+      "n": 22,
+      "per_class": {
+        "earnings": {
+          "fn": 0,
+          "fp": 0,
+          "micro_f1": 1.0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "support": 1,
+          "tp": 1
+        },
+        "geopolitical": {
+          "fn": 0,
+          "fp": 0,
+          "micro_f1": 1.0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "support": 2,
+          "tp": 2
+        },
+        "hack_exploit": {
+          "fn": 0,
+          "fp": 3,
+          "micro_f1": 0.4,
+          "precision": 0.25,
+          "recall": 1.0,
+          "support": 1,
+          "tp": 1
+        },
+        "news": {
+          "fn": 3,
+          "fp": 0,
+          "micro_f1": 0.8888888888888888,
+          "precision": 1.0,
+          "recall": 0.8,
+          "support": 15,
+          "tp": 12
+        },
+        "regulatory": {
+          "fn": 0,
+          "fp": 0,
+          "micro_f1": 1.0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "support": 3,
+          "tp": 3
+        }
+      }
+    },
+    "event_types": {
+      "errors": [
+        {
+          "false_negative": [
+            "news"
+          ],
+          "false_positive": [
+            "hack_exploit"
+          ],
+          "id": "N03"
+        },
+        {
+          "false_negative": [
+            "news"
+          ],
+          "false_positive": [
+            "hack_exploit"
+          ],
+          "id": "N05"
+        },
+        {
+          "false_negative": [
+            "news"
+          ],
+          "false_positive": [
+            "hack_exploit"
+          ],
+          "id": "M01"
+        },
+        {
+          "false_negative": [
+            "macro_event"
+          ],
+          "false_positive": [],
+          "id": "M02"
+        },
+        {
+          "false_negative": [
+            "earnings"
+          ],
+          "false_positive": [],
+          "id": "M04"
+        }
+      ],
+      "exact_match": 0.7916666666666666,
+      "fn": 5,
+      "fp": 3,
+      "micro_f1": 0.84,
+      "n": 24,
+      "precision": 0.875,
+      "recall": 0.8076923076923077,
+      "tp": 21
+    },
+    "sentiment": {
+      "accuracy": 0.6818181818181818,
+      "confusion_matrix": {
+        "bearish": {
+          "bearish": 0,
+          "bullish": 0,
+          "neutral": 3
+        },
+        "bullish": {
+          "bearish": 0,
+          "bullish": 2,
+          "neutral": 1
+        },
+        "neutral": {
+          "bearish": 1,
+          "bullish": 2,
+          "neutral": 13
+        }
+      },
+      "coverage": 0.9166666666666666,
+      "errors": [
+        {
+          "expected": "bearish",
+          "id": "C05",
+          "predicted": "neutral"
+        },
+        {
+          "expected": "neutral",
+          "id": "N01",
+          "predicted": "bullish"
+        },
+        {
+          "expected": "neutral",
+          "id": "N02",
+          "predicted": "bearish"
+        },
+        {
+          "expected": "bearish",
+          "id": "N06",
+          "predicted": "neutral"
+        },
+        {
+          "expected": "neutral",
+          "id": "M05",
+          "predicted": "bullish"
+        },
+        {
+          "expected": "bullish",
+          "id": "A05",
+          "predicted": "neutral"
+        },
+        {
+          "expected": "bearish",
+          "id": "A06",
+          "predicted": "neutral"
+        }
+      ],
+      "excluded_mixed_ids": [
+        "M03",
+        "M06"
+      ],
+      "macro_f1": 0.45310245310245306,
+      "n": 22,
+      "per_class": {
+        "bearish": {
+          "fn": 3,
+          "fp": 1,
+          "micro_f1": 0.0,
+          "precision": 0.0,
+          "recall": 0.0,
+          "support": 3,
+          "tp": 0
+        },
+        "bullish": {
+          "fn": 1,
+          "fp": 2,
+          "micro_f1": 0.5714285714285714,
+          "precision": 0.5,
+          "recall": 0.6666666666666666,
+          "support": 3,
+          "tp": 2
+        },
+        "neutral": {
+          "fn": 3,
+          "fp": 4,
+          "micro_f1": 0.7878787878787878,
+          "precision": 0.7647058823529411,
+          "recall": 0.8125,
+          "support": 16,
+          "tp": 13
+        }
+      }
+    },
+    "slices": {
+      "alias": {
+        "event_exact_match": 1.0,
+        "n": 3,
+        "sentiment": {
+          "accuracy": 1.0,
+          "confusion_matrix": {
+            "bullish": {
+              "bullish": 1,
+              "neutral": 0
+            },
+            "neutral": {
+              "bullish": 0,
+              "neutral": 2
+            }
+          },
+          "macro_f1": 1.0,
+          "n": 3,
+          "per_class": {
+            "bullish": {
+              "fn": 0,
+              "fp": 0,
+              "micro_f1": 1.0,
+              "precision": 1.0,
+              "recall": 1.0,
+              "support": 1,
+              "tp": 1
+            },
+            "neutral": {
+              "fn": 0,
+              "fp": 0,
+              "micro_f1": 1.0,
+              "precision": 1.0,
+              "recall": 1.0,
+              "support": 2,
+              "tp": 2
+            }
+          }
+        }
+      },
+      "case": {
+        "event_exact_match": 1.0,
+        "n": 1,
+        "sentiment": {
+          "accuracy": 1.0,
+          "confusion_matrix": {
+            "neutral": {
+              "neutral": 1
+            }
+          },
+          "macro_f1": 1.0,
+          "n": 1,
+          "per_class": {
+            "neutral": {
+              "fn": 0,
+              "fp": 0,
+              "micro_f1": 1.0,
+              "precision": 1.0,
+              "recall": 1.0,
+              "support": 1,
+              "tp": 1
+            }
+          }
+        }
+      },
+      "company_name": {
+        "event_exact_match": 1.0,
+        "n": 1,
+        "sentiment": {
+          "accuracy": 1.0,
+          "confusion_matrix": {
+            "bullish": {
+              "bullish": 1
+            }
+          },
+          "macro_f1": 1.0,
+          "n": 1,
+          "per_class": {
+            "bullish": {
+              "fn": 0,
+              "fp": 0,
+              "micro_f1": 1.0,
+              "precision": 1.0,
+              "recall": 1.0,
+              "support": 1,
+              "tp": 1
+            }
+          }
+        }
+      },
+      "control": {
+        "event_exact_match": 1.0,
+        "n": 3,
+        "sentiment": {
+          "accuracy": 0.6666666666666666,
+          "confusion_matrix": {
+            "bearish": {
+              "bearish": 0,
+              "neutral": 1
+            },
+            "neutral": {
+              "bearish": 0,
+              "neutral": 2
+            }
+          },
+          "macro_f1": 0.4,
+          "n": 3,
+          "per_class": {
+            "bearish": {
+              "fn": 1,
+              "fp": 0,
+              "micro_f1": 0.0,
+              "precision": null,
+              "recall": 0.0,
+              "support": 1,
+              "tp": 0
+            },
+            "neutral": {
+              "fn": 0,
+              "fp": 1,
+              "micro_f1": 0.8,
+              "precision": 0.6666666666666666,
+              "recall": 1.0,
+              "support": 2,
+              "tp": 2
+            }
+          }
+        }
+      },
+      "cross_clause": {
+        "event_exact_match": 0.0,
+        "n": 1,
+        "sentiment": {
+          "accuracy": 1.0,
+          "confusion_matrix": {
+            "neutral": {
+              "neutral": 1
+            }
+          },
+          "macro_f1": 1.0,
+          "n": 1,
+          "per_class": {
+            "neutral": {
+              "fn": 0,
+              "fp": 0,
+              "micro_f1": 1.0,
+              "precision": 1.0,
+              "recall": 1.0,
+              "support": 1,
+              "tp": 1
+            }
+          }
+        }
+      },
+      "incident_assertion": {
+        "event_exact_match": 0.0,
+        "n": 2,
+        "sentiment": {
+          "accuracy": 1.0,
+          "confusion_matrix": {
+            "neutral": {
+              "neutral": 2
+            }
+          },
+          "macro_f1": 1.0,
+          "n": 2,
+          "per_class": {
+            "neutral": {
+              "fn": 0,
+              "fp": 0,
+              "micro_f1": 1.0,
+              "precision": 1.0,
+              "recall": 1.0,
+              "support": 2,
+              "tp": 2
+            }
+          }
+        }
+      },
+      "markup": {
+        "event_exact_match": 1.0,
+        "n": 1,
+        "sentiment": {
+          "accuracy": 1.0,
+          "confusion_matrix": {
+            "neutral": {
+              "neutral": 1
+            }
+          },
+          "macro_f1": 1.0,
+          "n": 1,
+          "per_class": {
+            "neutral": {
+              "fn": 0,
+              "fp": 0,
+              "micro_f1": 1.0,
+              "precision": 1.0,
+              "recall": 1.0,
+              "support": 1,
+              "tp": 1
+            }
+          }
+        }
+      },
+      "mixed_sentiment": {
+        "event_exact_match": 1.0,
+        "n": 2,
+        "sentiment": {
+          "accuracy": null,
+          "confusion_matrix": {},
+          "macro_f1": null,
+          "n": 0,
+          "per_class": {}
+        }
+      },
+      "morphology": {
+        "event_exact_match": 1.0,
+        "n": 2,
+        "sentiment": {
+          "accuracy": 0.0,
+          "confusion_matrix": {
+            "bearish": {
+              "bearish": 0,
+              "bullish": 0,
+              "neutral": 1
+            },
+            "bullish": {
+              "bearish": 0,
+              "bullish": 0,
+              "neutral": 1
+            },
+            "neutral": {
+              "bearish": 0,
+              "bullish": 0,
+              "neutral": 0
+            }
+          },
+          "macro_f1": 0.0,
+          "n": 2,
+          "per_class": {
+            "bearish": {
+              "fn": 1,
+              "fp": 0,
+              "micro_f1": 0.0,
+              "precision": null,
+              "recall": 0.0,
+              "support": 1,
+              "tp": 0
+            },
+            "bullish": {
+              "fn": 1,
+              "fp": 0,
+              "micro_f1": 0.0,
+              "precision": null,
+              "recall": 0.0,
+              "support": 1,
+              "tp": 0
+            },
+            "neutral": {
+              "fn": 0,
+              "fp": 2,
+              "micro_f1": 0.0,
+              "precision": 0.0,
+              "recall": null,
+              "support": 0,
+              "tp": 0
+            }
+          }
+        }
+      },
+      "multi_event": {
+        "event_exact_match": 0.0,
+        "n": 2,
+        "sentiment": {
+          "accuracy": 1.0,
+          "confusion_matrix": {
+            "bullish": {
+              "bullish": 1,
+              "neutral": 0
+            },
+            "neutral": {
+              "bullish": 0,
+              "neutral": 1
+            }
+          },
+          "macro_f1": 1.0,
+          "n": 2,
+          "per_class": {
+            "bullish": {
+              "fn": 0,
+              "fp": 0,
+              "micro_f1": 1.0,
+              "precision": 1.0,
+              "recall": 1.0,
+              "support": 1,
+              "tp": 1
+            },
+            "neutral": {
+              "fn": 0,
+              "fp": 0,
+              "micro_f1": 1.0,
+              "precision": 1.0,
+              "recall": 1.0,
+              "support": 1,
+              "tp": 1
+            }
+          }
+        }
+      },
+      "multi_topic": {
+        "event_exact_match": 0.5,
+        "n": 6,
+        "sentiment": {
+          "accuracy": 0.75,
+          "confusion_matrix": {
+            "bullish": {
+              "bullish": 1,
+              "neutral": 0
+            },
+            "neutral": {
+              "bullish": 1,
+              "neutral": 2
+            }
+          },
+          "macro_f1": 0.7333333333333334,
+          "n": 4,
+          "per_class": {
+            "bullish": {
+              "fn": 0,
+              "fp": 1,
+              "micro_f1": 0.6666666666666666,
+              "precision": 0.5,
+              "recall": 1.0,
+              "support": 1,
+              "tp": 1
+            },
+            "neutral": {
+              "fn": 1,
+              "fp": 0,
+              "micro_f1": 0.8,
+              "precision": 1.0,
+              "recall": 0.6666666666666666,
+              "support": 3,
+              "tp": 2
+            }
+          }
+        }
+      },
+      "negation": {
+        "event_exact_match": 0.6666666666666666,
+        "n": 6,
+        "sentiment": {
+          "accuracy": 0.5,
+          "confusion_matrix": {
+            "bearish": {
+              "bearish": 0,
+              "bullish": 0,
+              "neutral": 1
+            },
+            "bullish": {
+              "bearish": 0,
+              "bullish": 0,
+              "neutral": 0
+            },
+            "neutral": {
+              "bearish": 1,
+              "bullish": 1,
+              "neutral": 3
+            }
+          },
+          "macro_f1": 0.3333333333333333,
+          "n": 6,
+          "per_class": {
+            "bearish": {
+              "fn": 1,
+              "fp": 1,
+              "micro_f1": 0.0,
+              "precision": 0.0,
+              "recall": 0.0,
+              "support": 1,
+              "tp": 0
+            },
+            "bullish": {
+              "fn": 0,
+              "fp": 1,
+              "micro_f1": 0.0,
+              "precision": 0.0,
+              "recall": null,
+              "support": 0,
+              "tp": 0
+            },
+            "neutral": {
+              "fn": 2,
+              "fp": 1,
+              "micro_f1": 0.6666666666666666,
+              "precision": 0.75,
+              "recall": 0.6,
+              "support": 5,
+              "tp": 3
+            }
+          }
+        }
+      },
+      "physical_attack": {
+        "event_exact_match": 1.0,
+        "n": 1,
+        "sentiment": {
+          "accuracy": 1.0,
+          "confusion_matrix": {
+            "neutral": {
+              "neutral": 1
+            }
+          },
+          "macro_f1": 1.0,
+          "n": 1,
+          "per_class": {
+            "neutral": {
+              "fn": 0,
+              "fp": 0,
+              "micro_f1": 1.0,
+              "precision": 1.0,
+              "recall": 1.0,
+              "support": 1,
+              "tp": 1
+            }
+          }
+        }
+      },
+      "polysemy": {
+        "event_exact_match": 1.0,
+        "n": 1,
+        "sentiment": {
+          "accuracy": 1.0,
+          "confusion_matrix": {
+            "neutral": {
+              "neutral": 1
+            }
+          },
+          "macro_f1": 1.0,
+          "n": 1,
+          "per_class": {
+            "neutral": {
+              "fn": 0,
+              "fp": 0,
+              "micro_f1": 1.0,
+              "precision": 1.0,
+              "recall": 1.0,
+              "support": 1,
+              "tp": 1
+            }
+          }
+        }
+      },
+      "prior_failure": {
+        "event_exact_match": 1.0,
+        "n": 4,
+        "sentiment": {
+          "accuracy": 1.0,
+          "confusion_matrix": {
+            "neutral": {
+              "neutral": 4
+            }
+          },
+          "macro_f1": 1.0,
+          "n": 4,
+          "per_class": {
+            "neutral": {
+              "fn": 0,
+              "fp": 0,
+              "micro_f1": 1.0,
+              "precision": 1.0,
+              "recall": 1.0,
+              "support": 4,
+              "tp": 4
+            }
+          }
+        }
+      },
+      "subject_attribution": {
+        "event_exact_match": 1.0,
+        "n": 1,
+        "sentiment": {
+          "accuracy": 0.0,
+          "confusion_matrix": {
+            "bullish": {
+              "bullish": 0,
+              "neutral": 0
+            },
+            "neutral": {
+              "bullish": 1,
+              "neutral": 0
+            }
+          },
+          "macro_f1": 0.0,
+          "n": 1,
+          "per_class": {
+            "bullish": {
+              "fn": 0,
+              "fp": 1,
+              "micro_f1": 0.0,
+              "precision": 0.0,
+              "recall": null,
+              "support": 0,
+              "tp": 0
+            },
+            "neutral": {
+              "fn": 1,
+              "fp": 0,
+              "micro_f1": 0.0,
+              "precision": null,
+              "recall": 0.0,
+              "support": 1,
+              "tp": 0
+            }
+          }
+        }
+      },
+      "substring": {
+        "event_exact_match": 1.0,
+        "n": 2,
+        "sentiment": {
+          "accuracy": 1.0,
+          "confusion_matrix": {
+            "neutral": {
+              "neutral": 2
+            }
+          },
+          "macro_f1": 1.0,
+          "n": 2,
+          "per_class": {
+            "neutral": {
+              "fn": 0,
+              "fp": 0,
+              "micro_f1": 1.0,
+              "precision": 1.0,
+              "recall": 1.0,
+              "support": 2,
+              "tp": 2
+            }
+          }
+        }
+      }
+    }
+  },
+  "reference_sha256": "6219d5e0ce6a807d6fbccb0602543b9aca94e1c5463fa9609f669ce53eb6fcef",
+  "schema": "event-semantic-evaluation-v1"
+}

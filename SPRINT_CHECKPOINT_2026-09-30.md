@@ -231,3 +231,17 @@ multi-topic summaries; conservative ticker matching may miss lowercase mentions.
 Next action: label a small fixed sample of the remaining ambiguous operational
 RSS cases before extending rules. DLL remediation requires the host's approved
 application-control process and is separate from semantic validation.
+
+## Event Intelligence fixed semantic baseline
+
+From `63dcb70`, added 24 fixed diagnostic contrast cases and an offline evaluator;
+classifier unchanged. References are assistant-authored manual annotations,
+explicitly pending human review; HUMAN_GOLD is empty. Predictions are separate.
+Set micro-F1: event types .8400, assets .8947, entities .0000 (not implemented).
+Sentiment macro-F1 .4531 / accuracy .6818 on 22 scorable cases; two mixed cases
+excluded explicitly. These are selected-case diagnostics, not production accuracy.
+24 relevant tests pass. Details, hashes, FP/FN and reproduction command in
+`research/event_intelligence/baseline_v1/README.md`. Structural deficits: assertion/
+negation and clause/subject scope; single-output loss on multi-topic text.
+No rule changes or scientific promotion. Next: human adjudication of the fixed
+reference, then a small clause-scoped negation/context experiment, not more keywords.
