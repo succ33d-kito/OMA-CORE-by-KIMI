@@ -69,3 +69,44 @@ def fetch_once(session,*,api_key=None,clock=None,timeout=8):
     metric=normalize_bundle(raw)
     material=json.dumps(raw,sort_keys=True,separators=(',',':')).encode()
     return {'bar':bar,'metric':metric,'raw_metrics_sha256':hashlib.sha256(material).hexdigest(),'raw_metrics':raw}
+
+
+def capture_price_receipt(session, ledger, *, clock=None, timeout=10):
+    """Two public requests, price only; no retries, metrics, history or trading."""
+    from core.scientific.prospective_receipts import append_observation, _utc
+    utc_now = clock or (lambda: datetime.now(timezone.utc))
+    def request(path, params=None):
+        response = session.get(BASE + path, params=params, timeout=timeout)
+        if response.status_code == 451:
+            raise RuntimeError('Binance HTTP 451; no proxy or alternate-provider fallback')
+        response.raise_for_status()
+        raw = response.text  # Consume bytes before assigning received_at.
+        received = _utc(utc_now())
+        return raw, received
+    server_raw, server_received = request('/fapi/v1/time')
+    server_ms = int(json.loads(server_raw)['serverTime'])
+    if datetime.fromtimestamp(server_ms/1000, timezone.utc) > server_received:
+        raise ValueError('server clock ahead of local receipt clock')
+    requested = _utc(utc_now())
+    if requested < server_received:
+        raise ValueError('clock moved backwards')
+    raw, received = request('/fapi/v1/klines', {'symbol':'BTCUSDT','interval':'1h','limit':3})
+    rows = json.loads(raw)
+    if received < requested:
+        raise ValueError('clock moved backwards')
+    closed = [r for r in rows if len(r) >= 7 and int(r[0]) + 3_600_000 <= server_ms]
+    if not closed:
+        raise ValueError('no closed bar supported by server-time evidence')
+    row = max(closed, key=lambda r:int(r[0]))
+    start = datetime.fromtimestamp(int(row[0])/1000, timezone.utc)
+    payload = latest_closed_kline([row], datetime.fromtimestamp(server_ms/1000, timezone.utc))
+    payload.update(open_time_ms=int(row[0]), close_time_ms=int(row[6]))
+    return append_observation(ledger, source=BASE+'/fapi/v1/klines', instrument='BTCUSDT',
+        feature='Price/OHLCV', event_time=start+timedelta(hours=1),
+        source_metric_at=datetime.fromtimestamp(int(row[6])/1000, timezone.utc),
+        received_at=received, payload=payload, clock=utc_now,
+        provenance={'contract':'binance-usdm-h1-rest-v1','bar_closed':True,
+                    'raw_server_time':server_raw,'raw_klines':raw,
+                    'server_received_at':server_received.isoformat(),
+                    'klines_requested_at':requested.isoformat(),
+                    'clock':'host UTC wall clock; decision must use the same clock domain'})

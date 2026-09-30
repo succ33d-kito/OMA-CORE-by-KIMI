@@ -1,0 +1,51 @@
+{
+  "status": "PROSPECTIVE_CAUSAL_AVAILABILITY_VERIFIED",
+  "historical_2024": "UNPROVEN",
+  "MM_READY": 0,
+  "MM_BLOCKED": 10,
+  "holdouts_opened": false,
+  "edge": false,
+  "promotion": "NONE",
+  "evidence_scope": "This observation only, under trusted host UTC clock and TLS capture; no continuous coverage claim",
+  "observation": {
+    "id": "fe64337e94be8edd693fa0726891ab4ed4fefdb49c5779279319a77abcf489c5",
+    "source": "https://fapi.binance.com/fapi/v1/klines",
+    "instrument": "BTCUSDT",
+    "feature": "Price/OHLCV",
+    "event_time": "2026-09-30T18:00:00+00:00",
+    "source_metric_at": "2026-09-30T17:59:59.999000+00:00",
+    "received_at": "2026-09-30T18:14:57.360120+00:00",
+    "available_at": "2026-09-30T18:14:57.387351+00:00",
+    "computed_at": null,
+    "payload": {
+      "time": "2026-09-30T17:00:00+00:00",
+      "open": 84318.3,
+      "high": 84400.0,
+      "low": 83901.2,
+      "close": 84000.0,
+      "volume": 4759.408,
+      "open_time_ms": 1790787600000,
+      "close_time_ms": 1790791199999
+    },
+    "payload_hash": "0e71a6be2d3f05ea7ac46b27e860fa2b7e21813f1daff53c7a44f00cc5539a43",
+    "provenance": {
+      "contract": "binance-usdm-h1-rest-v1",
+      "bar_closed": true,
+      "raw_server_time": "{\"serverTime\":1790792096804}",
+      "raw_klines": "[[1790784000000,\"84104.80\",\"84462.60\",\"84093.50\",\"84318.30\",\"5905.389\",1790787599999,\"497824322.97510\",146859,\"2729.374\",\"230084111.09490\",\"0\"],[1790787600000,\"84318.30\",\"84400.00\",\"83901.20\",\"84000.00\",\"4759.408\",1790791199999,\"400190553.44930\",142606,\"2032.971\",\"170956956.23400\",\"0\"],[1790791200000,\"84000.10\",\"84059.00\",\"83901.20\",\"83998.80\",\"791.612\",1790794799999,\"66477447.95010\",29477,\"405.629\",\"34065111.52990\",\"0\"]]",
+      "server_received_at": "2026-09-30T18:14:56.922734+00:00",
+      "klines_requested_at": "2026-09-30T18:14:56.922734+00:00",
+      "clock": "host UTC wall clock; decision must use the same clock domain"
+    },
+    "dependencies": [],
+    "derived": false,
+    "recorded_at": "2026-09-30T18:14:57.387351+00:00"
+  },
+  "decision_at": "2026-09-30T18:14:57.401121+00:00",
+  "latency_seconds_samples": [
+    897.36112
+  ],
+  "latency_scope": "REST polling delay plus transport; not intrinsic exchange publication latency",
+  "valid_from": "2026-09-30T18:14:57.387351+00:00",
+  "script_sha256": "63ea5af947abdeb5bddb987ecbfb1c894f825375a7075224798f79db87184b9f"
+}

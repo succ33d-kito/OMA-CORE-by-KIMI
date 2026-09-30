@@ -90,3 +90,153 @@ def export_verified(path,out):
     result['ledger_head_sha256']=previous
     (out/'receipt_manifest.json').write_text(json.dumps(result,indent=2))
     return result
+
+# Versioned generic observations share the existing SQLite file. Legacy rows
+# retain their original meaning and are never promoted to this stronger contract.
+def canonical_observation(value):
+    return json.dumps(value, sort_keys=True, separators=(',', ':'), allow_nan=False)
+
+
+def observation_hash(value):
+    return hashlib.sha256(canonical_observation(value).encode()).hexdigest()
+
+
+def _observation_db(path):
+    con = _connect(path)
+    con.execute('''CREATE TABLE IF NOT EXISTS observations_v2 (
+        seq INTEGER PRIMARY KEY AUTOINCREMENT, id TEXT UNIQUE NOT NULL,
+        body TEXT NOT NULL, previous_hash TEXT NOT NULL, receipt_hash TEXT NOT NULL)''')
+    for action in ('UPDATE', 'DELETE'):
+        con.execute(f'''CREATE TRIGGER IF NOT EXISTS observations_v2_no_{action.lower()}
+          BEFORE {action} ON observations_v2 BEGIN SELECT RAISE(ABORT, 'append-only'); END''')
+    return con
+
+
+def load_observations(path):
+    con = _observation_db(path)
+    try:
+        rows = con.execute('SELECT id,body,previous_hash,receipt_hash FROM observations_v2 ORDER BY seq').fetchall()
+    finally:
+        con.close()
+    previous, result = '0' * 64, {}
+    for identity, body, link, digest in rows:
+        if link != previous or observation_hash([link, body]) != digest:
+            raise ValueError('observation chain integrity failure')
+        item = json.loads(body)
+        if item['id'] != identity or observation_hash(item['payload']) != item['payload_hash']:
+            raise ValueError('payload identity/hash mismatch')
+        result[identity] = item
+        previous = digest
+    return result
+
+
+def append_observation(path, *, source, instrument, feature, event_time,
+                       source_metric_at, received_at, payload, provenance,
+                       dependencies=(), derived=False, clock=None):
+    """Trusted capture boundary; explicit clock injection is for tests only.
+
+    All live callers obtain received_at immediately after consuming response
+    bytes; available_at/computed_at are assigned here, never caller-supplied.
+    Unsupported raw features are stored UNKNOWN, not admitted by default.
+    """
+    if not source or not instrument or not feature or not isinstance(provenance, dict) or not provenance:
+        raise ValueError('missing provenance')
+    event, metric, received = map(_utc, (event_time, source_metric_at, received_at))
+    Path(path).parent.mkdir(parents=True, exist_ok=True)
+    known = load_observations(path)
+    now = _utc(clock() if clock else datetime.now(timezone.utc))
+    if max(event, metric) > received or received > now or now - event > timedelta(days=1):
+        raise ValueError('future observation or historical backfill')
+    deps = list(dependencies)
+    if len(set(deps)) != len(deps):
+        raise ValueError('duplicate dependency')
+    if deps and not derived:
+        raise ValueError('raw observation cannot declare unchecked dependencies')
+    available = now.isoformat() if feature == 'Price/OHLCV' and not derived else None
+    if derived:
+        values = [known.get(x, {}).get('available_at') for x in deps]
+        available = max([now, *map(_utc, values)]).isoformat() if deps and all(values) else None
+    identity = observation_hash([source, instrument, feature, event.isoformat(), metric.isoformat(), deps, derived])
+    item = dict(id=identity, source=source, instrument=instrument, feature=feature,
+                event_time=event.isoformat(), source_metric_at=metric.isoformat(),
+                received_at=received.isoformat(), available_at=available,
+                computed_at=now.isoformat() if derived else None,
+                payload=payload, payload_hash=observation_hash(payload), provenance=provenance,
+                dependencies=deps, derived=derived, recorded_at=now.isoformat())
+    con = _observation_db(path)
+    try:
+        con.execute('BEGIN IMMEDIATE')
+        existing = con.execute('SELECT body FROM observations_v2 WHERE id=?', (identity,)).fetchone()
+        if existing:
+            old = json.loads(existing[0])
+            if old['payload_hash'] != item['payload_hash']:
+                raise ValueError('conflicting observation; no silent overwrite')
+            con.rollback()
+            return old
+        last = con.execute('SELECT body,receipt_hash FROM observations_v2 ORDER BY seq DESC LIMIT 1').fetchone()
+        if last and _utc(json.loads(last[0])['recorded_at']) > now:
+            raise ValueError('clock moved backwards')
+        previous = last[1] if last else '0' * 64
+        body = canonical_observation(item)
+        con.execute('INSERT INTO observations_v2(id,body,previous_hash,receipt_hash) VALUES (?,?,?,?)',
+                    (identity, body, previous, observation_hash([previous, body])))
+        con.commit()
+    except Exception:
+        con.rollback()
+        raise
+    finally:
+        con.close()
+    return item
+
+
+def _price_closed(item):
+    """REST closure evidence: server time sampled BEFORE the kline request."""
+    p = item['provenance']
+    if item['source'] != 'https://fapi.binance.com/fapi/v1/klines' or item['instrument'] != 'BTCUSDT':
+        return False
+    if p.get('contract') != 'binance-usdm-h1-rest-v1' or p.get('bar_closed') is not True:
+        return False
+    raw = json.loads(p['raw_klines'])
+    server = json.loads(p['raw_server_time'])['serverTime']
+    opened = int(item['payload']['open_time_ms'])
+    row = next(r for r in raw if int(r[0]) == opened)
+    close = opened + 3_600_000
+    if opened % 3_600_000 or int(row[6]) != close - 1 or server < close:
+        return False
+    t = lambda ms: datetime.fromtimestamp(ms / 1000, timezone.utc)
+    if not (t(server) <= _utc(p['server_received_at']) <= _utc(p['klines_requested_at']) <= _utc(item['received_at'])):
+        return False
+    if _utc(item['event_time']) != t(close) or _utc(item['source_metric_at']) != t(int(row[6])):
+        return False
+    normalized = dict(time=t(opened).isoformat(), **{k:float(row[i]) for i,k in enumerate(['open','high','low','close','volume'], 1)})
+    _validate('bar', normalized)
+    return item['payload'] == dict(normalized, open_time_ms=opened, close_time_ms=int(row[6]))
+
+
+def is_causally_available(path, observation_id, decision_at):
+    """Only verified persisted observations qualify. UNKNOWN always fails closed."""
+    try:
+        decision = _utc(decision_at)
+        known = load_observations(path)
+        def check(identity, visiting):
+            if identity in visiting or identity not in known:
+                return False
+            item = known[identity]
+            if not item['available_at'] or not item['provenance']:
+                return False
+            available = _utc(item['available_at'])
+            if not (_utc(item['event_time']) <= _utc(item['received_at']) <= available <= decision):
+                return False
+            if _utc(item['source_metric_at']) > _utc(item['received_at']):
+                return False
+            if item['derived']:
+                deps = item['dependencies']
+                if not deps or not item['computed_at'] or not all(check(x, visiting | {identity}) for x in deps):
+                    return False
+                if any(known[x]['instrument'] != item['instrument'] for x in deps):
+                    return False
+                return available == max([_utc(item['computed_at']), *[_utc(known[x]['available_at']) for x in deps]])
+            return item['feature'] == 'Price/OHLCV' and _price_closed(item)
+        return check(observation_id, set())
+    except (ValueError, TypeError, KeyError, IndexError, AttributeError, StopIteration, sqlite3.Error, OverflowError):
+        return False

@@ -173,3 +173,14 @@ integridad tiene tres tests nuevos pasando y rechaza la ejecución con código 2
 Binance 2025 se clasifica explícitamente como SECONDARY TEMPORAL CONFIRMATION;
 Kraken Q2-2026 permanece SEALED_CROSS_EXCHANGE_HOLDOUT. No se abrieron en esta
 continuación. El próximo paso único figura en ese freeze.
+
+## Sprint Point-in-Time Price/OHLCV
+
+Partiendo de `f8b967a998f7f7571a6c97f4d44f53dd0966a22a`, se amplió el receipt
+ledger existente con observaciones versionadas y gate causal central. Una prueba
+real price-only pasó, con disponibilidad demostrada a las
+2026-09-30T18:14:57.387351Z. No implica cobertura continua ni acredita 2024.
+Freeze previo intacto; MM READY=0/BLOCKED=10; holdouts sin abrir.
+22 tests focalizados pasan. Contrato, evidencia, limitaciones y siguiente acción
+en [Point-in-Time Contract](docs/POINT_IN_TIME_CONTRACT_2026-09-30.md) y revisión
+`research/edge_discovery/price_point_in_time/REVISION.json`.

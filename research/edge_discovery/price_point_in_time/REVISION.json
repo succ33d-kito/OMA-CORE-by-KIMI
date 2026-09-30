@@ -1,0 +1,35 @@
+{
+  "revision": "PIT_PRICE_RECEIPTS_V1_2026_09_30",
+  "parent_freeze_id": "MECHANICS_V2_1_2026_09_30",
+  "parent_freeze_sha256": "1c88b8bc68ff2d0f529c07e8f5b91d7bda66c7d575a879c47771bbfd0ad8a99e",
+  "parent_unchanged": true,
+  "historical_data_gate": "FAIL",
+  "historical_2024_price_availability": "UNPROVEN",
+  "historical_mechanics_allowed": [],
+  "prospective_price_status": "PROSPECTIVE_CAUSAL_AVAILABILITY_VERIFIED",
+  "eligible_observation_ids": [
+    "fe64337e94be8edd693fa0726891ab4ed4fefdb49c5779279319a77abcf489c5"
+  ],
+  "first_demonstrated_available_at": "2026-09-30T18:14:57.387351+00:00",
+  "scope": "Only individually receipted observations passing the gate; no assertion of uninterrupted coverage after this timestamp",
+  "receipt_clock": "trusted host UTC wall clock; independent decision clock in same domain; not cryptographically attested external time",
+  "regime": "NOT_ACCREDITED; no real 81-bar input window validated",
+  "OpenInterest": "BLOCKED",
+  "AggressorFlow": "BLOCKED",
+  "Positioning": "BLOCKED",
+  "Funding": "BLOCKED",
+  "MM_READY": 0,
+  "MM_BLOCKED": 10,
+  "holdouts_opened": false,
+  "edge_demonstrated": false,
+  "Knowledge_Criterion_promotion": false,
+  "probe_sha256": "62aa9bb37e391aff5e0559a6daf625e4a00202bcd4da7b0bbf97586051c726a4",
+  "code_sha256": {
+    "core/scientific/prospective_receipts.py": "4aad353d255c92b8bec6af089d2b32ed0a717715c1c771f6eca3e09118a8b08d",
+    "core/market_mechanics/binance_live_adapter.py": "02849ccaf0b790a130c09a5a7e4722e2ae42ca799424554f236bad719efc8683",
+    "scripts/probe_price_point_in_time.py": "8b30efb45c422bc48a9774c5d8d92d995a68bd1882b307f032bddadc92f17da4"
+  },
+  "tests": "22 focused/regression tests passed; broad suite not rerun",
+  "next_single_action": "Establish periodic price-only receipt capture to accumulate a contiguous 81-bar H1 window; do not run Mechanics or hypotheses yet.",
+  "post_probe_changes": "Reject raw observations with dependency declarations; refuse report overwrites; handle malformed API errors. Persisted live receipt passed final gate again without new network requests."
+}
