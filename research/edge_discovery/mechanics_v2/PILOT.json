@@ -1,0 +1,13 @@
+{
+  "rows": 761222,
+  "first_id": 1965151407,
+  "last_id": 1965912628,
+  "first_transact_ms": 1704067200038,
+  "last_transact_ms": 1704153599978,
+  "missing_aggregate_ids": 0,
+  "unknown_hours": 0,
+  "source_sha256": "ed5c4326e6ccdec61504bc7d9bed594c4fe0a88f845c7a6ec5b934c97c01cb1c",
+  "version": "mechanics-v2-observations-2",
+  "output_sha256": "63168e3cf2646910ced9e2e14a0804dc8c0a4c2593bdc46a971a284b556e7706",
+  "pilot_script_sha256": "d0fb2e69b2ad53000a81cc0f1d86cc1b53e10f90bafcf21ac8c295a594ce41e4"
+}

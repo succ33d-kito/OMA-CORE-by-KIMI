@@ -1,0 +1,180 @@
+{
+  "edges": [
+    {
+      "available_at": "2026-09-29T21:43:24.967728+00:00",
+      "id": "evidence-claim",
+      "relation": "contradicts",
+      "source": "negative-gate",
+      "target": "stability"
+    },
+    {
+      "available_at": "2026-09-29T21:43:24.967728+00:00",
+      "id": "evidence-source",
+      "relation": "derived_from",
+      "source": "negative-gate",
+      "target": "metrics-report"
+    },
+    {
+      "available_at": "2026-09-29T21:43:24.967728+00:00",
+      "id": "no-promotion:informs:metrics-report",
+      "relation": "informs",
+      "source": "metrics-report",
+      "target": "no-promotion"
+    },
+    {
+      "available_at": "2026-09-29T21:43:24.967728+00:00",
+      "id": "no-promotion:informs:negative-gate",
+      "relation": "informs",
+      "source": "negative-gate",
+      "target": "no-promotion"
+    },
+    {
+      "available_at": "2026-09-29T21:43:24.967728+00:00",
+      "id": "no-promotion:informs:review",
+      "relation": "informs",
+      "source": "review",
+      "target": "no-promotion"
+    },
+    {
+      "available_at": "2026-09-29T21:43:24.967728+00:00",
+      "id": "no-promotion:informs:stability",
+      "relation": "informs",
+      "source": "stability",
+      "target": "no-promotion"
+    },
+    {
+      "available_at": "2026-09-29T21:43:24.967729+00:00",
+      "id": "no-promotion:produces:recorded-result",
+      "relation": "produces",
+      "source": "no-promotion",
+      "target": "recorded-result"
+    },
+    {
+      "available_at": "2026-09-29T21:43:24.967729+00:00",
+      "id": "result-candidate",
+      "relation": "candidate_from",
+      "source": "recorded-result",
+      "target": "lesson-candidate"
+    },
+    {
+      "available_at": "2026-09-29T21:43:24.967728+00:00",
+      "id": "review-claim",
+      "relation": "motivates",
+      "source": "review",
+      "target": "stability"
+    },
+    {
+      "available_at": "2026-09-29T21:43:24.967728+00:00",
+      "id": "source-review",
+      "relation": "observes",
+      "source": "metrics-report",
+      "target": "review"
+    }
+  ],
+  "nodes": [
+    {
+      "available_at": "2026-09-29T21:43:24.967729+00:00",
+      "id": "lesson-candidate",
+      "kind": "knowledge_candidate",
+      "observed_at": "2026-09-29T21:43:24.967729+00:00",
+      "payload": {
+        "claim": "Fragmentation and multiplicity must be controlled; extra significant cells alone do not establish improvement",
+        "promoted": false,
+        "status": "unreviewed"
+      },
+      "provenance": "repo:research/metrics_2024_2025/CONFIRMATORY_2024_2025_REPORT.md#sha256=af9b9a96277a366479f89348619a66fb556b0888ac845a0b1cd0779194a055ca"
+    },
+    {
+      "available_at": "2026-09-29T21:43:24.967728+00:00",
+      "id": "metrics-report",
+      "kind": "source",
+      "observed_at": "2026-09-29T21:43:24.967728+00:00",
+      "payload": {
+        "sha256": "af9b9a96277a366479f89348619a66fb556b0888ac845a0b1cd0779194a055ca"
+      },
+      "provenance": "repo:research/metrics_2024_2025/CONFIRMATORY_2024_2025_REPORT.md#sha256=af9b9a96277a366479f89348619a66fb556b0888ac845a0b1cd0779194a055ca"
+    },
+    {
+      "available_at": "2026-09-29T21:43:24.967728+00:00",
+      "id": "negative-gate",
+      "kind": "evidence",
+      "observed_at": "2026-09-29T21:43:24.967728+00:00",
+      "payload": {
+        "direction": "contradicts",
+        "gate": "FAIL",
+        "scope": "2024 versus 2025; no causal identification"
+      },
+      "provenance": "repo:research/metrics_2024_2025/CONFIRMATORY_2024_2025_REPORT.md#sha256=af9b9a96277a366479f89348619a66fb556b0888ac845a0b1cd0779194a055ca"
+    },
+    {
+      "available_at": "2026-09-29T21:43:24.967728+00:00",
+      "id": "no-promotion",
+      "kind": "decision",
+      "observed_at": "2026-09-29T21:43:24.967728+00:00",
+      "payload": {
+        "action": "KEEP_RESEARCH_ONLY",
+        "alternative_actions": [
+          "PROMOTE"
+        ],
+        "available_at": "2026-09-29T21:43:24.967728+00:00",
+        "decided_at": "2026-09-29T21:43:24.967728+00:00",
+        "decision_id": "no-promotion",
+        "event_id": "review",
+        "evidence_ids": [
+          "negative-gate"
+        ],
+        "expected_outcome": "No Knowledge/Criterion/trading promotion from this gate",
+        "hypothesis_id": "stability",
+        "invalidation_condition": "New independent evidence requires its own frozen protocol",
+        "market_state_id": null,
+        "market_state_snapshot": null,
+        "missing_information": [
+          "eligible prospective live feed"
+        ],
+        "rationale": "Retrospective documentation of failed gate",
+        "regime_snapshot": null,
+        "risk_constraints": [],
+        "source_ids": [
+          "metrics-report"
+        ]
+      },
+      "provenance": "repo:research/metrics_2024_2025/CONFIRMATORY_2024_2025_REPORT.md#sha256=af9b9a96277a366479f89348619a66fb556b0888ac845a0b1cd0779194a055ca"
+    },
+    {
+      "available_at": "2026-09-29T21:43:24.967729+00:00",
+      "id": "recorded-result",
+      "kind": "outcome",
+      "observed_at": "2026-09-29T21:43:24.967729+00:00",
+      "payload": {
+        "decision_id": "no-promotion",
+        "facts": [
+          "Negative result retained in graph; no promotion action exists in this component"
+        ],
+        "observed_at": "2026-09-29T21:43:24.967729+00:00",
+        "outcome_id": "recorded-result"
+      },
+      "provenance": "repo:research/metrics_2024_2025/CONFIRMATORY_2024_2025_REPORT.md#sha256=af9b9a96277a366479f89348619a66fb556b0888ac845a0b1cd0779194a055ca"
+    },
+    {
+      "available_at": "2026-09-29T21:43:24.967728+00:00",
+      "id": "review",
+      "kind": "event",
+      "observed_at": "2026-09-29T21:43:24.967728+00:00",
+      "payload": {
+        "mode": "retrospective_review"
+      },
+      "provenance": "repo:research/metrics_2024_2025/CONFIRMATORY_2024_2025_REPORT.md#sha256=af9b9a96277a366479f89348619a66fb556b0888ac845a0b1cd0779194a055ca"
+    },
+    {
+      "available_at": "2026-09-29T21:43:24.967728+00:00",
+      "id": "stability",
+      "kind": "hypothesis",
+      "observed_at": "2026-09-29T21:43:24.967728+00:00",
+      "payload": {
+        "claim": "derivatives improve incremental stability",
+        "status": "historical_rejected_claim"
+      },
+      "provenance": "repo:research/metrics_2024_2025/CONFIRMATORY_2024_2025_REPORT.md#sha256=af9b9a96277a366479f89348619a66fb556b0888ac845a0b1cd0779194a055ca"
+    }
+  ]
+}

@@ -310,6 +310,10 @@ class ScientificStore:
     # ── Knowledge CRUD ───────────────────────────────────────────
 
     def create_knowledge(self, knowledge: Knowledge) -> Knowledge:
+        from core.scientific.learning_integrity import require_promotion_authority, quarantine_candidate
+        if knowledge.status == KnowledgeStatus.VALIDATED:
+            require_promotion_authority()
+        quarantine_candidate(knowledge)
         data = knowledge.to_dict()
         with self._conn() as conn:
             conn.execute(
@@ -358,6 +362,10 @@ class ScientificStore:
         return [Knowledge.from_dict(dict(r)) for r in rows]
 
     def update_knowledge(self, knowledge: Knowledge) -> None:
+        from core.scientific.learning_integrity import require_promotion_authority, quarantine_candidate
+        if knowledge.status == KnowledgeStatus.VALIDATED:
+            require_promotion_authority()
+        quarantine_candidate(knowledge)
         data = knowledge.to_dict()
         with self._conn() as conn:
             conn.execute(
@@ -383,6 +391,9 @@ class ScientificStore:
     # ── CriterionDelta CRUD ──────────────────────────────────────
 
     def create_criterion_delta(self, delta: CriterionDelta) -> CriterionDelta:
+        from core.scientific.learning_integrity import require_promotion_authority
+        if delta.status == DeltaStatus.APPLIED:
+            require_promotion_authority()
         data = delta.to_dict()
         with self._conn() as conn:
             conn.execute(
@@ -427,6 +438,9 @@ class ScientificStore:
         return [CriterionDelta.from_dict(dict(r)) for r in rows]
 
     def update_criterion_delta(self, delta: CriterionDelta) -> None:
+        from core.scientific.learning_integrity import require_promotion_authority
+        if delta.status == DeltaStatus.APPLIED:
+            require_promotion_authority()
         data = delta.to_dict()
         with self._conn() as conn:
             conn.execute(

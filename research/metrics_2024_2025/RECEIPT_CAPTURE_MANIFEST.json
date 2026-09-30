@@ -1,0 +1,15 @@
+{
+  "sprint": "provider-neutral-prospective-receipt-capture",
+  "capture_status": "not_active_http_451",
+  "real_prospective_rows": 0,
+  "frozen_protocol_sha256": "012a80dcfd4566c7906c61a03f2c5ce3991c31481d2bdb4d87e6855d6005bc46",
+  "files_sha256": {
+    "core/scientific/prospective_receipts.py": "1c197cfbc665e8ede2061da9bac19a460ecfbc76a46aeed8d6fc59665212ce66",
+    "core/market_mechanics/binance_live_adapter.py": "8293202948f06ec0a9bedfe7eb4eda520e08e08943e65dec5d33a24a0a61c4fe",
+    "scripts/prospective_receipts.py": "0aec09a469aa58909ae591a0ac94bdba2062894335feffb5ae2cbac16f0bb259",
+    "scripts/binance_research_collect.py": "c8f10df1f79e0e9c68dd70536ce07685fd58b37d120166f27ab4972ebc3c380e",
+    "docs/ADR-OMA-V2-009-PROSPECTIVE-RECEIPTS.md": "93b7fb732ad87a936a240227cbef48304cb68bbfdddae77dae25093812055c01",
+    "research/metrics_2024_2025/PROSPECTIVE_H1_PREREGISTRATION.json": "012a80dcfd4566c7906c61a03f2c5ce3991c31481d2bdb4d87e6855d6005bc46"
+  },
+  "test_summary": "1009 passed, 12 skipped, 3 warnings in 71.58s"
+}

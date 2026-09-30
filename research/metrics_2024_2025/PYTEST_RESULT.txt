@@ -1,0 +1,2 @@
+Full repository suite: python -m pytest -q
+996 passed, 12 skipped, 3 warnings in 91.95s (0:01:31)

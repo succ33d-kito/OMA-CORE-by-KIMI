@@ -1,0 +1,64 @@
+{
+  "status": "frozen_design_not_yet_evaluated",
+  "origin": "mechanistic hypothesis proposed after inspecting 2024-2025; future independent test required",
+  "registered_utc": "2026-09-29T20:54:01Z",
+  "holdout_start_utc": "2026-10-01T00:00:00Z",
+  "minimum_calendar_hours": 2160,
+  "source": "BTCUSDT USD-M Futures H1 OHLCV and timestamped Binance USD-M public metrics, recorded with provenance and SHA-256 before evaluation",
+  "decision": "5 minutes after UTC hour boundary following the last closed H1 bar; both bar and metrics must have recorded available_at <= decision; metric source timestamp < hour boundary and age <=60 minutes; no imputation",
+  "baseline": "Regime er20-vol20-vs-prior60-v1 structure=range, all directions and volatility levels",
+  "target": "baseline AND OI rising versus the immediately prior consecutive valid hourly metric AND taker buy/sell ratio >1",
+  "comparator": "baseline AND valid consecutive OI change and nonzero valid taker ratio AND NOT target",
+  "primary_horizon_hours": 4,
+  "family_horizons_hours": [
+    1,
+    4,
+    12,
+    24,
+    48
+  ],
+  "outcome": "BTCUSDT futures first full UTC hour open after the 5-minute decision window to close after h full hours; at bar index i, entry i+2 open, exit i+h+1 close",
+  "primary_null": "target conditional mean minus comparator conditional mean <= 0",
+  "minimum_n_each_arm_each_horizon": 200,
+  "inference": "joint calendar moving block max-t simultaneous 95% confidence intervals across five horizons, 168-hour blocks, 2000 resamples, seed 1729",
+  "pass_research_gate": "4h simultaneous lower bound >0, target 4h mean after fixed 0.001 round-trip cost >0, minimum N and calendar duration all satisfied",
+  "failure": "any prerequisite absent or primary research gate fails; no retuning, no promotion",
+  "secondary_horizons": "reported with same simultaneous intervals; no secondary horizon can rescue failed primary",
+  "promotion": "research gate only; Criterion still requires independent replication, execution-cost/funding/slippage, risk and prospective governance gates",
+  "exposure_counts_2024_2025": {
+    "target_2024": 37,
+    "target_2025": 31,
+    "comparator_2024": 131,
+    "comparator_2025": 102
+  },
+  "preprospective_feasibility_record": "prior trend-up candidate rejected on exposure counts only, before looking at conditional returns; see PROSPECTIVE_H1_FEASIBILITY_REJECTED.json",
+  "historical_exposure_counts_only": {
+    "target_2024": 1318,
+    "target_2025": 1153,
+    "comparator_2024": 3954,
+    "comparator_2025": 4110
+  },
+  "availability_grace_minutes": 5,
+  "required_input_columns": {
+    "bars": [
+      "time",
+      "available_at",
+      "open",
+      "high",
+      "low",
+      "close",
+      "volume"
+    ],
+    "metrics": [
+      "timestamp",
+      "available_at",
+      "sum_open_interest",
+      "sum_open_interest_value",
+      "count_toptrader_long_short_ratio",
+      "sum_toptrader_long_short_ratio",
+      "count_long_short_ratio",
+      "sum_taker_long_short_vol_ratio"
+    ]
+  },
+  "availability_note": "Historical Binance Vision rows lack independently logged receipt times and cannot be substituted for this prospective feed"
+}

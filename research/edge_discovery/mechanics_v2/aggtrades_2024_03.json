@@ -1,0 +1,17 @@
+{
+  "rows": 66512993,
+  "first_id": 2041763940,
+  "last_id": 2108276932,
+  "first_transact_ms": 1709251200019,
+  "last_transact_ms": 1711929599791,
+  "missing_aggregate_ids": 0,
+  "unknown_hours": 0,
+  "source_sha256": "8ceb6fd06fc3bff87870e7adc362ca0e2f463f57a04599d2506e40320921401d",
+  "version": "mechanics-v2-observations-2",
+  "output_sha256": "bbbac6126adfad67c667232694a04d2b3a109e0a0d1ff73af8ab93b8dd381a7d",
+  "migration": {
+    "from_version": "mechanics-v2-observations-1",
+    "previous_output_sha256": "806569d772e5e0f260dc1d74d65fa9a32b6d068a83c113ac5bd9c6174bf0a83b",
+    "change": "ID span diagnostic only; remove unsupported individual trade estimators"
+  }
+}

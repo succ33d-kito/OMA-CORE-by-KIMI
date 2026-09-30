@@ -1,0 +1,233 @@
+{
+  "note": "Inherited candidate input inventory only. Hashing does not validate scientific results or release a holdout. Large/generated inputs are not committed. 2024 fixtures remain for offline tests. Primary mechanics-v2 inputs have their own manifest.",
+  "artifacts": [
+    {
+      "path": "research/edge_discovery/BLOCK_BOOTSTRAP_V1_2025_2026.csv",
+      "bytes": 4406,
+      "sha256": "858302c3ff53396bf7c66d0610d9dfd7f0bbb24260a2e9496221200aea23bc40",
+      "role": "inherited_artifact_not_reanalysed_this_sprint"
+    },
+    {
+      "path": "research/edge_discovery/kraken_2026_participation_ablation.csv",
+      "bytes": 6884,
+      "sha256": "f1b7512ba6046c46c31f7f4fafbe05bed7ee5bde2cd17783066ae2d8264fb283",
+      "role": "inherited_artifact_not_reanalysed_this_sprint"
+    },
+    {
+      "path": "research/edge_discovery/kraken_2026_regime_v1_cells.csv",
+      "bytes": 2685,
+      "sha256": "779fdfc13b67ed656bfd4587b4afd81717d5bdef2e0191ab5c74cf5e51921738",
+      "role": "inherited_artifact_not_reanalysed_this_sprint"
+    },
+    {
+      "path": "research/edge_discovery/REGIME_PARTICIPATION_QUARTER_STABILITY.csv",
+      "bytes": 2195,
+      "sha256": "1a756af21ec0f12a7b3613bd6a4576e346950d3e5cacb2f44a9be3178d51bede",
+      "role": "inherited_artifact_not_reanalysed_this_sprint"
+    },
+    {
+      "path": "research/edge_discovery/REGIME_PARTICIPATION_QUARTERLY_2025_2026.csv",
+      "bytes": 35253,
+      "sha256": "4db0a62a24046beb5323831792e0a7eef85a75b96adf0b6a607b29334725ca41",
+      "role": "inherited_artifact_not_reanalysed_this_sprint"
+    },
+    {
+      "path": "research/edge_discovery/REGIME_V2_ABLATION_2025_2026.csv",
+      "bytes": 700,
+      "sha256": "44357963d6396abdcf746a677f10dc02d6411ba7668f07c713926992f8585cf2",
+      "role": "inherited_artifact_not_reanalysed_this_sprint"
+    },
+    {
+      "path": "research/edge_discovery/TEMPORAL_CONTEXT_ABLATION_2025_2026.csv",
+      "bytes": 618,
+      "sha256": "5a843120c52a5e93c875a52ed3ba72a7174defadc71c99680774f12c0856d43f",
+      "role": "inherited_artifact_not_reanalysed_this_sprint"
+    },
+    {
+      "path": "research/metrics_2024_2025/ABLATION_2024_FROZEN.csv",
+      "bytes": 323738,
+      "sha256": "b75187fcefdfe4b9e70bab29ac6f5a5f04811a6dcf47024ef73c84e315ee39cb",
+      "role": "inherited_artifact_not_reanalysed_this_sprint"
+    },
+    {
+      "path": "research/metrics_2024_2025/ABLATION_2025_EXPLORATORY.csv",
+      "bytes": 286506,
+      "sha256": "13269a3932759fbeeee95a1e17226de04d86bf1d2bd4beb593d07c94733b8f49",
+      "role": "inherited_artifact_not_reanalysed_this_sprint"
+    },
+    {
+      "path": "research/metrics_2024_2025/ABLATION_2025_USDM_FROZEN.csv",
+      "bytes": 278358,
+      "sha256": "862b5c43dc54ef93194be72c6ec41cecd80dab468614a55e537c5e66d59bd615",
+      "role": "inherited_artifact_not_reanalysed_this_sprint"
+    },
+    {
+      "path": "research/metrics_2024_2025/ABLATION_STABILITY_SUMMARY.csv",
+      "bytes": 945,
+      "sha256": "b1e0d73394c8ca1a900a8637c68a163f97832b090259e3c398146df1bf451334",
+      "role": "inherited_artifact_not_reanalysed_this_sprint"
+    },
+    {
+      "path": "research/metrics_2024_2025/BTCUSDT_1h_Cleaned_source.csv",
+      "bytes": 1025268,
+      "sha256": "201a3b15d50a791cb5be2b755107c8303906c8fc3ca6b64e8377c9fc73ba016b",
+      "role": "inherited_artifact_not_reanalysed_this_sprint"
+    },
+    {
+      "path": "research/metrics_2024_2025/BTCUSDT_H1_2024_joined.csv.gz",
+      "bytes": 819410,
+      "sha256": "0974d37085d2d2e25cd9b07d90d058beb9d0594ecf214ad029826610f7213cf4",
+      "role": "inherited_artifact_not_reanalysed_this_sprint"
+    },
+    {
+      "path": "research/metrics_2024_2025/BTCUSDT_H1_2025_joined.csv.gz",
+      "bytes": 817373,
+      "sha256": "7408b9cb9b2711f743f3e56c28dd5cda6007e307df4f4d6c5ab302367ddb7075",
+      "role": "inherited_artifact_not_reanalysed_this_sprint"
+    },
+    {
+      "path": "research/metrics_2024_2025/BTCUSDT_metrics_5m.csv.gz",
+      "bytes": 21035809,
+      "sha256": "d8f1d66e23c66594bae40cd60d1782e7b8b74738c7694306a24d5f44393e0017",
+      "role": "inherited_artifact_not_reanalysed_this_sprint"
+    },
+    {
+      "path": "research/metrics_2024_2025/BTCUSDT_metrics_H1_2024_2025.csv.gz",
+      "bytes": 690472,
+      "sha256": "a12ae424865fa4f8041f09c9375a46afedfcfa3d7076a5b237d777e4d5d0feb0",
+      "role": "inherited_artifact_not_reanalysed_this_sprint"
+    },
+    {
+      "path": "research/metrics_2024_2025/BTCUSDT_USDM_H1_2024.csv",
+      "bytes": 574362,
+      "sha256": "1da0f441f4a62e84fd5bc2b6b08f82f1d909077235ff591b82475741861d2e27",
+      "role": "inherited_artifact_not_reanalysed_this_sprint"
+    },
+    {
+      "path": "research/metrics_2024_2025/BTCUSDT_USDM_H1_2025.csv",
+      "bytes": 591289,
+      "sha256": "808c152f4d74f07fc94d2d736fa1453fdd9ed967533d95454c5ac2e48e87400f",
+      "role": "inherited_artifact_not_reanalysed_this_sprint"
+    },
+    {
+      "path": "research/metrics_2024_2025/FLIP_ATTRIBUTION_DESCRIPTIVE.csv",
+      "bytes": 237,
+      "sha256": "9c198e9eb29b705ac095e85b90f1ced10fd60d8d1bd3f5bd29cfeb717f08811d",
+      "role": "inherited_artifact_not_reanalysed_this_sprint"
+    },
+    {
+      "path": "research/metrics_2024_2025/official_2024/BTCUSDT-1h-2024-01.zip",
+      "bytes": 38890,
+      "sha256": "bf673f3d10804a951e8bac56dd2473486f113025971d43ebe5258ec40f9bfeb3",
+      "role": "inherited_artifact_not_reanalysed_this_sprint"
+    },
+    {
+      "path": "research/metrics_2024_2025/official_2024/BTCUSDT-1h-2024-02.zip",
+      "bytes": 36374,
+      "sha256": "655ff5ac0fc570956756944c7afef4895c9bd149342f1e437de97292cbd1fe22",
+      "role": "inherited_artifact_not_reanalysed_this_sprint"
+    },
+    {
+      "path": "research/metrics_2024_2025/official_2024/BTCUSDT-1h-2024-03.zip",
+      "bytes": 39301,
+      "sha256": "8138642b757ddf5a42207130277be4569afb4c581a0a1817be9f5f35a4415498",
+      "role": "inherited_artifact_not_reanalysed_this_sprint"
+    },
+    {
+      "path": "research/metrics_2024_2025/official_2024/BTCUSDT-1h-2024-04.zip",
+      "bytes": 37804,
+      "sha256": "4bf3ca3574e0075c1b79f5b22c4253e26f6260f3621943205e3a8016c4c12318",
+      "role": "inherited_artifact_not_reanalysed_this_sprint"
+    },
+    {
+      "path": "research/metrics_2024_2025/official_2024/BTCUSDT-1h-2024-05.zip",
+      "bytes": 38427,
+      "sha256": "1d607e3b26e6886ba742477bc97687f0b86c4c26ac564325dc5f1667e0362d35",
+      "role": "inherited_artifact_not_reanalysed_this_sprint"
+    },
+    {
+      "path": "research/metrics_2024_2025/official_2024/BTCUSDT-1h-2024-06.zip",
+      "bytes": 36794,
+      "sha256": "7dba8642e56641fca2c7f3f363050ae88bf0d6c87d28e14b747fbd3267d4d3a8",
+      "role": "inherited_artifact_not_reanalysed_this_sprint"
+    },
+    {
+      "path": "research/metrics_2024_2025/official_2024/BTCUSDT-1h-2024-07.zip",
+      "bytes": 38700,
+      "sha256": "920aacb84b2745ee8f31806a753cdc5b2d672e6814d9c50c0bf524ad45eb5611",
+      "role": "inherited_artifact_not_reanalysed_this_sprint"
+    },
+    {
+      "path": "research/metrics_2024_2025/official_2024/BTCUSDT-1h-2024-08.zip",
+      "bytes": 38718,
+      "sha256": "8d8465eb4c8a4fd05ebc0126e4c14a217edb2039441546bf095229e975268de6",
+      "role": "inherited_artifact_not_reanalysed_this_sprint"
+    },
+    {
+      "path": "research/metrics_2024_2025/official_2024/BTCUSDT-1h-2024-09.zip",
+      "bytes": 37266,
+      "sha256": "0a8118b3601f18ddad04a8afcf887fdc01661f66824a0ce49e0419be1f97f907",
+      "role": "inherited_artifact_not_reanalysed_this_sprint"
+    },
+    {
+      "path": "research/metrics_2024_2025/official_2024/BTCUSDT-1h-2024-10.zip",
+      "bytes": 38285,
+      "sha256": "e3dcb9fe9d70fea19dfbdc5294044da69b9061c6f7411e99468825fac1ce8d61",
+      "role": "inherited_artifact_not_reanalysed_this_sprint"
+    },
+    {
+      "path": "research/metrics_2024_2025/official_2024/BTCUSDT-1h-2024-11.zip",
+      "bytes": 37741,
+      "sha256": "0675e55056748489b8750cf6088a666f65dd4fd932d7ca5bd30491f5996b5f3d",
+      "role": "inherited_artifact_not_reanalysed_this_sprint"
+    },
+    {
+      "path": "research/metrics_2024_2025/official_2024/BTCUSDT-1h-2024-12.zip",
+      "bytes": 38950,
+      "sha256": "b072f3147b3e390c81dcbf35830a12ff7d53a73236aa44a9eea78199502529cb",
+      "role": "inherited_artifact_not_reanalysed_this_sprint"
+    },
+    {
+      "path": "research/metrics_2024_2025/PAIRED_2024_2025_N50.csv",
+      "bytes": 305427,
+      "sha256": "9dda4e6adadca7876c986c30c38796dd0c155fbcecdc0edf26d4473bb0a16440",
+      "role": "inherited_artifact_not_reanalysed_this_sprint"
+    },
+    {
+      "path": "research/metrics_2024_2025/recomputed_2025/ABLATION_2025_EXPLORATORY.csv",
+      "bytes": 291408,
+      "sha256": "50dbc6b50a1c327f9ef8fbf9597b42144517adde5246ee3e712409fdeb780491",
+      "role": "inherited_artifact_not_reanalysed_this_sprint"
+    },
+    {
+      "path": "research/metrics_2024_2025/recomputed_2025/BTCUSDT_H1_2025_joined.csv.gz",
+      "bytes": 817049,
+      "sha256": "8c9fe423a5cd418d6cf3b7952c74016f2b05efb9a71a2dc804ce93ed383671c8",
+      "role": "inherited_artifact_not_reanalysed_this_sprint"
+    },
+    {
+      "path": "research/metrics_2024_2025/source_train-00000-of-00001.parquet",
+      "bytes": 30661040,
+      "sha256": "db5959a0e38d8155ee5931a5a22fb04b6ed3af853faba01fe498f65d17ea37ce",
+      "role": "inherited_artifact_not_reanalysed_this_sprint"
+    },
+    {
+      "path": "research/mm_h1_btc_2025.json",
+      "bytes": 2913495,
+      "sha256": "b864bde9f96f3ec14f187d6cce39a866a2f9c60c0dc5208768658a24316ad277",
+      "role": "inherited_output_not_reanalysed_this_sprint_excluded_from_Git"
+    },
+    {
+      "path": "research/mm_h1_smoke.json",
+      "bytes": 202595,
+      "sha256": "505ed2744f4eccf02bea96c64f2666ebe43603267b91189b6d113276fb7b8c6d",
+      "role": "inherited_output_not_reanalysed_this_sprint_excluded_from_Git"
+    },
+    {
+      "path": "research/metrics_2024_2025/BTCUSDT_USDM_H1_2025.json",
+      "bytes": 1027726,
+      "sha256": "5da49152b09155f0522df8277d7523b15e0bdfcf36e2382baad1867542805c5e",
+      "role": "inherited_output_not_reanalysed_this_sprint_excluded_from_Git"
+    }
+  ]
+}

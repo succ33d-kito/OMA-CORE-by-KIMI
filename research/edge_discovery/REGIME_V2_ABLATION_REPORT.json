@@ -1,0 +1,14 @@
+{
+  "verdict": "context_v2_not_promoted",
+  "reason": "No contextual axis demonstrates a sufficiently large, stable improvement over Regime v1 across already-inspected 2025/2026 data.",
+  "v1_sign_persistence": 0.5,
+  "participation_sign_persistence": 0.5454545454545454,
+  "best_quarterly_sign_persistence": 0.8333333333333334,
+  "anti_overfit": [
+    "2025 and 2026 are now development/exploratory evidence",
+    "no threshold retuning from outcome labels",
+    "no Criterion promotion",
+    "2024 raw data required for reproducible 3-period gate"
+  ],
+  "next_gate": "Require 2024 raw recomputation and/or future unseen data before promotion."
+}

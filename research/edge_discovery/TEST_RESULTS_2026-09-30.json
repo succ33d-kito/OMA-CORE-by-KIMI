@@ -1,0 +1,22 @@
+{
+  "date": "2026-09-30",
+  "command": "python -m pytest tests -q -k \"not bundled_case_is_reproducible_and_retrospective\" --tb=short",
+  "local": {
+    "passed": 1055,
+    "skipped": 15,
+    "deselected": 1,
+    "warnings": 3
+  },
+  "git_index_export": {
+    "passed": 1055,
+    "skipped": 15,
+    "deselected": 1,
+    "warnings": 3
+  },
+  "skip_reasons": [
+    "12 unavailable live Binance tests",
+    "3 POSIX installer tests on Windows"
+  ],
+  "excluded": "retrospective graph case reads historical outcomes",
+  "subsequent_changes": "Pilot CLI and exporter executed successfully against existing 2024 artifacts; no additional experiment."
+}

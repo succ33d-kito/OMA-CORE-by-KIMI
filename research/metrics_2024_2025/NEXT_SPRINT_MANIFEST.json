@@ -1,0 +1,24 @@
+{
+  "sprint": "calendar-inference-and-prospective-preregistration",
+  "historical_gate": "failed_unchanged",
+  "prospective_data_evaluated": false,
+  "protocol_sha256": "012a80dcfd4566c7906c61a03f2c5ce3991c31481d2bdb4d87e6855d6005bc46",
+  "files_sha256": {
+    "core/scientific/calendar_block_inference.py": "af50a98718e0f1a47f19ff39801f5039c71da548e913785fd26105dcaadb4d18",
+    "scripts/prospective_oi_taker_gate.py": "5cf4c491f738b83da6c142fa4e069d5ee5cd58d0ef7284e14e3aa15482355941",
+    "research/metrics_2024_2025/PROSPECTIVE_H1_PREREGISTRATION.json": "012a80dcfd4566c7906c61a03f2c5ce3991c31481d2bdb4d87e6855d6005bc46",
+    "research/metrics_2024_2025/PROSPECTIVE_H1_FEASIBILITY_REJECTED.json": "47d84d607cd3234e7c00b7b5cc3240457e015c02da9259bbd94aad08ed4ee5e5",
+    "docs/ADR-OMA-V2-008-PROSPECTIVE-CALENDAR-INFERENCE.md": "e696f0cf37a056e75f2d65f57e82fd3a4dfd459569c1a0451877bbf4ee6ad6b5"
+  },
+  "tests": {
+    "passed": 1003,
+    "skipped": 12,
+    "warnings": 3
+  },
+  "synthetic_check": {
+    "eligible_decisions": 3371,
+    "target": 1263,
+    "comparator": 2104,
+    "result": "functional_check_only_no_market_evidence"
+  }
+}

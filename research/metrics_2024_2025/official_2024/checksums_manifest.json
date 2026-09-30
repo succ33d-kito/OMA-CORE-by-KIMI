@@ -1,0 +1,86 @@
+[
+  {
+    "month": 1,
+    "status": "verified",
+    "zip_sha256": "bf673f3d10804a951e8bac56dd2473486f113025971d43ebe5258ec40f9bfeb3",
+    "csv_sha256": "ac2f326bd322c623e6060233597646ba40ce609d86dc4faeabe2196dc36f20c0",
+    "rows": 744
+  },
+  {
+    "month": 2,
+    "status": "verified",
+    "zip_sha256": "655ff5ac0fc570956756944c7afef4895c9bd149342f1e437de97292cbd1fe22",
+    "csv_sha256": "0d46b5827c2e9bc44ad7fd14d8f57e019f8077a9375f866182733a83dc580eea",
+    "rows": 696
+  },
+  {
+    "month": 3,
+    "status": "verified",
+    "zip_sha256": "8138642b757ddf5a42207130277be4569afb4c581a0a1817be9f5f35a4415498",
+    "csv_sha256": "6620f497e02028f486803376963c5d7b64cb8cf0c14160657bf3e856d9fcec97",
+    "rows": 744
+  },
+  {
+    "month": 4,
+    "status": "verified",
+    "zip_sha256": "4bf3ca3574e0075c1b79f5b22c4253e26f6260f3621943205e3a8016c4c12318",
+    "csv_sha256": "000079d12f28b8522511c8ef826fea83545e736e33b3aaaf69fd62599922daf3",
+    "rows": 720
+  },
+  {
+    "month": 5,
+    "status": "verified",
+    "zip_sha256": "1d607e3b26e6886ba742477bc97687f0b86c4c26ac564325dc5f1667e0362d35",
+    "csv_sha256": "0b75d764abe13630b8569980973aa3c8c15a7198bbaab75997ad11cd0144eb61",
+    "rows": 744
+  },
+  {
+    "month": 6,
+    "status": "verified",
+    "zip_sha256": "7dba8642e56641fca2c7f3f363050ae88bf0d6c87d28e14b747fbd3267d4d3a8",
+    "csv_sha256": "afd6f59af19f2875c9e60eab6602506c71e5b30aba0f849f714bef69ecd11ca2",
+    "rows": 720
+  },
+  {
+    "month": 7,
+    "status": "verified",
+    "zip_sha256": "920aacb84b2745ee8f31806a753cdc5b2d672e6814d9c50c0bf524ad45eb5611",
+    "csv_sha256": "adc480fd9a76b074ac475da9eec0e0045364b1a5811f41a3cea3abb75638ac3e",
+    "rows": 744
+  },
+  {
+    "month": 8,
+    "status": "verified",
+    "zip_sha256": "8d8465eb4c8a4fd05ebc0126e4c14a217edb2039441546bf095229e975268de6",
+    "csv_sha256": "7f29c7b3814ca90cc77d5921783da8187e0c8790b7b346b7db3de0fadec74483",
+    "rows": 744
+  },
+  {
+    "month": 9,
+    "status": "verified",
+    "zip_sha256": "0a8118b3601f18ddad04a8afcf887fdc01661f66824a0ce49e0419be1f97f907",
+    "csv_sha256": "8293493f536ef822445ea6df56a5660fa57df90d8afd6ea448d0e92cf709e2c4",
+    "rows": 720
+  },
+  {
+    "month": 10,
+    "status": "verified",
+    "zip_sha256": "e3dcb9fe9d70fea19dfbdc5294044da69b9061c6f7411e99468825fac1ce8d61",
+    "csv_sha256": "aacb830ffca8d3e619d4cf670a17406342a99ea96b5da6ccd57b69d3ad5c948a",
+    "rows": 744
+  },
+  {
+    "month": 11,
+    "status": "verified",
+    "zip_sha256": "0675e55056748489b8750cf6088a666f65dd4fd932d7ca5bd30491f5996b5f3d",
+    "csv_sha256": "6ea2b487e7bad8d6ad7c0c05aaedb90bfbc2239b2abe8726b3d658f1e5eb2e7d",
+    "rows": 720
+  },
+  {
+    "month": 12,
+    "status": "verified",
+    "zip_sha256": "b072f3147b3e390c81dcbf35830a12ff7d53a73236aa44a9eea78199502529cb",
+    "csv_sha256": "7897271fb06851094755160aa1712767a482ed75346fa4dd7e4d2452f9bacc73",
+    "rows": 744
+  }
+]

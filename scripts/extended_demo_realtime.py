@@ -41,6 +41,12 @@ from core.execution.gap_risk import GapRiskEngine
 from core.monitoring.health import HealthMonitor, HealthStatus
 from core.monitoring.telemetry import TelemetryRecorder, GuardAuditRecorder, ExecutionAuditRecorder
 from core.monitoring.failure_classifier import FailureClassifier, FailureCategory, FailureSeverity
+from core.decision_domain import DecisionJournal
+from core.decision_domain.paper_adapter import record_paper_signal, paper_trade_outcome, paper_block_outcome
+from core.execution.paper_checkpoint import snapshot as snapshot_paper, restore as restore_paper
+from core.market_mechanics import build_market_state
+from core.scientific.probability_calibration import ForecastJournal
+from core.scientific.price_forecast import issue_reference, resolve_from_market_state
 
 OUT_DIR = "_extended_demo"
 STATE_FILE = os.path.join(OUT_DIR, "run_state.json")
@@ -104,10 +110,14 @@ class DemoHarness:
         self.telemetry = TelemetryRecorder(OUT_DIR)
         self.guard_audit = GuardAuditRecorder(OUT_DIR)
         self.execution_audit = ExecutionAuditRecorder(OUT_DIR)
+        os.makedirs(OUT_DIR, exist_ok=True)
+        self.decision_journal = DecisionJournal(os.path.join(OUT_DIR, "decisions.db"))
+        self.forecast_journal = ForecastJournal(os.path.join(OUT_DIR, "decisions.db"))
         self.failures = FailureClassifier(OUT_DIR)
 
         # State
         self._agent_ohlcv: dict[str, list[dict]] = {}
+        self._market_states = {}
         self._last_prices: dict[str, float] = {}
         self._start_time: Optional[datetime] = None
         self._cycle_id = 0
@@ -140,12 +150,24 @@ class DemoHarness:
     def _load_state(self) -> bool:
         if not self.resume_mode:
             return False
-        if not os.path.exists(STATE_FILE):
+        state = self.decision_journal.load_paper_state()
+        if state is None and not os.path.exists(STATE_FILE):
+            self.decision_journal.reconcile_uncommitted_paper_decisions(set())
             print("[RESUME] No saved state found. Starting fresh.")
             return False
         try:
-            with open(STATE_FILE) as f:
-                state = json.load(f)
+            migrated = state is None
+            if migrated:
+                with open(STATE_FILE) as f:
+                    state = json.load(f)
+            # A counters-only legacy snapshot cannot safely resume a portfolio.
+            if "paper_checkpoint" not in state:
+                raise ValueError("legacy state has no positions/risk checkpoint; archive it and start a new demo")
+            restore_paper(self.engine, state["paper_checkpoint"])
+            self.council._track_record = state.get("council_track_record", {})
+            from collections import defaultdict
+            self.perf_memory._agent_records = defaultdict(list, state.get("performance_agent_records", {}))
+            self.perf_memory._trades = self.engine.closed_trades.copy()
             self._cycle_id = state.get("cycle_id", 0)
             self._events_processed = state.get("events_processed", 0)
             self._signals_generated = state.get("signals_generated", 0)
@@ -161,12 +183,16 @@ class DemoHarness:
                 print(f"[RESUME] Restored state. Previously ran {elapsed.days}d {elapsed.seconds//3600}h")
             print(f"[RESUME] Cycle {self._cycle_id}, {self._events_processed} events, "
                   f"{self._trades_opened_total} trades")
+            if migrated:
+                self.decision_journal.commit_paper_state(state)
+            active = {t.signal.metadata["decision_record_id"] for t in self.engine.positions
+                      if t.signal.metadata.get("decision_record_id")}
+            self.decision_journal.reconcile_uncommitted_paper_decisions(active)
             return True
         except Exception as e:
-            print(f"[RESUME] Failed to load state: {e}. Starting fresh.")
-            return False
+            raise RuntimeError(f"[RESUME] Unsafe state: {e}") from e
 
-    def _save_state(self):
+    def _save_state(self, outcomes=()):
         state = {
             "cycle_id": self._cycle_id,
             "events_processed": self._events_processed,
@@ -179,9 +205,18 @@ class DemoHarness:
             "execution_blocks": self._execution_blocks,
             "start_time": self._start_time.isoformat() if self._start_time else None,
             "last_updated": datetime.now(timezone.utc).isoformat(),
+            "paper_checkpoint": snapshot_paper(self.engine),
+            "council_track_record": self.council._track_record,
+            "performance_agent_records": dict(self.perf_memory._agent_records),
         }
-        with open(STATE_FILE, "w") as f:
+        self.decision_journal.commit_paper_state(state, tuple(outcomes))
+        os.makedirs(OUT_DIR, exist_ok=True)
+        temporary = STATE_FILE + ".tmp"
+        with open(temporary, "w") as f:
             json.dump(state, f, indent=2)
+            f.flush()
+            os.fsync(f.fileno())
+        os.replace(temporary, STATE_FILE)
 
     # ── Data Layer ────────────────────────────────────────────────────────
 
@@ -200,6 +235,9 @@ class DemoHarness:
                 return None
             candles = []
             for k in resp.json():
+                # Binance hourly bar's open time determines its exclusive end.
+                if k[0] + 3600000 > end:
+                    continue
                 candles.append({
                     "time": datetime.fromtimestamp(k[0] / 1000, tz=timezone.utc),
                     "open": float(k[1]), "high": float(k[2]),
@@ -216,9 +254,23 @@ class DemoHarness:
 
     def _refresh_market_data(self):
         self._agent_ohlcv = {}
+        self._market_states = {}
+        self._last_prices = {}
         for sym in self.symbols:
             data = self._fetch_ohlcv(sym)
             if data:
+                observed_at = datetime.now(timezone.utc)
+                try:
+                    state = build_market_state(sym, data, source_id=f"binance:spot:{BNB_MAP[sym]}:1h",
+                                               observed_at=observed_at, as_of=observed_at)
+                except ValueError as error:
+                    self._data_failures += 1
+                    self.failures.record(error, cycle_id=self._cycle_id,
+                                         recovery_action="skip_symbol", resolved=False,
+                                         impact="invalid_market_state")
+                    continue
+                self._market_states[sym] = state
+                resolve_from_market_state(self.forecast_journal, state)
                 self._agent_ohlcv[sym] = data
                 self._last_prices[sym] = data[-1]["close"]
             else:
@@ -278,6 +330,9 @@ class DemoHarness:
         for trade in closed:
             self._trades_closed_total += 1
             result["trades_closed"] += 1
+        if closed:
+            self._save_state(outcomes=[paper_trade_outcome(t) for t in closed
+                                       if t.signal.metadata.get("decision_record_id")])
 
         # Process each event
         for event in events:
@@ -301,8 +356,12 @@ class DemoHarness:
             return
 
         price = self._last_prices.get(symbol)
-        if price is None:
+        state = self._market_states.get(symbol)
+        if price is None or state is None:
             return
+
+        # Research reference forecast, including events that never become trades.
+        issue_reference(self.forecast_journal, state, event.id)
 
         # Market agent
         market_opinion = self.market_agent.analyze(event)
@@ -342,13 +401,16 @@ class DemoHarness:
         result["signals_generated"] += 1
 
         # Execute
+        decision_id = record_paper_signal(self.decision_journal, event, decision, signal, market_state=state)
         trade = self.engine.execute_signal(signal)
         if trade:
             self._trades_opened_total += 1
             result["trades_opened"] += 1
+            self._save_state()
         else:
             self._execution_blocks += 1
             result["execution_blocks"] += 1
+            self._save_state(outcomes=[paper_block_outcome(decision_id, "execution_capacity_or_invalid_signal")])
             self._record_execution_block(event, decision, signal)
 
     def _record_guard_block(self, event: Event, decision):
@@ -560,6 +622,10 @@ class DemoHarness:
     # ── Main Loop ─────────────────────────────────────────────────────────
 
     def run(self):
+        if not self.resume_mode and self.decision_journal.load_paper_state() is not None:
+            raise RuntimeError("Existing paper state found; use --resume or a new demo directory")
+        if not self.resume_mode:
+            self.decision_journal.reconcile_uncommitted_paper_decisions(set())
         self._start_time = datetime.now(timezone.utc)
         end_time = self._start_time + self.duration if self.duration else None
 

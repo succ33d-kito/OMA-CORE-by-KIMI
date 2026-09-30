@@ -16,6 +16,7 @@ from core.schemas.knowledge_schema import (
     VALID_TRANSITIONS,
 )
 from core.schemas.outcome_comparison_schema import OutcomeComparison
+from core.scientific.learning_integrity import require_promotion_authority, quarantine_candidate
 
 
 def transition_knowledge(
@@ -38,6 +39,8 @@ def transition_knowledge(
             f"Allowed: {[s.value for s in allowed]}"
         )
 
+    if target_status == KnowledgeStatus.VALIDATED:
+        require_promotion_authority()
     now = datetime.now(timezone.utc)
     entry = {
         "type": "status_transition",
@@ -61,12 +64,12 @@ def can_transition(
     knowledge: Knowledge, target_status: KnowledgeStatus
 ) -> bool:
     """Check whether the given transition is valid without performing it."""
-    return target_status in VALID_TRANSITIONS.get(knowledge.status, [])
+    return target_status != KnowledgeStatus.VALIDATED and target_status in VALID_TRANSITIONS.get(knowledge.status, [])
 
 
 def get_valid_transitions(knowledge: Knowledge) -> list[KnowledgeStatus]:
     """Return the list of valid target states from the current state."""
-    return list(VALID_TRANSITIONS.get(knowledge.status, []))
+    return [s for s in VALID_TRANSITIONS.get(knowledge.status, []) if s != KnowledgeStatus.VALIDATED]
 
 
 def extract_knowledge(
@@ -87,7 +90,7 @@ def extract_knowledge(
     SPECULATIVE (confidence 0.0-0.3) until replicated.
     """
     now = datetime.now(timezone.utc)
-    return Knowledge(
+    knowledge = Knowledge(
         id=str(uuid.uuid4()),
         statement=statement,
         hypothesis_ids=hypothesis_ids,
@@ -111,6 +114,8 @@ def extract_knowledge(
         },
         revision_history=[],
     )
+    quarantine_candidate(knowledge)
+    return knowledge
 
 
 def extract_from_comparison(

@@ -10,6 +10,7 @@ from typing import Any, Dict, List, Optional
 from core.schemas.knowledge_schema import Knowledge, KnowledgeStatus
 from core.schemas.outcome_comparison_schema import Verdict
 from core.scientific.scientific_store import ScientificStore
+from core.scientific.learning_integrity import quarantine_candidate
 
 
 class KnowledgeExtractor:
@@ -49,7 +50,7 @@ class KnowledgeExtractor:
         generated_statement = statement or (
             f"When {comparison.predicted_consequence[:100]}, "
             f"the actual outcome was {comparison.actual_outcome[:100]}. "
-            f"This pattern suggests the original reasoning has predictive value."
+            f"Unvalidated research candidate; predictive value is not established."
         )
 
         hypothesis_ids = [comparison.hypothesis_id]
@@ -76,7 +77,7 @@ class KnowledgeExtractor:
             outcome_ids=outcome_ids,
             missed_opportunity_ids=[],
             evidence_summary=evidence_summary[:500],
-            confidence=min(confidence + (0.1 if comparison.verdict == Verdict.CONFIRMED else 0.0), 0.95),
+            confidence=max(0.0, min(confidence, 0.95)),
             conditions=knowledge_conditions[:500],
             scope=scope,
             time_horizon=time_horizon,
@@ -98,6 +99,7 @@ class KnowledgeExtractor:
             revision_history=[],
         )
 
+        quarantine_candidate(knowledge)
         return {
             "knowledge": knowledge,
             "source_comparison_id": comparison_id,

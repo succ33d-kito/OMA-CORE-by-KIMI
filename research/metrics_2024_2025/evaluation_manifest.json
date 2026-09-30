@@ -1,0 +1,10 @@
+{
+  "joined_rows": 8676,
+  "price_source_sha256": "112840ef17e2c309583033341e860adfa244ea99cde061540cc9f8f9026ce67a",
+  "ablation_cells": 1690,
+  "qualified_n50": 925,
+  "comparison_2024_2025": "blocked_missing_2024_OHLCV",
+  "sign_persistence": "not_estimable",
+  "effect_size_stability": "not_estimable",
+  "sign_flips_explained": "not_estimable"
+}

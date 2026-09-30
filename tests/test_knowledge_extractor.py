@@ -86,7 +86,8 @@ class TestExtractFromComparison:
         assert "knowledge" in result
         assert result["knowledge"].status == KnowledgeStatus.EXTRACTED
         assert "cmp_kn_001" in result["knowledge"].outcome_ids
-        assert result["knowledge"].confidence > 0.3
+        assert result["knowledge"].confidence == 0.3
+        assert result["knowledge"].provenance['learning_eligible'] is False
 
     def test_extract_from_rejected_returns_error(self, extractor):
         result = extractor.extract_from_comparison(

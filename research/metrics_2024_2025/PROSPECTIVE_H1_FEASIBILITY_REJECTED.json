@@ -1,0 +1,34 @@
+{
+  "status": "rejected_before_outcome_evaluation_due_to_exposure_frequency",
+  "origin": "mechanistic hypothesis proposed after inspecting 2024-2025; future independent test required",
+  "registered_utc": "2026-09-29T20:46:39Z",
+  "holdout_start_utc": "2026-10-01T00:00:00Z",
+  "minimum_calendar_hours": 2160,
+  "source": "BTCUSDT USD-M Futures H1 OHLCV and timestamped Binance USD-M public metrics, recorded with provenance and SHA-256 before evaluation",
+  "decision": "hour boundary after the last closed H1 bar; latest metrics must have timestamp <= decision and age <=60 minutes; no imputation",
+  "baseline": "Regime er20-vol20-vs-prior60-v1 structure=trend direction=up, all volatility levels",
+  "target": "baseline AND OI rising versus the immediately prior consecutive valid hourly metric AND taker buy/sell ratio >1",
+  "comparator": "baseline AND valid consecutive OI change and nonzero valid taker ratio AND NOT target",
+  "primary_horizon_hours": 4,
+  "family_horizons_hours": [
+    1,
+    4,
+    12,
+    24,
+    48
+  ],
+  "outcome": "BTCUSDT futures next-hour open to horizon close simple return, same hours and venue in both arms",
+  "primary_null": "target conditional mean minus comparator conditional mean <= 0",
+  "minimum_n_each_arm_each_horizon": 200,
+  "inference": "joint calendar moving block max-t simultaneous 95% confidence intervals across five horizons, 168-hour blocks, 2000 resamples, seed 1729",
+  "pass_research_gate": "4h simultaneous lower bound >0, target 4h mean after fixed 0.001 round-trip cost >0, minimum N and calendar duration all satisfied",
+  "failure": "any prerequisite absent or primary research gate fails; no retuning, no promotion",
+  "secondary_horizons": "reported with same simultaneous intervals; no secondary horizon can rescue failed primary",
+  "promotion": "research gate only; Criterion still requires independent replication, execution-cost/funding/slippage, risk and prospective governance gates",
+  "exposure_counts_2024_2025": {
+    "target_2024": 37,
+    "target_2025": 31,
+    "comparator_2024": 131,
+    "comparator_2025": 102
+  }
+}

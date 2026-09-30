@@ -1,0 +1,58 @@
+{
+  "additional_cost_bps_per_side": {
+    "0": {
+      "baseline": {
+        "trade_count": 151,
+        "net_return_pct": -10.221077999295936,
+        "closed_equity_max_drawdown_pct": 10.545551445085188,
+        "win_rate": 0.41721854304635764,
+        "mean_trade_return": -0.0035395730436018147,
+        "profit_factor": 0.6126340703028321
+      },
+      "mechanics_filter": {
+        "trade_count": 46,
+        "net_return_pct": -3.524078762444105,
+        "closed_equity_max_drawdown_pct": 3.524078762444105,
+        "win_rate": 0.391304347826087,
+        "mean_trade_return": -0.003869527238752535,
+        "profit_factor": 0.5804070583359668
+      }
+    },
+    "10": {
+      "baseline": {
+        "trade_count": 151,
+        "net_return_pct": -15.481265396462362,
+        "closed_equity_max_drawdown_pct": 15.609248487624273,
+        "win_rate": 0.3841059602649007,
+        "mean_trade_return": -0.00553703220013648,
+        "profit_factor": 0.46413233140631266
+      },
+      "mechanics_filter": {
+        "trade_count": 46,
+        "net_return_pct": -5.282168341775096,
+        "closed_equity_max_drawdown_pct": 5.282168341775096,
+        "win_rate": 0.32608695652173914,
+        "mean_trade_return": -0.005866656276032422,
+        "profit_factor": 0.44055887795483206
+      }
+    },
+    "20": {
+      "baseline": {
+        "trade_count": 151,
+        "net_return_pct": -20.435177714670548,
+        "closed_equity_max_drawdown_pct": 20.435177714670548,
+        "win_rate": 0.33774834437086093,
+        "mean_trade_return": -0.0075344913566711465,
+        "profit_factor": 0.35044485616499255
+      },
+      "mechanics_filter": {
+        "trade_count": 46,
+        "net_return_pct": -7.008904145070549,
+        "closed_equity_max_drawdown_pct": 7.008904145070549,
+        "win_rate": 0.2826086956521739,
+        "mean_trade_return": -0.00786378531331231,
+        "profit_factor": 0.3379490461672477
+      }
+    }
+  }
+}

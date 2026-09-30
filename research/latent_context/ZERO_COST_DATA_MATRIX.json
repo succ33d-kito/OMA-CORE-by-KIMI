@@ -1,0 +1,51 @@
+{
+  "budget_usd": 0,
+  "official_primary": {
+    "Binance USD-M daily metrics": {
+      "coverage_target": "2024-01-01..2025-12-31",
+      "frequency": "5m",
+      "fields": [
+        "open_interest",
+        "open_interest_value",
+        "top trader account L/S",
+        "top trader position L/S",
+        "global L/S",
+        "taker buy/sell volume ratio"
+      ],
+      "status": "public archive confirmed",
+      "integrity": "download ZIP + CHECKSUM; audit known gaps/duplicates"
+    },
+    "Binance USD-M funding": {
+      "coverage_target": "2024-01-01..2026-H1 where available",
+      "frequency": "funding settlement",
+      "status": "public REST/archive path supported; acquire with checksums when archive used"
+    },
+    "Binance aggTrades/trades": {
+      "coverage_target": "2024..2026",
+      "status": "public archives confirmed",
+      "derived": [
+        "aggressor buy/sell imbalance",
+        "trade intensity",
+        "signed volume proxy"
+      ]
+    },
+    "Binance spot klines": {
+      "coverage_target": "2024..2026",
+      "status": "public archives confirmed",
+      "derived": [
+        "trade count",
+        "taker buy base/quote volume"
+      ]
+    }
+  },
+  "not_free_or_not_historical_enough": {
+    "CoinGlass": "excluded: paid/key-dependent historical endpoints",
+    "Binance REST openInterestHist": "latest ~1 month only",
+    "historical full depth/L2": "no complete free official 2024-2026 archive established"
+  },
+  "data_quality": {
+    "metrics": "known missing and duplicate timestamps exist in official archives; preserve missingness",
+    "aggTrades": "reported trade-id gaps; audit per archive"
+  },
+  "rule": "No synthetic filling of unavailable latent state."
+}

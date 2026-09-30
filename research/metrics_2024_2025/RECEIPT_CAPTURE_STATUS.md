@@ -1,0 +1,9 @@
+# Prospective capture readiness (2026-09-29)
+
+The provider-neutral receipt writer, verified exporter and optional Binance USDⓈ-M Futures adapter are implemented and tested. The writer assigns actual UTC receipt time, rejects caller timestamps and historical backfill, preserves append order, checks uniqueness and emits a SHA-256 chain. Export validates the chain and yields the frozen evaluator's CSV schema. A local hash chain requires externally retained head hashes to detect a complete rewrite.
+
+The optional Binance adapter maps one closed H1 kline and five separate 5m statistics endpoints into the six required metrics. It rejects mixed 5m periods, invalid numeric values and unclosed bars. It conservatively timestamps the completed bundle only after the last response. Raw metric responses are retained separately with a digest. Tests use provider response fixtures and include a 451 failure. No live prospective observations were collected.
+
+A direct probe from this runtime returned HTTP 451 for Binance Futures klines, OI history and taker flow. Current official documentation lists an API key for top-trader ratio endpoints and a latest-30-days window. This runtime cannot operate the Binance adapter prospectively. No geographical workaround, retroactive archive timestamp or changed five-minute deadline was applied. A verified eligible source and persistent collector are still required before 2026-10-01 UTC. If the feed is unavailable by then, the gate remains operationally blocked until a new prospective start is explicitly registered; missed hours cannot be recreated as live observations.
+
+The frozen scientific gate and the failed 2024→2025 result are unchanged. No Knowledge, Criterion, paper or real trading promotion occurred. Full pytest: 1,009 passed, 12 skipped, 3 warnings.

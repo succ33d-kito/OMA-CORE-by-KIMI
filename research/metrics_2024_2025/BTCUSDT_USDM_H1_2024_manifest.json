@@ -1,0 +1,13 @@
+{
+  "source": "SubhayanBiswas/Binance-Vision-Sample-Data BTCUSDT_1h_Cleaned.csv",
+  "source_git_blob_sha1": "629859ca96ea5e13816c10ce74bdd48e01ba93dd",
+  "source_sha256": "201a3b15d50a791cb5be2b755107c8303906c8fc3ca6b64e8377c9fc73ba016b",
+  "normalized_sha256": "1da0f441f4a62e84fd5bc2b6b08f82f1d909077235ff591b82475741861d2e27",
+  "rows": 8784,
+  "first_utc": "2024-01-01T00:00:00+00:00",
+  "last_utc": "2024-12-31T23:00:00+00:00",
+  "duplicates": 0,
+  "gaps": 0,
+  "invalid_ohlcv": 0,
+  "normalization": "Date strict day-month-year UTC; 2024 only; columns time/open/high/low/close/volume; no fill or corrections"
+}

@@ -1,0 +1,32 @@
+{
+  "dataset_required": "BTCUSDT 1h 2024 raw OHLCV",
+  "purpose": "recompute, not import historical summaries",
+  "minimum_checks": [
+    "8784 expected hourly timestamps for leap-year complete feed",
+    "strictly increasing unique timestamps",
+    "exact 1h continuity for complete-feed source",
+    "OHLC coherence",
+    "finite nonnegative volume",
+    "SHA-256 manifest"
+  ],
+  "frozen_algorithms": [
+    "MarketState ohlcv-v1",
+    "Regime er20-vol20-vs-prior60-v1",
+    "MarketContext ohlcv-context-v2",
+    "RegimeTransition regime-transition-v1"
+  ],
+  "frozen_evaluation": {
+    "horizons_hours": [
+      1,
+      4,
+      12,
+      24,
+      48
+    ],
+    "min_cell_n": 50,
+    "bootstrap_block_hours": 24,
+    "bootstrap_resamples": 1000
+  },
+  "rule": "No threshold changes after inspecting 2024 outcomes; discrepancies with old summaries must be investigated, not overwritten.",
+  "criterion_promotion": false
+}

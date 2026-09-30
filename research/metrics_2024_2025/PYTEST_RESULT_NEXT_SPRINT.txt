@@ -1,0 +1,2 @@
+python -m pytest -q
+1003 passed, 12 skipped, 3 warnings in 76.10s (0:01:16)

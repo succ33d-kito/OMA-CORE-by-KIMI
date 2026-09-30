@@ -1,0 +1,62 @@
+{
+  "objective": "Explain longitudinal sign flips without tuning on future outcomes.",
+  "priority": [
+    {
+      "axis": "derivatives_positioning",
+      "fields": [
+        "open_interest_change",
+        "funding_rate",
+        "long_short_ratio"
+      ],
+      "sources": [
+        "Binance official where historical coverage exists",
+        "CoinGlass optional historical provider"
+      ]
+    },
+    {
+      "axis": "forced_flow",
+      "fields": [
+        "liquidation_imbalance",
+        "taker_imbalance"
+      ],
+      "sources": [
+        "CoinGlass optional",
+        "exchange trade feeds where side is observable"
+      ]
+    },
+    {
+      "axis": "capital_flow",
+      "fields": [
+        "spot_netflow",
+        "ETF flow"
+      ],
+      "sources": [
+        "CoinGlass optional",
+        "primary/public issuer datasets where available"
+      ]
+    },
+    {
+      "axis": "liquidity",
+      "fields": [
+        "spread",
+        "depth",
+        "book_imbalance"
+      ],
+      "sources": [
+        "historical L2/L3 provider required"
+      ]
+    }
+  ],
+  "causality_rule": "observed_at <= decision as_of; never backfill a value that was published later",
+  "missingness_rule": "unknown is a first-class value; never infer unavailable derivatives/liquidity from OHLCV",
+  "validation_order": [
+    "coverage/provenance",
+    "alignment",
+    "ablation",
+    "block bootstrap",
+    "cross-period",
+    "execution",
+    "prospective"
+  ],
+  "promotion": false
+}

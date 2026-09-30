@@ -1,0 +1,20 @@
+{
+  "hypothesis_id": "MM-H1-v1",
+  "study": "BTCUSDT-1h-2025",
+  "status": "not_supported_insufficient_holdout_trades",
+  "operational_promotion": false,
+  "criterion_auto_update": false,
+  "holdout_consumed": true,
+  "lesson": "Lower aggregate loss does not imply improved entry expectancy when fewer trades are taken.",
+  "baseline_mean_trade_return": -0.0035395730436018147,
+  "candidate_mean_trade_return": -0.003869527238752535,
+  "candidate_holdout_trades": 46,
+  "minimum_required_trades": 50,
+  "evidence_files": [
+    "mm_h1_btc_2025.json",
+    "mm_h1_btc_2025_cost_sensitivity.json",
+    "data/BTCUSDT_1h_2025_manifest.json"
+  ],
+  "report_sha256": "b864bde9f96f3ec14f187d6cce39a866a2f9c60c0dc5208768658a24316ad277",
+  "scope": "long-only entry ablation; not complete runtime benchmark"
+}

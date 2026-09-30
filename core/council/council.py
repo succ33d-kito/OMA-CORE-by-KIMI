@@ -9,6 +9,7 @@ Changes from v1:
 from typing import List, Optional, Dict
 from statistics import mean, stdev
 from collections import defaultdict
+from math import isfinite
 from core.schemas.agent_schema import (
     AgentOpinion, CouncilDecision, CouncilTier, Recommendation
 )
@@ -34,12 +35,18 @@ class AgentCouncil:
         return self._opinions.get(event_id, [])
 
     def update_track_record(self, agent_name: str, was_correct: bool) -> None:
+        if type(was_correct) is not bool:
+            raise ValueError('was_correct must be boolean')
         alpha = 0.1
-        current = self._track_record.get(agent_name, 0.5)
-        self._track_record[agent_name] = current + alpha * (1.0 if was_correct else 0.0 - current)
+        current = self.get_track_record(agent_name)
+        self._track_record[agent_name] = current + alpha * (float(was_correct) - current)
 
     def get_track_record(self, agent_name: str) -> float:
-        return self._track_record.get(agent_name, 0.5)
+        value = self._track_record.get(agent_name, 0.5)
+        # Legacy checkpoints may contain the pre-fix unbounded accumulator.
+        if not isfinite(value) or not 0 <= value <= 1:
+            return 0.5
+        return value
 
     def decide(self, event_id: str) -> Optional[CouncilDecision]:
         opinions = self._opinions.get(event_id, [])

@@ -205,8 +205,8 @@ class TestFullPipeline:
         assert len(closed) == 1
         assert closed[0].exit_reason == ExitReason.TIME_EXPIRY
 
-    def test_council_track_records_update(self, mock_ohlcv, monkeypatch):
-        """Verify Council track records are updated after trade closes."""
+    def test_council_does_not_learn_from_unproven_trade(self, mock_ohlcv, monkeypatch):
+        """Trade PnL without verified provenance must not change vote weights."""
         market = MarketAgent()
         risk = RiskAgent()
         monkeypatch.setattr(market, "_fetch_ohlcv", lambda s: mock_ohlcv)
@@ -242,8 +242,9 @@ class TestFullPipeline:
 
         track_market = council2.get_track_record("market_agent")
         track_risk = council2.get_track_record("risk_agent")
-        assert track_market != 0.5, f"Track record should change from 0.5, got {track_market}"
-        assert track_risk != 0.5, f"Track record should change from 0.5, got {track_risk}"
+        assert len(engine2.closed_trades) == 1
+        assert track_market == 0.5
+        assert track_risk == 0.5
 
     def test_performance_memory_updates(self, mock_ohlcv, monkeypatch):
         """Verify PerformanceMemory records trades and agent outcomes."""

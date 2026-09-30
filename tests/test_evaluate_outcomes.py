@@ -83,7 +83,7 @@ class TestAutoDetectVerdict:
 
     def test_neutral_direction(self):
         verdict, _ = auto_detect_verdict("market performance was nominal today", "neutral")
-        assert verdict == Verdict.CONFIRMED
+        assert verdict == Verdict.INCONCLUSIVE
 
 
 class TestComputeOutcomeScore:

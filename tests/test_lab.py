@@ -241,9 +241,10 @@ class TestKnowledgeTransitions:
 
     def test_provisional_to_validated(self):
         k = make_knowledge(status=KnowledgeStatus.PROVISIONAL)
-        validate_knowledge(k)
-        assert k.status == KnowledgeStatus.VALIDATED
-        assert k.last_validated_at is not None
+        with pytest.raises(ValueError, match="LEARNING_QUARANTINED"):
+            validate_knowledge(k)
+        assert k.status == KnowledgeStatus.PROVISIONAL
+        assert k.last_validated_at is None
 
     def test_provisional_to_invalidated(self):
         k = make_knowledge(status=KnowledgeStatus.PROVISIONAL)
@@ -297,8 +298,9 @@ class TestKnowledgeTransitions:
     def test_validated_sets_last_validated(self):
         k = make_knowledge(status=KnowledgeStatus.PROVISIONAL)
         assert k.last_validated_at is None
-        validate_knowledge(k)
-        assert k.last_validated_at is not None
+        with pytest.raises(ValueError, match="LEARNING_QUARANTINED"):
+            validate_knowledge(k)
+        assert k.last_validated_at is None
 
 
 class TestKnowledgeDecay:
@@ -380,9 +382,10 @@ class TestDeltaReview:
             dimension="knowledge_yield", change="Increase threshold",
         )
         assert delta.status == DeltaStatus.PENDING_REVIEW
-        apply_delta(delta)
-        assert delta.status == DeltaStatus.APPLIED
-        assert delta.applied_at is not None
+        with pytest.raises(ValueError, match="LEARNING_QUARANTINED"):
+            apply_delta(delta)
+        assert delta.status == DeltaStatus.PENDING_REVIEW
+        assert delta.applied_at is None
 
     def test_reject_pending(self):
         delta = propose_delta(
@@ -397,7 +400,7 @@ class TestDeltaReview:
             knowledge_ids=[], hypothesis_ids=[], outcome_ids=[],
             dimension="scarce_resource_conversion", change="X",
         )
-        apply_delta(delta)
+        delta.status = DeltaStatus.APPLIED  # Legacy object fixture; not a promotion.
         with pytest.raises(ValueError):
             apply_delta(delta)
 
@@ -415,7 +418,7 @@ class TestDeltaReview:
             knowledge_ids=[], hypothesis_ids=[], outcome_ids=[],
             dimension="calibration", change="X",
         )
-        apply_delta(delta)
+        delta.status = DeltaStatus.APPLIED  # Legacy object fixture; not a promotion.
         with pytest.raises(ValueError):
             reject_delta(delta)
 
@@ -493,14 +496,14 @@ class TestStoreIntegration:
 
     def test_list_filters_by_status(self, store):
         k1 = make_knowledge(status=KnowledgeStatus.EXTRACTED)
-        k2 = make_knowledge(status=KnowledgeStatus.VALIDATED)
+        k2 = make_knowledge(status=KnowledgeStatus.PROVISIONAL)
         store.create_knowledge(k1)
         store.create_knowledge(k2)
 
         extracted = store.list_knowledge(status=KnowledgeStatus.EXTRACTED)
-        validated = store.list_knowledge(status=KnowledgeStatus.VALIDATED)
+        provisional = store.list_knowledge(status=KnowledgeStatus.PROVISIONAL)
         assert len(extracted) == 1
-        assert len(validated) == 1
+        assert len(provisional) == 1
 
     def test_lab_stats(self, store):
         hyp = store.create_hypothesis(
@@ -539,8 +542,10 @@ class TestKnowledgeFullLifecycle:
     def test_extract_to_validated(self):
         k = make_knowledge(status=KnowledgeStatus.EXTRACTED)
         promote_to_provisional(k)
-        validate_knowledge(k)
-        assert k.status == KnowledgeStatus.VALIDATED
+        before = k.status
+        with pytest.raises(ValueError, match="LEARNING_QUARANTINED"):
+            validate_knowledge(k)
+        assert k.status == before
 
     def test_extract_to_invalidated(self):
         k = make_knowledge(status=KnowledgeStatus.EXTRACTED)
@@ -552,13 +557,16 @@ class TestKnowledgeFullLifecycle:
         k = make_knowledge(status=KnowledgeStatus.VALIDATED)
         revise_knowledge(k, "Refined statement")
         assert k.status == KnowledgeStatus.REVISED
-        validate_knowledge(k)
-        assert k.status == KnowledgeStatus.VALIDATED
+        before = k.status
+        with pytest.raises(ValueError, match="LEARNING_QUARANTINED"):
+            validate_knowledge(k)
+        assert k.status == before
 
     def test_full_archival_path(self):
         k = make_knowledge(status=KnowledgeStatus.EXTRACTED)
         promote_to_provisional(k)
-        validate_knowledge(k)
+        with pytest.raises(ValueError, match="LEARNING_QUARANTINED"):
+            validate_knowledge(k)
         archive_knowledge(k)
         assert k.status == KnowledgeStatus.ARCHIVED
 
@@ -632,8 +640,9 @@ class TestHumanReview:
             dimension="calibration", change="Test",
         )
         assert delta.status == DeltaStatus.PENDING_REVIEW
-        apply_delta(delta)
-        assert delta.status == DeltaStatus.APPLIED
+        with pytest.raises(ValueError, match="LEARNING_QUARANTINED"):
+            apply_delta(delta)
+        assert delta.status == DeltaStatus.PENDING_REVIEW
 
     def test_no_auto_approval(self):
         k = make_knowledge(status=KnowledgeStatus.VALIDATED)
@@ -718,11 +727,12 @@ class TestCLICommands:
             dimension="error_recurrence", change="Apply test",
         )
         store.create_criterion_delta(delta)
-        apply_delta(delta)
+        with pytest.raises(ValueError, match="LEARNING_QUARANTINED"):
+            apply_delta(delta)
         store.update_criterion_delta(delta)
         loaded = store.get_criterion_delta(delta.id)
-        assert loaded.status == DeltaStatus.APPLIED
-        assert loaded.applied_at is not None
+        assert loaded.status == DeltaStatus.PENDING_REVIEW
+        assert loaded.applied_at is None
 
     def test_lab_criterion_reject_command(self, store):
         delta = propose_delta(

@@ -1,0 +1,10 @@
+{
+  "status": "research_only",
+  "selection_contamination": "2025 and 2026 inspected; no claims of confirmatory validation",
+  "qualified_cells_n50_both": 14,
+  "same_sign": 7,
+  "sign_flips": 7,
+  "sign_persistence_rate": 0.5,
+  "2024_status": "historical summary available but raw bytes absent from this snapshot; excluded from machine-recomputed gate",
+  "criterion_promotion": false
+}

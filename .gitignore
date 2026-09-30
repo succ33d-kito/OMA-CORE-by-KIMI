@@ -1,4 +1,23 @@
 __pycache__/
+
+# Research inputs and generated observation panels stay outside Git.
+*.part
+*.parquet
+*.csv.gz
+*.tar.gz
+*.zip
+research/**/*.csv
+research/data/
+research/edge_discovery/mechanics_v2/DATA_GATE.json
+# Small, bounded 2024-only fixtures used by offline validation tests.
+!research/metrics_2024_2025/BTCUSDT_USDM_H1_2024.csv
+!research/metrics_2024_2025/official_2024/*.zip
+research/metrics_2024_2025/BTCUSDT_USDM_H1_2025.json
+research/mm_h1_btc_2025.json
+research/mm_h1_smoke.json
+*.pem
+*.key
+.credentials/
 *.pyc
 *.db
 *.sqlite

@@ -1,0 +1,31 @@
+{
+  "status": "verified_checksums_and_compared",
+  "official_months": 12,
+  "comparisons": {
+    "open": {
+      "exact_numeric_mismatches": 0,
+      "max_abs_difference": 0.0,
+      "max_relative_difference": 0.0
+    },
+    "high": {
+      "exact_numeric_mismatches": 0,
+      "max_abs_difference": 0.0,
+      "max_relative_difference": 0.0
+    },
+    "low": {
+      "exact_numeric_mismatches": 0,
+      "max_abs_difference": 0.0,
+      "max_relative_difference": 0.0
+    },
+    "close": {
+      "exact_numeric_mismatches": 0,
+      "max_abs_difference": 0.0,
+      "max_relative_difference": 0.0
+    },
+    "volume": {
+      "exact_numeric_mismatches": 0,
+      "max_abs_difference": 0.0,
+      "max_relative_difference": 0.0
+    }
+  }
+}

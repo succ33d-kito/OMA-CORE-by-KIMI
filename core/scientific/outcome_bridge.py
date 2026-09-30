@@ -82,7 +82,7 @@ class OutcomeBridge:
         conn.close()
         return [
             dict(r) for r in rows
-            if r.get("score", 0) >= min_score
+            if (r["score"] or 0) >= min_score
         ]
 
     def opportunity_to_hypothesis(self, opp: Dict[str, Any]) -> Hypothesis:

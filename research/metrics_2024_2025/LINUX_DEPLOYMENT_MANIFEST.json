@@ -1,0 +1,16 @@
+{
+  "sprint": "linux-mint-prospective-deployment-kit",
+  "activation": "not_activated_no_remote_host_access",
+  "provider_status_in_work": "binance_http_451",
+  "prospective_rows": 0,
+  "protocol_sha256": "012a80dcfd4566c7906c61a03f2c5ce3991c31481d2bdb4d87e6855d6005bc46",
+  "files_sha256": {
+    "scripts/install_prospective_timer.py": "8eec6fc53d7803929427d0d889f1047a7ef31898dfc0ca5b10e5a212b7bd4057",
+    "scripts/prospective_health.py": "9f545f2833656616cfc97516f10fe91e272274d5b495e98935ae4e9ae5ebbd21",
+    "scripts/binance_research_collect.py": "640c01e1e8201ccb24cb5463a3fd07b4a64240f9759d6ff6aae5240a30f003a0",
+    "docs/PROSPECTIVE_LINUX_MINT_DEPLOYMENT.md": "4515be9f4669f09549b0e879da595ee58bd31623e8cec94b9588f651a10e77b0",
+    "research/metrics_2024_2025/PROSPECTIVE_H1_PREREGISTRATION.json": "012a80dcfd4566c7906c61a03f2c5ce3991c31481d2bdb4d87e6855d6005bc46"
+  },
+  "unit_syntax": "systemd-analyze verify passed",
+  "tests": "1012 passed, 12 skipped, 3 warnings in 71.55s"
+}

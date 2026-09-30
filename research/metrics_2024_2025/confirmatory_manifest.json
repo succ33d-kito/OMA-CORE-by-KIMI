@@ -1,0 +1,81 @@
+{
+  "source": "SubhayanBiswas/Binance-Vision-Sample-Data BTCUSDT_1h_Cleaned.csv",
+  "source_git_blob_sha1": "629859ca96ea5e13816c10ce74bdd48e01ba93dd",
+  "source_sha256": "201a3b15d50a791cb5be2b755107c8303906c8fc3ca6b64e8377c9fc73ba016b",
+  "normalized_sha256": "1da0f441f4a62e84fd5bc2b6b08f82f1d909077235ff591b82475741861d2e27",
+  "rows": 8784,
+  "first_utc": "2024-01-01T00:00:00+00:00",
+  "last_utc": "2024-12-31T23:00:00+00:00",
+  "duplicates": 0,
+  "gaps": 0,
+  "invalid_ohlcv": 0,
+  "normalization": "Date strict day-month-year UTC; 2024 only; columns time/open/high/low/close/volume; no fill or corrections",
+  "normalized_2025": {
+    "normalized_sha256": "808c152f4d74f07fc94d2d736fa1453fdd9ed967533d95454c5ac2e48e87400f",
+    "rows": 8760,
+    "first_utc": "2025-01-01T00:00:00+00:00",
+    "last_utc": "2025-12-31T23:00:00+00:00",
+    "gaps": 0,
+    "duplicates": 0,
+    "invalid_ohlcv": 0
+  },
+  "recomputed_2025": {
+    "joined_rows": 8676,
+    "price_source_sha256": "5da49152b09155f0522df8277d7523b15e0bdfcf36e2382baad1867542805c5e",
+    "ablation_cells": 1725,
+    "qualified_n50": 930
+  },
+  "historical_2025_spot_like_source_excluded": "original research/data/BTCUSDT_1h_2025.json first bar differs from USD-M futures; original exploratory table preserved, not used in comparison",
+  "official_comparison": {
+    "status": "verified_checksums_and_compared",
+    "official_months": 12,
+    "comparisons": {
+      "open": {
+        "exact_numeric_mismatches": 0,
+        "max_abs_difference": 0.0,
+        "max_relative_difference": 0.0
+      },
+      "high": {
+        "exact_numeric_mismatches": 0,
+        "max_abs_difference": 0.0,
+        "max_relative_difference": 0.0
+      },
+      "low": {
+        "exact_numeric_mismatches": 0,
+        "max_abs_difference": 0.0,
+        "max_relative_difference": 0.0
+      },
+      "close": {
+        "exact_numeric_mismatches": 0,
+        "max_abs_difference": 0.0,
+        "max_relative_difference": 0.0
+      },
+      "volume": {
+        "exact_numeric_mismatches": 0,
+        "max_abs_difference": 0.0,
+        "max_relative_difference": 0.0
+      }
+    }
+  },
+  "joined_rows_2024": 8694,
+  "protocol": "scripts/metrics_2024_2025.py frozen HORIZONS, VARIANTS, Regime, MarketState, MarketContext, bins, n50, bootstrap 24/1000/1729; 2025 outputs unmodified",
+  "2025_ablation_sha256": "862b5c43dc54ef93194be72c6ec41cecd80dab468614a55e537c5e66d59bd615",
+  "gate_decision": "FAIL_NO_PROMOTION",
+  "artifact_sha256": {
+    "BTCUSDT_USDM_H1_2024.csv": "1da0f441f4a62e84fd5bc2b6b08f82f1d909077235ff591b82475741861d2e27",
+    "BTCUSDT_USDM_H1_2025.csv": "808c152f4d74f07fc94d2d736fa1453fdd9ed967533d95454c5ac2e48e87400f",
+    "BTCUSDT_1h_Cleaned_source.csv": "201a3b15d50a791cb5be2b755107c8303906c8fc3ca6b64e8377c9fc73ba016b",
+    "BTCUSDT_H1_2024_joined.csv.gz": "0974d37085d2d2e25cd9b07d90d058beb9d0594ecf214ad029826610f7213cf4",
+    "ABLATION_2024_FROZEN.csv": "b75187fcefdfe4b9e70bab29ac6f5a5f04811a6dcf47024ef73c84e315ee39cb",
+    "ABLATION_2025_USDM_FROZEN.csv": "862b5c43dc54ef93194be72c6ec41cecd80dab468614a55e537c5e66d59bd615",
+    "PAIRED_2024_2025_N50.csv": "9dda4e6adadca7876c986c30c38796dd0c155fbcecdc0edf26d4473bb0a16440",
+    "ABLATION_STABILITY_SUMMARY.csv": "b1e0d73394c8ca1a900a8637c68a163f97832b090259e3c398146df1bf451334",
+    "FLIP_ATTRIBUTION_DESCRIPTIVE.csv": "9c198e9eb29b705ac095e85b90f1ced10fd60d8d1bd3f5bd29cfeb717f08811d",
+    "official_comparison.json": "4940d58c9edeb82f979f522c5e751b13c2ab2d7e48e9de21b71c1d96e7277bc3"
+  },
+  "frozen_algorithm_sha256": {
+    "metrics_2024_2025.py": "157879fc8be5cb4c62587d7b249eeb8b46973f915514c25339368d32a41c8170",
+    "confirm_2024_metrics.py": "cd2d80f642b0b2f137d3b0ecca7d6ab89fed9fc6bc9ce5dfe359a5ca4eb3b30a"
+  },
+  "reproduction_command": "python scripts/confirm_2024_metrics.py research/metrics_2024_2025/BTCUSDT_1h_Cleaned_source.csv --repo . --official research/metrics_2024_2025/official_2024"
+}

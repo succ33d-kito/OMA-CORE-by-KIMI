@@ -1,0 +1,10 @@
+{
+  "command": "python scripts/build_evidence_graph_case.py --recorded-at 2026-09-29T21:43:24.967728+00:00",
+  "edges": 10,
+  "mode": "retrospective_governance_case",
+  "nodes": 7,
+  "promotion": "NONE",
+  "recorded_at": "2026-09-29T21:43:24.967728+00:00",
+  "report_sha256": "af9b9a96277a366479f89348619a66fb556b0888ac845a0b1cd0779194a055ca",
+  "snapshot_sha256": "a93978d5075ca593c77bf6d564f78463ba74f6bf8e63f2e65a5281dfe37d7c8e"
+}

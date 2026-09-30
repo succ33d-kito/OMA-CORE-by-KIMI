@@ -1,5 +1,6 @@
 """outcome_evaluator.py — Shared logic for evaluating hypotheses against outcomes."""
 from datetime import datetime, timezone
+import re
 from typing import Any, Dict, List, Optional, Tuple
 
 from core.schemas.outcome_comparison_schema import OutcomeComparison, ComparisonType, Verdict, ErrorType
@@ -29,6 +30,9 @@ def auto_detect_verdict(actual_outcome: str,
                         hypothesis_direction: str) -> Tuple[Verdict, float]:
     """Auto-detect verdict from outcome text and expected direction."""
     outcome_lower = actual_outcome.lower()
+    # Text parsing is descriptive only, never independent validation evidence.
+    if re.search(r"\b(?:not|never|no)\b|\b(?:didn't|wasn't|isn't|cannot)\b", outcome_lower):
+        return Verdict.INCONCLUSIVE, 0.0
 
     direction_up = {"up", "rise", "rose", "gain", "gained", "increased",
                     "higher", "bullish", "surged", "rally", "positive",
@@ -44,17 +48,20 @@ def auto_detect_verdict(actual_outcome: str,
                           "mixed", "neutral", "flat", "unchanged",
                           "no movement", "sideways"}
 
-    up_count = sum(1 for w in direction_up if w in outcome_lower)
-    down_count = sum(1 for w in direction_down if w in outcome_lower)
+    def contains(word):
+        return bool(re.search(r'\b' + re.escape(word) + r'\b', outcome_lower))
+
+    up_count = sum(1 for w in direction_up if contains(w))
+    down_count = sum(1 for w in direction_down if contains(w))
+
+    if any(contains(w) for w in rejected_words):
+        return Verdict.REJECTED, 0.80
 
     for w in confirmed_words:
-        if w in outcome_lower:
+        if contains(w):
             return Verdict.CONFIRMED, 0.85
-    for w in rejected_words:
-        if w in outcome_lower:
-            return Verdict.REJECTED, 0.80
     for w in inconclusive_words:
-        if w in outcome_lower:
+        if contains(w):
             return Verdict.INCONCLUSIVE, 0.70
 
     if hypothesis_direction == "bullish" and up_count > down_count:
@@ -65,9 +72,6 @@ def auto_detect_verdict(actual_outcome: str,
         return Verdict.CONFIRMED, 0.75
     if hypothesis_direction == "bearish" and up_count > down_count:
         return Verdict.REJECTED, 0.70
-    if hypothesis_direction == "neutral" and up_count == down_count:
-        return Verdict.CONFIRMED, 0.60
-
     if up_count > 0 and down_count > 0:
         return Verdict.INCONCLUSIVE, 0.50
 

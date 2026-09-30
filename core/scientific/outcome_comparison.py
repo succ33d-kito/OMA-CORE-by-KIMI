@@ -22,9 +22,11 @@ DIRECTION_DOWN = {"down", "decrease", "drop", "dropped", "drops", "fell", "fall"
 
 def _extract_direction(text: str) -> Optional[str]:
     text_lower = text.lower()
-    if any(w in text_lower for w in DIRECTION_UP):
+    up = any(re.search(r'\b' + re.escape(w) + r'\b', text_lower) for w in DIRECTION_UP)
+    down = any(re.search(r'\b' + re.escape(w) + r'\b', text_lower) for w in DIRECTION_DOWN)
+    if up and not down:
         return "up"
-    if any(w in text_lower for w in DIRECTION_DOWN):
+    if down and not up:
         return "down"
     return None
 
@@ -52,6 +54,8 @@ def auto_detect_verdict(
     Checks numeric values first (higher precision), then direction
     words as fallback. Returns None when the comparison is ambiguous.
     """
+    if re.search(r"\b(?:not|never|no|incorrect|invalid|failed)\b|\b(?:didn't|wasn't|isn't|cannot)\b", actual.lower()):
+        return Verdict.INCONCLUSIVE
     pred_num = _extract_numeric(predicted)
     actual_num = _extract_numeric(actual)
 

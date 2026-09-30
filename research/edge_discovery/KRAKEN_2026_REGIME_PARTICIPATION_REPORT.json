@@ -1,0 +1,24 @@
+{
+  "dataset": "Kraken XBT/USD spot H1 2026-01-01..2026-06-30",
+  "bars": 4344,
+  "analyzed_states": 4216,
+  "v1_cells": 35,
+  "protocol": {
+    "causal": true,
+    "future_horizons_hours": [
+      1,
+      4,
+      12,
+      24,
+      48
+    ],
+    "selection_on_2026": false
+  },
+  "findings": [
+    "ED-H1 remains operationally rejected under frozen translation.",
+    "Regime-v1 relationships show additional sign instability on Kraken 2026.",
+    "trade_count participation materially stratifies some 24h conditional means, but this is exploratory and Kraken-only.",
+    "No Criterion or Knowledge promotion."
+  ],
+  "promotion": false
+}

@@ -291,10 +291,9 @@ class PaperTradingEngine:
                 trade_result=trade.pnl_percent or 0,
                 correct=correct,
             )
-            if self.council:
-                self.council.update_track_record(
-                    opinion.get("agent_name", "unknown"), correct
-                )
+            # Descriptive performance remains recorded, but profit alone does
+            # not establish opinion correctness or verified scientific lineage.
+            # Council adaptation is quarantined until that bridge is integrated.
 
         self.performance.record_trade(trade)
 

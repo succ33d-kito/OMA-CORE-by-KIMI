@@ -1,6 +1,7 @@
 """Tests for OMA launcher diagnostics and install script."""
 import os
 import tempfile
+import posixpath
 from pathlib import Path
 
 import pytest
@@ -60,7 +61,7 @@ class TestDetectMismatch:
     def test_mismatch_with_trailing(self):
         launcher_path = "/home/kito/O.M.A.-C.O.R.E"
         current_repo = "/home/kito/O.M.A.-C.O.R.E./"
-        assert os.path.abspath(launcher_path) != os.path.abspath(current_repo)
+        assert posixpath.abspath(launcher_path) != posixpath.abspath(current_repo)
 
 
 class TestGeneratedLauncher:
@@ -80,6 +81,7 @@ class TestGeneratedLauncher:
         assert 'python -m core.cli.main "$@"' in content
 
 
+@pytest.mark.skipif(os.name == 'nt', reason='POSIX launcher installer requires native bash paths')
 class TestInstallScriptDryRun:
 
     INSTALL_SCRIPT = """

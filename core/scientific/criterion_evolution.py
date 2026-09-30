@@ -63,17 +63,18 @@ def propose_delta(
 
 
 def apply_delta(delta: CriterionDelta) -> CriterionDelta:
-    """Transition PENDING_REVIEW → APPLIED.
+    """Reject application until verified scientific promotion is integrated.
 
-    This function exists for the human reviewer to record
-    their decision. It is NEVER called automatically.
+    Human review alone cannot override missing evidence/provenance gates.
     """
+    from core.scientific.learning_integrity import require_promotion_authority
     allowed = DELTA_VALID_TRANSITIONS.get(delta.status, [])
     if DeltaStatus.APPLIED not in allowed:
         raise ValueError(
             f"Cannot apply delta {delta.id} from {delta.status.value}. "
             f"Only PENDING_REVIEW deltas can be applied."
         )
+    require_promotion_authority()
     delta.status = DeltaStatus.APPLIED
     delta.applied_at = datetime.now(timezone.utc)
     return delta

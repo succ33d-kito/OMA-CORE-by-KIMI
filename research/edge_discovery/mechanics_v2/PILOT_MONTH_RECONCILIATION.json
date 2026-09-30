@@ -1,0 +1,13 @@
+{
+  "pilot_day": "2024-01-01",
+  "status": "PASS",
+  "same_hours": true,
+  "field_matches": {
+    "aggressive_buy_volume": true,
+    "aggressive_sell_volume": true,
+    "aggregate_trade_count": true,
+    "underlying_id_span_count": true,
+    "quote_volume": true
+  },
+  "note": "Daily vs monthly sources; not a proof of equality to the kline trade universe."
+}

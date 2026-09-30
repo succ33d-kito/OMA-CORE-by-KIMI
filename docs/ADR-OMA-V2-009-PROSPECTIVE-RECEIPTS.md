@@ -1,0 +1,13 @@
+# ADR-OMA-V2-009 — Prospective receipt evidence and feed access
+
+Status: research infrastructure accepted; collection not active in this environment.
+
+Prospective validation requires observed receipt timestamps, not archive timestamps. `core/scientific/prospective_receipts.py` writes a SQLite ledger, assigns UTC receipt time inside the writer, forbids caller-supplied `available_at`, rejects delayed historical backfill and validates bar/metric values. The exported CSV uses the exact schema of the frozen evaluator. Every record includes its predecessor's SHA-256, and export verifies the chain. Preserve independent copies of ledger heads or manifests to detect a complete rewrite; the local chain alone is not an external timestamp authority.
+
+`core/market_mechanics/binance_live_adapter.py` is optional and provider-specific. It maps official USDⓈ-M Futures H1 klines and five 5m statistics endpoints to the six canonical metric fields. Binance documents the taker timestamp as the period *start* and the other statistics timestamps as period *end*; the adapter normalizes these before joining and rejects mixed periods. The 5m period end is represented one microsecond before the boundary for the predeclared hourly decision bucket. Raw responses are retained with a SHA-256 reference. The receipt timestamp is assigned only after the complete response bundle reaches the writer. There are no orders, account actions, proxy fallbacks or historical fill.
+
+The Binance Futures API returned HTTP 451 from this execution location on 2026-09-29 for both klines and statistics. The current Binance documentation indicates that top-trader ratio endpoints require an API key; no key was supplied or stored. Therefore **no real prospective capture was started here**. A deployment must use an authorized source capable of publishing all required fields before the five-minute deadline. Provider availability is a prerequisite, not an excuse to alter the frozen protocol. Late observations remain ineligible. If this prerequisite cannot be met, register the gate as operationally blocked.
+
+## Local deployment kit
+
+`install_prospective_timer.py` generates an unprivileged systemd user service and a UTC five-minute timer. It does not activate the timer unless explicitly invoked with `--activate` on the intended host. `binance_research_collect.py` has a hard 2026-10-01 start guard and a read-only preflight. `prospective_health.py` reports missing bar hours and late receipts without computing outcome effects. Local systemd unit syntax was verified with `systemd-analyze verify`; the market feed remains blocked here by HTTP 451. See `PROSPECTIVE_LINUX_MINT_DEPLOYMENT.md`.
