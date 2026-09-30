@@ -1,5 +1,11 @@
 __pycache__/
 
+# Continuous capture is operational state, not a research result.
+prospective/runtime/
+prospective/continuous/
+*.db-wal
+*.db-shm
+
 # Research inputs and generated observation panels stay outside Git.
 *.part
 *.parquet
@@ -75,3 +81,8 @@ logs/
 _extended_demo/
 .pytest_cache/
 __pycache__/
+
+.venv-price-capture/
+
+# OMA prospective runtime evidence
+research/edge_discovery/price_point_in_time/continuous_capture/*.json

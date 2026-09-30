@@ -71,7 +71,7 @@ def fetch_once(session,*,api_key=None,clock=None,timeout=8):
     return {'bar':bar,'metric':metric,'raw_metrics_sha256':hashlib.sha256(material).hexdigest(),'raw_metrics':raw}
 
 
-def capture_price_receipt(session, ledger, *, clock=None, timeout=10):
+def capture_price_receipt(session, ledger, *, clock=None, timeout=10, expected_event_time=None):
     """Two public requests, price only; no retries, metrics, history or trading."""
     from core.scientific.prospective_receipts import append_observation, _utc
     utc_now = clock or (lambda: datetime.now(timezone.utc))
@@ -99,6 +99,8 @@ def capture_price_receipt(session, ledger, *, clock=None, timeout=10):
         raise ValueError('no closed bar supported by server-time evidence')
     row = max(closed, key=lambda r:int(r[0]))
     start = datetime.fromtimestamp(int(row[0])/1000, timezone.utc)
+    if expected_event_time is not None and start + timedelta(hours=1) != _utc(expected_event_time):
+        raise ValueError('scheduled slot mismatch; no historical backfill')
     payload = latest_closed_kline([row], datetime.fromtimestamp(server_ms/1000, timezone.utc))
     payload.update(open_time_ms=int(row[0]), close_time_ms=int(row[6]))
     return append_observation(ledger, source=BASE+'/fapi/v1/klines', instrument='BTCUSDT',

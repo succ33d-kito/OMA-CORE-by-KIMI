@@ -184,3 +184,17 @@ Freeze previo intacto; MM READY=0/BLOCKED=10; holdouts sin abrir.
 22 tests focalizados pasan. Contrato, evidencia, limitaciones y siguiente acción
 en [Point-in-Time Contract](docs/POINT_IN_TIME_CONTRACT_2026-09-30.md) y revisión
 `research/edge_discovery/price_point_in_time/REVISION.json`.
+
+## Sprint continuous H1 Price capture
+
+Continuation from `7a95a6615ea7da509e0a9c23da1ad1229e0fca47`: UTC boundary
+runner, bounded retry, OS singleton lock, gap/streak checker, 81-bar certificate
+and external prefix anchors implemented. Windows logon task installed/running;
+runtime and live ledger remain outside Git. One real receipt, streak 1,
+80 remaining at the checkpoint; Regime not executed. No discovery or holdouts.
+Historical Data Gate FAIL and MM READY=0/BLOCKED=10 remain unchanged.
+47 focused tests pass; freeze verification PASS. Real scheduled-task restart
+verified; no receipt duplication or alteration.
+See [operations, evidence and limitations](docs/CONTINUOUS_PRICE_CAPTURE_2026-09-30.md).
+Next bottleneck: elapsed real time with continuous causal receipts; leave the
+host awake/online and the scheduled task running. No historical backfill.

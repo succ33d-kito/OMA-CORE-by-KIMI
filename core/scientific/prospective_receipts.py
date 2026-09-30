@@ -112,13 +112,13 @@ def _observation_db(path):
     return con
 
 
-def load_observations(path):
+def observation_snapshot(path):
     con = _observation_db(path)
     try:
         rows = con.execute('SELECT id,body,previous_hash,receipt_hash FROM observations_v2 ORDER BY seq').fetchall()
     finally:
         con.close()
-    previous, result = '0' * 64, {}
+    previous, result, prefixes = '0' * 64, {}, []
     for identity, body, link, digest in rows:
         if link != previous or observation_hash([link, body]) != digest:
             raise ValueError('observation chain integrity failure')
@@ -127,7 +127,12 @@ def load_observations(path):
             raise ValueError('payload identity/hash mismatch')
         result[identity] = item
         previous = digest
-    return result
+        prefixes.append(digest)
+    return result, prefixes
+
+
+def load_observations(path):
+    return observation_snapshot(path)[0]
 
 
 def append_observation(path, *, source, instrument, feature, event_time,
@@ -216,8 +221,15 @@ def _price_closed(item):
 def is_causally_available(path, observation_id, decision_at):
     """Only verified persisted observations qualify. UNKNOWN always fails closed."""
     try:
+        return snapshot_causally_available(load_observations(path), observation_id, decision_at)
+    except (ValueError, TypeError, KeyError, sqlite3.Error):
+        return False
+
+
+def snapshot_causally_available(known, observation_id, decision_at):
+    """Gate for an already chain-verified snapshot; avoids repeated database scans."""
+    try:
         decision = _utc(decision_at)
-        known = load_observations(path)
         def check(identity, visiting):
             if identity in visiting or identity not in known:
                 return False
