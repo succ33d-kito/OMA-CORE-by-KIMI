@@ -1,0 +1,368 @@
+{
+  "version": "MM-conceptual-owner-2026-09-30-v1",
+  "provenance": "conversation-specified conceptual hypothesis set supplied by project owner on 2026-09-30",
+  "historical_claim": "Newly materialized; not claimed to have existed in the repository before this continuation",
+  "status": "CONCEPTUAL_UNVALIDATED",
+  "representation": "M_t = (ΔP, ΔOI, AF, ΔAF, F, POS, R)",
+  "variables": {
+    "ΔP": "price change",
+    "ΔOI": "open-interest change",
+    "AF": "Aggressor Flow / imbalance",
+    "ΔAF": "change or acceleration in Aggressor Flow",
+    "F": "Funding",
+    "POS": "Positioning",
+    "R": "Regime"
+  },
+  "effort_response": {
+    "conceptual_formulas": [
+      "E_t = |AF_t|",
+      "R_t = |ΔP_t|",
+      "EPR_t = E_t / (R_t + ε)",
+      "NormalizedPriceResponse = |ΔP_t| / σ_past",
+      "EPR*_t = |AF_z| / (|Return_z| + ε)"
+    ],
+    "notation": "R_t in Effort→Result is response, not the Regime component R of M_t. Do not mix them.",
+    "normalization": "Past-only fitted scales; shift reference window; zero/unknown scale remains UNKNOWN",
+    "epsilon": null,
+    "epsilon_status": "Must be dimensionally defined and frozen before any outcome inspection",
+    "interpretation": "Compatible with absorption / weak price response relative to aggressive effort; not proof of absorption"
+  },
+  "threshold_policy": "Strong/extreme/weak/acceleration/divergence need exact past-only operational definitions before outcomes; none selected from predictive results in this sprint",
+  "hypotheses": [
+    {
+      "id": "MM-01",
+      "name": "Long Initiation",
+      "conceptual_condition": "Price ↑ + Open Interest ↑ + Aggressor Flow comprador.",
+      "conceptual_hypothesis": "Mayor probabilidad de continuación alcista que su comparator apropiado.",
+      "required_inputs": [
+        "Price/OHLCV",
+        "OpenInterest",
+        "AggressorFlow"
+      ],
+      "status": "BLOCKED",
+      "blockers": [
+        "All required historical available_at values are unproven",
+        "Exact operational protocol cannot be admitted until inputs pass"
+      ],
+      "proxy_policy": "NO_PROXY; do not alter hypothesis to recover a testable subset",
+      "operational_parameters": {
+        "exact_condition": null,
+        "comparator": null,
+        "expected_direction": "Mayor probabilidad de continuación alcista que su comparator apropiado.",
+        "primary_horizon": null,
+        "secondary_horizons": [],
+        "minimum_observations": null,
+        "bootstrap": null,
+        "transaction_cost_hurdle": null,
+        "economic_magnitude_threshold": null,
+        "temporal_stability": null,
+        "multiple_testing_correction": null,
+        "pass_fail": "BLOCKED before evaluation; not empirically falsified"
+      },
+      "note": "MM-03/04 require aggressor flow to construct their initiation comparator; MM-07/08 retain Funding and need the precise joint Funding/Positioning operator frozen before testing."
+    },
+    {
+      "id": "MM-02",
+      "name": "Short Initiation",
+      "conceptual_condition": "Price ↓ + Open Interest ↑ + Aggressor Flow vendedor.",
+      "conceptual_hypothesis": "Mayor probabilidad de continuación bajista.",
+      "required_inputs": [
+        "Price/OHLCV",
+        "OpenInterest",
+        "AggressorFlow"
+      ],
+      "status": "BLOCKED",
+      "blockers": [
+        "All required historical available_at values are unproven",
+        "Exact operational protocol cannot be admitted until inputs pass"
+      ],
+      "proxy_policy": "NO_PROXY; do not alter hypothesis to recover a testable subset",
+      "operational_parameters": {
+        "exact_condition": null,
+        "comparator": null,
+        "expected_direction": "Mayor probabilidad de continuación bajista.",
+        "primary_horizon": null,
+        "secondary_horizons": [],
+        "minimum_observations": null,
+        "bootstrap": null,
+        "transaction_cost_hurdle": null,
+        "economic_magnitude_threshold": null,
+        "temporal_stability": null,
+        "multiple_testing_correction": null,
+        "pass_fail": "BLOCKED before evaluation; not empirically falsified"
+      },
+      "note": "MM-03/04 require aggressor flow to construct their initiation comparator; MM-07/08 retain Funding and need the precise joint Funding/Positioning operator frozen before testing."
+    },
+    {
+      "id": "MM-03",
+      "name": "Short Covering",
+      "conceptual_condition": "Price ↑ + Open Interest ↓.",
+      "conceptual_hypothesis": "Menor persistencia alcista que MM-01 / long initiation.",
+      "required_inputs": [
+        "Price/OHLCV",
+        "OpenInterest",
+        "AggressorFlow"
+      ],
+      "status": "BLOCKED",
+      "blockers": [
+        "All required historical available_at values are unproven",
+        "Exact operational protocol cannot be admitted until inputs pass"
+      ],
+      "proxy_policy": "NO_PROXY; do not alter hypothesis to recover a testable subset",
+      "operational_parameters": {
+        "exact_condition": null,
+        "comparator": null,
+        "expected_direction": "Menor persistencia alcista que MM-01 / long initiation.",
+        "primary_horizon": null,
+        "secondary_horizons": [],
+        "minimum_observations": null,
+        "bootstrap": null,
+        "transaction_cost_hurdle": null,
+        "economic_magnitude_threshold": null,
+        "temporal_stability": null,
+        "multiple_testing_correction": null,
+        "pass_fail": "BLOCKED before evaluation; not empirically falsified"
+      },
+      "note": "MM-03/04 require aggressor flow to construct their initiation comparator; MM-07/08 retain Funding and need the precise joint Funding/Positioning operator frozen before testing."
+    },
+    {
+      "id": "MM-04",
+      "name": "Long Unwind",
+      "conceptual_condition": "Price ↓ + Open Interest ↓.",
+      "conceptual_hypothesis": "Menor persistencia bajista que MM-02 / short initiation.",
+      "required_inputs": [
+        "Price/OHLCV",
+        "OpenInterest",
+        "AggressorFlow"
+      ],
+      "status": "BLOCKED",
+      "blockers": [
+        "All required historical available_at values are unproven",
+        "Exact operational protocol cannot be admitted until inputs pass"
+      ],
+      "proxy_policy": "NO_PROXY; do not alter hypothesis to recover a testable subset",
+      "operational_parameters": {
+        "exact_condition": null,
+        "comparator": null,
+        "expected_direction": "Menor persistencia bajista que MM-02 / short initiation.",
+        "primary_horizon": null,
+        "secondary_horizons": [],
+        "minimum_observations": null,
+        "bootstrap": null,
+        "transaction_cost_hurdle": null,
+        "economic_magnitude_threshold": null,
+        "temporal_stability": null,
+        "multiple_testing_correction": null,
+        "pass_fail": "BLOCKED before evaluation; not empirically falsified"
+      },
+      "note": "MM-03/04 require aggressor flow to construct their initiation comparator; MM-07/08 retain Funding and need the precise joint Funding/Positioning operator frozen before testing."
+    },
+    {
+      "id": "MM-05",
+      "name": "Buy Pressure Without Proportional Price Response",
+      "conceptual_condition": "Aggressor Flow fuertemente comprador pero respuesta del precio débil.",
+      "conceptual_hypothesis": "Menor continuación alcista y/o mayor probabilidad de reversión que cuando el precio responde proporcionalmente al esfuerzo comprador.",
+      "required_inputs": [
+        "Price/OHLCV",
+        "AggressorFlow"
+      ],
+      "status": "BLOCKED",
+      "blockers": [
+        "All required historical available_at values are unproven",
+        "Exact operational protocol cannot be admitted until inputs pass"
+      ],
+      "proxy_policy": "NO_PROXY; do not alter hypothesis to recover a testable subset",
+      "operational_parameters": {
+        "exact_condition": null,
+        "comparator": null,
+        "expected_direction": "Menor continuación alcista y/o mayor probabilidad de reversión que cuando el precio responde proporcionalmente al esfuerzo comprador.",
+        "primary_horizon": null,
+        "secondary_horizons": [],
+        "minimum_observations": null,
+        "bootstrap": null,
+        "transaction_cost_hurdle": null,
+        "economic_magnitude_threshold": null,
+        "temporal_stability": null,
+        "multiple_testing_correction": null,
+        "pass_fail": "BLOCKED before evaluation; not empirically falsified"
+      },
+      "note": "MM-03/04 require aggressor flow to construct their initiation comparator; MM-07/08 retain Funding and need the precise joint Funding/Positioning operator frozen before testing."
+    },
+    {
+      "id": "MM-06",
+      "name": "Sell Pressure Without Proportional Price Response",
+      "conceptual_condition": "Aggressor Flow fuertemente vendedor pero respuesta bajista del precio débil.",
+      "conceptual_hypothesis": "Menor continuación bajista y/o mayor probabilidad de reversión.",
+      "required_inputs": [
+        "Price/OHLCV",
+        "AggressorFlow"
+      ],
+      "status": "BLOCKED",
+      "blockers": [
+        "All required historical available_at values are unproven",
+        "Exact operational protocol cannot be admitted until inputs pass"
+      ],
+      "proxy_policy": "NO_PROXY; do not alter hypothesis to recover a testable subset",
+      "operational_parameters": {
+        "exact_condition": null,
+        "comparator": null,
+        "expected_direction": "Menor continuación bajista y/o mayor probabilidad de reversión.",
+        "primary_horizon": null,
+        "secondary_horizons": [],
+        "minimum_observations": null,
+        "bootstrap": null,
+        "transaction_cost_hurdle": null,
+        "economic_magnitude_threshold": null,
+        "temporal_stability": null,
+        "multiple_testing_correction": null,
+        "pass_fail": "BLOCKED before evaluation; not empirically falsified"
+      },
+      "note": "MM-03/04 require aggressor flow to construct their initiation comparator; MM-07/08 retain Funding and need the precise joint Funding/Positioning operator frozen before testing."
+    },
+    {
+      "id": "MM-07",
+      "name": "Crowded Longs",
+      "conceptual_condition": "Price ↑ + OI ↑ + Aggressor Flow comprador + Funding/Positioning extremo.",
+      "conceptual_hypothesis": "Menor continuación alcista y/o mayor downside asimétrico que una iniciación long no crowded.",
+      "required_inputs": [
+        "Price/OHLCV",
+        "OpenInterest",
+        "AggressorFlow",
+        "Funding",
+        "Positioning"
+      ],
+      "status": "BLOCKED",
+      "blockers": [
+        "All required historical available_at values are unproven",
+        "Exact operational protocol cannot be admitted until inputs pass"
+      ],
+      "proxy_policy": "NO_PROXY; do not alter hypothesis to recover a testable subset",
+      "operational_parameters": {
+        "exact_condition": null,
+        "comparator": null,
+        "expected_direction": "Menor continuación alcista y/o mayor downside asimétrico que una iniciación long no crowded.",
+        "primary_horizon": null,
+        "secondary_horizons": [],
+        "minimum_observations": null,
+        "bootstrap": null,
+        "transaction_cost_hurdle": null,
+        "economic_magnitude_threshold": null,
+        "temporal_stability": null,
+        "multiple_testing_correction": null,
+        "pass_fail": "BLOCKED before evaluation; not empirically falsified"
+      },
+      "note": "MM-03/04 require aggressor flow to construct their initiation comparator; MM-07/08 retain Funding and need the precise joint Funding/Positioning operator frozen before testing."
+    },
+    {
+      "id": "MM-08",
+      "name": "Crowded Shorts",
+      "conceptual_condition": "Price ↓ + OI ↑ + Aggressor Flow vendedor + Funding/Positioning extremo.",
+      "conceptual_hypothesis": "Menor continuación bajista y/o mayor upside asimétrico que una iniciación short no crowded.",
+      "required_inputs": [
+        "Price/OHLCV",
+        "OpenInterest",
+        "AggressorFlow",
+        "Funding",
+        "Positioning"
+      ],
+      "status": "BLOCKED",
+      "blockers": [
+        "All required historical available_at values are unproven",
+        "Exact operational protocol cannot be admitted until inputs pass"
+      ],
+      "proxy_policy": "NO_PROXY; do not alter hypothesis to recover a testable subset",
+      "operational_parameters": {
+        "exact_condition": null,
+        "comparator": null,
+        "expected_direction": "Menor continuación bajista y/o mayor upside asimétrico que una iniciación short no crowded.",
+        "primary_horizon": null,
+        "secondary_horizons": [],
+        "minimum_observations": null,
+        "bootstrap": null,
+        "transaction_cost_hurdle": null,
+        "economic_magnitude_threshold": null,
+        "temporal_stability": null,
+        "multiple_testing_correction": null,
+        "pass_fail": "BLOCKED before evaluation; not empirically falsified"
+      },
+      "note": "MM-03/04 require aggressor flow to construct their initiation comparator; MM-07/08 retain Funding and need the precise joint Funding/Positioning operator frozen before testing."
+    },
+    {
+      "id": "MM-09",
+      "name": "Flow Acceleration",
+      "conceptual_condition": "Price y Aggressor Flow alineados + aceleración favorable del Aggressor Flow (ΔAF).",
+      "conceptual_hypothesis": "Mayor continuación que cuando el Aggressor Flow está alineado pero estable/no acelerando.",
+      "required_inputs": [
+        "Price/OHLCV",
+        "AggressorFlow"
+      ],
+      "status": "BLOCKED",
+      "blockers": [
+        "All required historical available_at values are unproven",
+        "Exact operational protocol cannot be admitted until inputs pass"
+      ],
+      "proxy_policy": "NO_PROXY; do not alter hypothesis to recover a testable subset",
+      "operational_parameters": {
+        "exact_condition": null,
+        "comparator": null,
+        "expected_direction": "Mayor continuación que cuando el Aggressor Flow está alineado pero estable/no acelerando.",
+        "primary_horizon": null,
+        "secondary_horizons": [],
+        "minimum_observations": null,
+        "bootstrap": null,
+        "transaction_cost_hurdle": null,
+        "economic_magnitude_threshold": null,
+        "temporal_stability": null,
+        "multiple_testing_correction": null,
+        "pass_fail": "BLOCKED before evaluation; not empirically falsified"
+      },
+      "note": "MM-03/04 require aggressor flow to construct their initiation comparator; MM-07/08 retain Funding and need the precise joint Funding/Positioning operator frozen before testing."
+    },
+    {
+      "id": "MM-10",
+      "name": "Flow Exhaustion",
+      "conceptual_condition": "Price continúa en una dirección mientras Aggressor Flow desacelera o diverge.",
+      "conceptual_hypothesis": "Menor continuación y/o mayor probabilidad de reversión.",
+      "required_inputs": [
+        "Price/OHLCV",
+        "AggressorFlow"
+      ],
+      "status": "BLOCKED",
+      "blockers": [
+        "All required historical available_at values are unproven",
+        "Exact operational protocol cannot be admitted until inputs pass"
+      ],
+      "proxy_policy": "NO_PROXY; do not alter hypothesis to recover a testable subset",
+      "operational_parameters": {
+        "exact_condition": null,
+        "comparator": null,
+        "expected_direction": "Menor continuación y/o mayor probabilidad de reversión.",
+        "primary_horizon": null,
+        "secondary_horizons": [],
+        "minimum_observations": null,
+        "bootstrap": null,
+        "transaction_cost_hurdle": null,
+        "economic_magnitude_threshold": null,
+        "temporal_stability": null,
+        "multiple_testing_correction": null,
+        "pass_fail": "BLOCKED before evaluation; not empirically falsified"
+      },
+      "note": "MM-03/04 require aggressor flow to construct their initiation comparator; MM-07/08 retain Funding and need the precise joint Funding/Positioning operator frozen before testing."
+    }
+  ],
+  "ready": [],
+  "partially_testable": [],
+  "blocked": [
+    "MM-01",
+    "MM-02",
+    "MM-03",
+    "MM-04",
+    "MM-05",
+    "MM-06",
+    "MM-07",
+    "MM-08",
+    "MM-09",
+    "MM-10"
+  ],
+  "promotion": "NONE"
+}

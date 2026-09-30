@@ -157,3 +157,19 @@ conectar provenance verificable y usar el diseño incremental del Registry en
 discovery elegible. No abrir holdouts ni levantar cuarentena para evitar un FAIL.
 Este resultado negativo del Data Gate es el corte científicamente coherente;
 no justifica añadir modelos ni reclamar una ventaja todavía.
+
+## Continuación acotada Mechanics v2.1
+
+El checkpoint anterior se publicó como `c900946ef559a8f72cffa47a3f019c3df92f8d08`
+en `origin/main`; coincidencia remota verificada. La continuación solicitada
+clasifica los seis issues sin repetir descargas, reducción ni suite completa.
+El propietario proporcionó explícitamente MM-01…MM-10, ahora materializados
+con esa procedencia. Ver [freeze causal y registro](research/edge_discovery/mechanics_v2_1/FREEZE.md).
+
+Resultado: subconjunto causal admisible vacío, diez hipótesis BLOCKED, cero
+READY; no hay protocolo de resultados ejecutable mientras fallen sus inputs.
+Se congela la exclusión, no se presenta un experimento como listo. El guard de
+integridad tiene tres tests nuevos pasando y rechaza la ejecución con código 2.
+Binance 2025 se clasifica explícitamente como SECONDARY TEMPORAL CONFIRMATION;
+Kraken Q2-2026 permanece SEALED_CROSS_EXCHANGE_HOLDOUT. No se abrieron en esta
+continuación. El próximo paso único figura en ese freeze.

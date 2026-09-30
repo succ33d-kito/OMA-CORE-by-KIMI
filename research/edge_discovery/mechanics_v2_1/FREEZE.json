@@ -1,0 +1,292 @@
+{
+  "schema_version": 1,
+  "freeze_id": "MECHANICS_V2_1_2026_09_30",
+  "status": "FROZEN_EMPTY_ADMISSIBLE_SUBSET_BLOCKED",
+  "date": "2026-09-30",
+  "phase0_checkpoint": {
+    "branch": "main",
+    "commit": "c900946ef559a8f72cffa47a3f019c3df92f8d08",
+    "remote": "https://github.com/succ33d-kito/OMA-CORE-by-KIMI.git",
+    "push": "VERIFIED_BY_REMOTE_REF"
+  },
+  "evidence_manifest": {
+    "path": "research/edge_discovery/mechanics_v2/PORTABLE_MANIFEST.json",
+    "sha256": "8d306d8c82722aa2734c4c5ea5c6e33c2d84ce0b52a2fb8b9100b32caccc34dd",
+    "hash_mode": "UTF-8 LF bytes"
+  },
+  "data_gate": "FAIL",
+  "outcome_testing_allowed": false,
+  "issue_classification": [
+    {
+      "issue": "AGGTRADES_HISTORICAL_AVAILABILITY_UNKNOWN",
+      "category": "A",
+      "action": "EXCLUDE until causality is independently established"
+    },
+    {
+      "issue": "AGGTRADES_KLINES_RECONCILIATION_FAILED",
+      "category": "B",
+      "action": "QUARANTINE unresolved comparability; do not force equality"
+    },
+    {
+      "issue": "FUNDING_HISTORICAL_AVAILABILITY_UNKNOWN",
+      "category": "A",
+      "action": "EXCLUDE until causality is independently established"
+    },
+    {
+      "issue": "METRICS_HISTORICAL_AVAILABILITY_UNKNOWN",
+      "category": "A",
+      "action": "EXCLUDE until causality is independently established"
+    },
+    {
+      "issue": "METRICS_MISSING_VALUES",
+      "category": "C",
+      "action": "Keep NULL; nonmissing sample still fails independent causal gates"
+    },
+    {
+      "issue": "PRICE_HISTORICAL_AVAILABILITY_UNKNOWN",
+      "category": "A",
+      "action": "EXCLUDE until causality is independently established"
+    }
+  ],
+  "additional_observation_classification": [
+    {
+      "issue": "37 primary metric archives have unordered rows",
+      "category": "D",
+      "action": "Stable sort already performed without imputation; preserve raw hashes"
+    },
+    {
+      "issue": "Aggregate record count differs from individual kline count",
+      "category": "D",
+      "action": "Distinct quantities; retain distinct names, never require equality as proof of aggregate record count"
+    },
+    {
+      "issue": "ID span treated as exact individual trade count",
+      "category": "B",
+      "action": "Already removed unsupported trade-size/intensity estimators; diagnostic field excluded"
+    }
+  ],
+  "features": [
+    {
+      "feature": "Price/OHLCV",
+      "raw_timestamp": "open_time, close_time",
+      "timestamp_meaning": "UTC bar interval labels; close time is not a receipt",
+      "earliest_possible_knowledge_bound": "Not before the entire H1 interval closes",
+      "historical_receipt_or_publication_proven": false,
+      "available_at": null,
+      "usable_at_decision_at": false,
+      "disposition": "EXCLUDED",
+      "causal_reason": "No verified historical publication/receipt upper bound at the decision; event time alone is insufficient.",
+      "semantic_state": "Known OHLCV schema; historical publication/revision time unresolved",
+      "dependencies": [],
+      "missing_policy": "UNKNOWN, never impute"
+    },
+    {
+      "feature": "Regime",
+      "raw_timestamp": "derived; last_bar_closed_at",
+      "timestamp_meaning": "Function of 81 closed H1 bars",
+      "earliest_possible_knowledge_bound": "Not before every input is available and computation completes",
+      "historical_receipt_or_publication_proven": false,
+      "available_at": null,
+      "usable_at_decision_at": false,
+      "disposition": "EXCLUDED",
+      "causal_reason": "No verified historical publication/receipt upper bound at the decision; event time alone is insufficient.",
+      "semantic_state": "Existing classifier fixed; no predictive claim",
+      "dependencies": [
+        "Price/OHLCV"
+      ],
+      "missing_policy": "UNKNOWN, never impute"
+    },
+    {
+      "feature": "OpenInterest",
+      "raw_timestamp": "create_time / metric_observed_at",
+      "timestamp_meaning": "Provider metric row time; no recorded publication time",
+      "earliest_possible_knowledge_bound": "Not before the selected snapshot and its predecessor are published/received",
+      "historical_receipt_or_publication_proven": false,
+      "available_at": null,
+      "usable_at_decision_at": false,
+      "disposition": "EXCLUDED",
+      "causal_reason": "No verified historical publication/receipt upper bound at the decision; event time alone is insufficient.",
+      "semantic_state": "OI level versus notional value must remain distinct; delta needs consecutive eligible observations",
+      "dependencies": [],
+      "missing_policy": "UNKNOWN, never impute"
+    },
+    {
+      "feature": "AggressorFlow",
+      "raw_timestamp": "transact_time",
+      "timestamp_meaning": "Exchange timestamp of aggregate trade record, milliseconds UTC",
+      "earliest_possible_knowledge_bound": "Not before all records needed for the H1 aggregate are available",
+      "historical_receipt_or_publication_proven": false,
+      "available_at": null,
+      "usable_at_decision_at": false,
+      "disposition": "EXCLUDED",
+      "causal_reason": "No verified historical publication/receipt upper bound at the decision; event time alone is insufficient.",
+      "semantic_state": "Buyer maker implies seller aggression; volume universe reconciliation remains quarantined",
+      "dependencies": [],
+      "missing_policy": "UNKNOWN, never impute"
+    },
+    {
+      "feature": "Positioning",
+      "raw_timestamp": "create_time / metric_observed_at",
+      "timestamp_meaning": "Provider metric row time, not receipt",
+      "earliest_possible_knowledge_bound": "Not before publication/receipt of that row",
+      "historical_receipt_or_publication_proven": false,
+      "available_at": null,
+      "usable_at_decision_at": false,
+      "disposition": "EXCLUDED",
+      "causal_reason": "No verified historical publication/receipt upper bound at the decision; event time alone is insufficient.",
+      "semantic_state": "Account ratios, top-position ratios and global ratios are distinct sampled populations, not participant identities",
+      "dependencies": [],
+      "missing_policy": "UNKNOWN, never impute"
+    },
+    {
+      "feature": "TakerMetrics",
+      "raw_timestamp": "create_time / metric_observed_at",
+      "timestamp_meaning": "Archive row time; precise per-field measurement window must be established separately",
+      "earliest_possible_knowledge_bound": "Not before complete measurement window and publication",
+      "historical_receipt_or_publication_proven": false,
+      "available_at": null,
+      "usable_at_decision_at": false,
+      "disposition": "EXCLUDED",
+      "causal_reason": "No verified historical publication/receipt upper bound at the decision; event time alone is insufficient.",
+      "semantic_state": "Quarantined as substitute for aggTrades flow; do not inherit live adapter period assumptions into archives",
+      "dependencies": [],
+      "missing_policy": "UNKNOWN, never impute"
+    },
+    {
+      "feature": "Funding",
+      "raw_timestamp": "calc_time",
+      "timestamp_meaning": "Funding calculation/settlement record time; not proof of publication",
+      "earliest_possible_knowledge_bound": "Only after actual publication/receipt, not automatically at settlement",
+      "historical_receipt_or_publication_proven": false,
+      "available_at": null,
+      "usable_at_decision_at": false,
+      "disposition": "EXCLUDED",
+      "causal_reason": "No verified historical publication/receipt upper bound at the decision; event time alone is insufficient.",
+      "semantic_state": "Historical rate is not proof of contemporaneously known next funding; excluded",
+      "dependencies": [],
+      "missing_policy": "UNKNOWN, never impute"
+    },
+    {
+      "feature": "aggregate_trade_count",
+      "raw_timestamp": "transact_time aggregated over [hour, hour+1h)",
+      "timestamp_meaning": "Count of actual aggTrades records in the interval",
+      "earliest_possible_knowledge_bound": "After full interval and its records are available",
+      "historical_receipt_or_publication_proven": false,
+      "available_at": null,
+      "usable_at_decision_at": false,
+      "disposition": "EXCLUDED",
+      "causal_reason": "No verified historical publication/receipt upper bound at the decision; event time alone is insufficient.",
+      "semantic_state": "Valid aggregate-record count; NOT individual trade count. Difference from kline count is D for this intended meaning",
+      "dependencies": [],
+      "missing_policy": "UNKNOWN, never impute"
+    },
+    {
+      "feature": "underlying_id_span_count",
+      "raw_timestamp": "first_trade_id, last_trade_id; transact_time",
+      "timestamp_meaning": "Sum of ID spans, diagnostic only",
+      "earliest_possible_knowledge_bound": "Not admissible as individual count even if availability is later established",
+      "historical_receipt_or_publication_proven": false,
+      "available_at": null,
+      "usable_at_decision_at": false,
+      "disposition": "EXCLUDED",
+      "causal_reason": "No verified historical publication/receipt upper bound at the decision; event time alone is insufficient.",
+      "semantic_state": "B: not validated as individual operations; derived individual intensity and mean size removed",
+      "dependencies": [],
+      "missing_policy": "UNKNOWN, never impute"
+    },
+    {
+      "feature": "official_kline_trade_count",
+      "raw_timestamp": "open_time, close_time",
+      "timestamp_meaning": "Provider count attached to the kline interval",
+      "earliest_possible_knowledge_bound": "After complete kline publication/receipt",
+      "historical_receipt_or_publication_proven": false,
+      "available_at": null,
+      "usable_at_decision_at": false,
+      "disposition": "EXCLUDED",
+      "causal_reason": "No verified historical publication/receipt upper bound at the decision; event time alone is insufficient.",
+      "semantic_state": "Provider kline count only; equality of universe to aggTrades not established",
+      "dependencies": [],
+      "missing_policy": "UNKNOWN, never impute"
+    }
+  ],
+  "MECHANICS_V2_1_ALLOWED": [],
+  "MECHANICS_V2_1_EXCLUDED": [
+    "Price/OHLCV",
+    "Regime",
+    "OpenInterest",
+    "AggressorFlow",
+    "Positioning",
+    "TakerMetrics",
+    "Funding",
+    "aggregate_trade_count",
+    "underlying_id_span_count",
+    "official_kline_trade_count"
+  ],
+  "MECHANICS_V2_1_UNKNOWN": [
+    "historical available_at for every component",
+    "10 missing hourly metric rows",
+    "one additional missing top-position ratio",
+    "archive per-field metric measurement-window semantics",
+    "aggTrades/kline volume-universe reconciliation"
+  ],
+  "timestamp_contract": {
+    "event_time": "When the source says the event/interval occurred; not assumed availability",
+    "source_metric_at": "Original provider metric timestamp, preserved unchanged; never round it into an earlier available_at",
+    "available_at": "Verified publication/receipt upper bound, plus derivation completion; NULL for these archives",
+    "decision_at": "Independent decision clock; actual decision time must be frozen before experimentation",
+    "derived_available_at": "max(all verified dependency availability times, computation completion); UNKNOWN if any input is UNKNOWN",
+    "asof_rule": "Require event/interval closed and every dependency available_at <= actual decision_at; no future or missing receipt accepted",
+    "historical_download_time": "Current archive receipt proves current possession only, not 2024 availability",
+    "legacy_adapter_limit": "metrics_asof validates observation ordering only; it does not prove availability and is not an admission gate"
+  },
+  "hypothesis_registry": {
+    "path": "research/edge_discovery/mechanics_v2_1/HYPOTHESIS_REGISTRY_MM_V1.json",
+    "sha256": "235c93538063399253326457ed1f5f0f5ddb3149f93543373f1ada9bdb25fa6e",
+    "source_status": "OWNER_SUPPLIED_AND_MATERIALIZED_THIS_CONTINUATION",
+    "ready": [],
+    "blocked": [
+      "MM-01",
+      "MM-02",
+      "MM-03",
+      "MM-04",
+      "MM-05",
+      "MM-06",
+      "MM-07",
+      "MM-08",
+      "MM-09",
+      "MM-10"
+    ],
+    "mapping": "Exact project-owner IDs; no mapping invented from earlier eight-family registry"
+  },
+  "scientific_protocol": {
+    "status": "BLOCKED_NO_TESTABLE_SUBSET",
+    "executable_hypotheses": [],
+    "condition": null,
+    "comparator": null,
+    "expected_direction": null,
+    "primary_horizon": null,
+    "secondary_horizons": [],
+    "minimum_observations": null,
+    "bootstrap": null,
+    "transaction_cost_hurdle": null,
+    "economic_magnitude_threshold": null,
+    "temporal_stability_requirement": null,
+    "multiple_testing_correction": null,
+    "pass_fail": "No execution permitted. Absence of prerequisites is BLOCKED, not an empirical hypothesis failure.",
+    "reason_for_null_parameters": "There are zero testable hypotheses; do not invent an experiment or borrow parameters from another frozen protocol.",
+    "unblock_requirements": [
+      "Independent point-in-time availability evidence for a nonempty feature subset",
+      "Resolve required feature semantics",
+      "New immutable protocol revision, fully parameterized and hashed before any outcome execution",
+      "Operationalize supplied conceptual conditions and all protocol parameters before execution"
+    ]
+  },
+  "holdouts": {
+    "Binance_2024": "DISCOVERY_ONLY; no new outcomes computed in this continuation",
+    "Binance_2025": "SECONDARY_TEMPORAL_CONFIRMATION; prior exposure recorded; no new reads in this continuation",
+    "Kraken_Q2_2026": "SEALED_CROSS_EXCHANGE_HOLDOUT; no reads"
+  },
+  "learning": "Observation -> Event -> Hypothesis -> Evidence -> Decision -> Outcome -> Knowledge -> Criterion; incomplete provenance blocks learning; PnL is not Criterion evidence",
+  "edge_claim": false,
+  "next_single_action": "Establish and validate the Price/OHLCV point-in-time availability contract using the existing prospective receipt capture; do not fabricate 2024 receipts."
+}
