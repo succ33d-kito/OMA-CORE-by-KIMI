@@ -48,16 +48,13 @@ class TestUrlConstruction:
             assert params.get("api_key") == "test_key"
             assert params.get("file_type") == "json"
 
-    def test_url_without_api_key_still_has_file_type(self):
-        collector = FREDCollector()
+    def test_without_api_key_never_requests(self):
+        with patch.dict(os.environ, {}, clear=True):
+            collector = FREDCollector()
         with patch.object(collector, "_make_request") as mock_request:
-            mock_request.return_value = {"observations": []}
-            collector._get_series_data("DFF")
-            mock_request.assert_called_once()
-            args = mock_request.call_args
-            params = args[0][1]
-            assert params.get("file_type") == "json"
-            assert "series_id" in params
+            assert collector._get_series_data("DFF") is None
+            assert collector.collect() == []
+            mock_request.assert_not_called()
 
     def test_api_base_correct(self):
         collector = FREDCollector()

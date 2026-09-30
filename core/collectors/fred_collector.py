@@ -41,6 +41,8 @@ class FREDCollector(BaseCollector):
 
     def collect(self) -> List[Event]:
         events = []
+        if not self.api_key:
+            return events
         for series_id, info in self.SERIES.items():
             try:
                 data = self._get_series_data(series_id)
@@ -55,6 +57,8 @@ class FREDCollector(BaseCollector):
         return events
 
     def _get_series_data(self, series_id: str) -> Optional[List[dict]]:
+        if not self.api_key:
+            return None
         params = {"series_id": series_id, "file_type": "json", "sort_order": "desc", "limit": 10}
         if self.api_key:
             params["api_key"] = self.api_key

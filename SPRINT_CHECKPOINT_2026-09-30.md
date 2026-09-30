@@ -198,3 +198,36 @@ verified; no receipt duplication or alteration.
 See [operations, evidence and limitations](docs/CONTINUOUS_PRICE_CAPTURE_2026-09-30.md).
 Next bottleneck: elapsed real time with continuous causal receipts; leave the
 host awake/online and the scheduled task running. No historical backfill.
+
+## Surgical Event Intelligence checkpoint
+
+Baseline `e27e61b` matched the expected HEAD; working tree was clean. No capture
+restart, receipt changes, holdout access or environment mixing in this session.
+RSS assigned type/sentiment/urgency and assets using substrings of raw HTML:
+`attack` treated physical attacks as exploits, `bill` matched `billion`, `ban`
+matched `bank`, and `ETH` matched `Ethena`/other words. OpportunityEngine inherited
+the resulting type and sentiment; it did not independently infer regulation.
+RSS entities remain the schema's empty default; no entity extractor was added.
+
+Minimal fix: visible-text parsing, bounded lexical matches, cyber context for
+ambiguous security words, explicit ticker matching and canonical BTC/ETH aliases.
+Original raw content is retained and new classifications carry rule version
+`rss-token-context-v1`. Existing stored events/opportunities were not rewritten.
+FRED now makes no requests without a key. Yahoo diagnostics distinguish a missing
+package from dependency import failure. On this host yfinance is installed, but
+Windows Application Control blocks a pandas DLL; that policy was not bypassed.
+
+Evidence: 38 semantic/FRED tests plus 88 scoring/Yahoo-guard/freeze tests pass.
+A read-only replay of 110 operational RSS records changed hack labels 13 -> 3
+and regulatory labels 27 -> 8; this is a diagnostic delta, not measured accuracy.
+Controlled feed -> temporary DB -> opportunities passes, including negative and
+positive regulatory controls. Main `.venv` has no pytest, so regression tests use
+the existing audit environment; the controlled operational check runs directly
+in main `.venv`, with no new dependencies. Historical Data Gate remains FAIL;
+MM 0 READY / 10 BLOCKED; no Regime execution, Edge or learning promotion.
+
+Remaining limits: lexical rules do not resolve negation, subject attribution or
+multi-topic summaries; conservative ticker matching may miss lowercase mentions.
+Next action: label a small fixed sample of the remaining ambiguous operational
+RSS cases before extending rules. DLL remediation requires the host's approved
+application-control process and is separate from semantic validation.

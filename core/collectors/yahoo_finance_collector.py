@@ -37,8 +37,11 @@ class YahooFinanceCollector(BaseCollector):
             try:
                 import yfinance as yf
                 self._yf = yf
-            except ImportError:
-                print("[yahoo_finance] yfinance no instalado. Ejecuta: pip install yfinance")
+            except ImportError as exc:
+                if isinstance(exc, ModuleNotFoundError) and exc.name == 'yfinance':
+                    print("[yahoo_finance] yfinance no instalado. Ejecuta: pip install yfinance")
+                else:
+                    print(f"[yahoo_finance] Fallo al importar yfinance o una dependencia: {exc}")
                 return None
         return self._yf
 

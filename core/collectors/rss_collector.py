@@ -1,9 +1,40 @@
 """O.M.A.-C.O.R.E. RSS News Collector"""
 import uuid
+import re
+from html.parser import HTMLParser
 from datetime import datetime, timezone
 from typing import List, Optional, Dict
 from core.collectors.base_collector import BaseCollector
 from core.schemas.event_schema import Event, EventType, Asset, AssetClass, Sentiment, Urgency
+
+
+class _VisibleText(HTMLParser):
+    def __init__(self):
+        super().__init__(convert_charrefs=True)
+        self.parts = []
+        self.hidden = 0
+
+    def handle_starttag(self, tag, attrs):
+        if tag in ('script', 'style'):
+            self.hidden += 1
+
+    def handle_endtag(self, tag):
+        if tag in ('script', 'style'):
+            self.hidden = max(0, self.hidden - 1)
+
+    def handle_data(self, data):
+        if not self.hidden:
+            self.parts.append(data)
+
+
+def _visible_text(text):
+    parser = _VisibleText()
+    parser.feed(text)
+    return re.sub(r'https?://\S+', ' ', ' '.join(parser.parts))
+
+
+def _has(text, term, flags=re.IGNORECASE):
+    return re.search(r'(?<!\w)' + re.escape(term.strip()) + r'(?!\w)', text, flags) is not None
 
 class RSSCollector(BaseCollector):
     RSS_SOURCES = {
@@ -55,8 +86,10 @@ class RSSCollector(BaseCollector):
     KEYWORDS_STOCKS = ["stock", "shares", "equity", "earnings", "revenue", "profit", "dividend", "ipo", "merger", "acquisition", "buyback"]
     KEYWORDS_MACRO = ["fed", "federal reserve", "interest rate", "inflation", "cpi", "gdp", "unemployment", "recession", "stimulus", "fiscal"]
     KEYWORDS_GEO = ["war", "sanctions", "treaty", "election", "vote", "president", "prime minister", "conflict", "diplomatic", "nato", "eu"]
-    KEYWORDS_REGULATORY = ["sec", "regulation", "regulatory", "compliance", "law", "bill", "legislation", "ban", "approve", "license"]
-    KEYWORDS_HACK = ["hack", "exploit", "breach", "security", "vulnerability", "stolen", "attack", "ransomware", "phishing"]
+    KEYWORDS_REGULATORY = ["sec", "regulation", "regulatory", "compliance", "law", "bill", "legislation", "ban", "license"]
+    KEYWORDS_HACK = ["cyberattack", "cyberattacks", "cyber attack", "ransomware", "phishing", "data breach", "security breach"]
+    SECURITY_ACTIONS = ["hack", "hacked", "hacking", "exploit", "exploited", "breach", "vulnerability", "vulnerabilities", "stolen", "attack", "attacks"]
+    SECURITY_CONTEXT = ["wallet", "protocol", "exchange", "blockchain", "crypto", "bitcoin", "ethereum", "defi", "server", "database", "software", "computer", "smart contract"]
     BULLISH_WORDS = ["surge", "rally", "soar", "jump", "gain", "rise", "bullish", "breakout", " ATH", "record high", "strong", "beat", "exceed"]
     BEARISH_WORDS = ["crash", "plunge", "drop", "fall", "decline", "bearish", "breakdown", " ATL", "record low", "weak", "miss", "below"]
 
@@ -117,7 +150,7 @@ class RSSCollector(BaseCollector):
                     assets=assets, keywords=keywords, sentiment=sentiment,
                     sentiment_score=sentiment_score, urgency=urgency,
                     confidence=config["confidence"], language=config["language"],
-                    metadata={"source_name": source_name, "feed_title": feed.feed.get("title", ""), "published": entry.get("published", ""), "focus_areas": config["focus"]}
+                    metadata={"source_name": source_name, "feed_title": feed.feed.get("title", ""), "published": entry.get("published", ""), "focus_areas": config["focus"], "classification_rule_version": "rss-token-context-v1"}
                 ))
             except Exception as e:
                 print(f"[rss] Error procesando entrada: {e}")
@@ -125,30 +158,31 @@ class RSSCollector(BaseCollector):
         return events
 
     def _classify_news(self, title, summary, focus):
-        text = (title + " " + summary).lower()
-        if any(kw in text for kw in self.KEYWORDS_HACK):
+        text = _visible_text(title + " " + summary)
+        has = lambda terms: any(_has(text, kw) for kw in terms)
+        if has(self.KEYWORDS_HACK) or (has(self.SECURITY_ACTIONS) and has(self.SECURITY_CONTEXT)):
             event_type = EventType.HACK_EXPLOIT
             urgency = Urgency.CRITICAL
-        elif any(kw in text for kw in self.KEYWORDS_REGULATORY):
+        elif has(self.KEYWORDS_REGULATORY):
             event_type = EventType.REGULATORY
             urgency = Urgency.HIGH
-        elif any(kw in text for kw in self.KEYWORDS_GEO):
+        elif has(self.KEYWORDS_GEO):
             event_type = EventType.GEOPOLITICAL
             urgency = Urgency.HIGH
-        elif any(kw in text for kw in self.KEYWORDS_MACRO):
+        elif has(self.KEYWORDS_MACRO):
             event_type = EventType.MACRO_EVENT
             urgency = Urgency.HIGH
-        elif any(kw in text for kw in self.KEYWORDS_CRYPTO):
+        elif has(self.KEYWORDS_CRYPTO):
             event_type = EventType.NEWS
             urgency = Urgency.MEDIUM
-        elif any(kw in text for kw in self.KEYWORDS_STOCKS):
-            event_type = EventType.EARNINGS if "earnings" in text else EventType.NEWS
+        elif has(self.KEYWORDS_STOCKS):
+            event_type = EventType.EARNINGS if _has(text, "earnings") else EventType.NEWS
             urgency = Urgency.MEDIUM
         else:
             event_type = EventType.NEWS
             urgency = Urgency.LOW
-        bullish_count = sum(1 for w in self.BULLISH_WORDS if w in text)
-        bearish_count = sum(1 for w in self.BEARISH_WORDS if w in text)
+        bullish_count = sum(1 for w in self.BULLISH_WORDS if _has(text, w))
+        bearish_count = sum(1 for w in self.BEARISH_WORDS if _has(text, w))
         if bullish_count > bearish_count:
             sentiment = Sentiment.BULLISH
             sentiment_score = min(0.3 + (bullish_count - bearish_count) * 0.1, 1.0)
@@ -164,7 +198,7 @@ class RSSCollector(BaseCollector):
 
     def _extract_assets(self, text):
         assets = []
-        text_upper = text.upper()
+        text = _visible_text(text)
         symbol_map = {
             "BTC": ("Bitcoin", AssetClass.CRYPTO), "BITCOIN": ("Bitcoin", AssetClass.CRYPTO),
             "ETH": ("Ethereum", AssetClass.CRYPTO), "ETHEREUM": ("Ethereum", AssetClass.CRYPTO),
@@ -181,16 +215,18 @@ class RSSCollector(BaseCollector):
             "SILVER": ("Silver", AssetClass.COMMODITY), "OIL": ("Crude Oil", AssetClass.COMMODITY),
         }
         for symbol, (name, asset_class) in symbol_map.items():
-            if symbol in text_upper:
-                if not any(a.symbol == symbol for a in assets):
-                    assets.append(Asset(symbol=symbol, name=name, asset_class=asset_class, currency="USD"))
+            flags = re.IGNORECASE if symbol in ('BITCOIN', 'ETHEREUM', 'GOLD', 'SILVER', 'OIL') else 0
+            if _has(text, symbol, flags):
+                canonical = {'BITCOIN': 'BTC', 'ETHEREUM': 'ETH'}.get(symbol, symbol)
+                if not any(a.symbol == canonical for a in assets):
+                    assets.append(Asset(symbol=canonical, name=name, asset_class=asset_class, currency="USD"))
         return assets
 
     def _extract_keywords(self, text):
-        text_lower = text.lower()
+        text = _visible_text(text)
         keywords = []
         all_keywords = self.KEYWORDS_CRYPTO + self.KEYWORDS_STOCKS + self.KEYWORDS_MACRO + self.KEYWORDS_GEO + self.KEYWORDS_REGULATORY + self.KEYWORDS_HACK + self.BULLISH_WORDS + self.BEARISH_WORDS
         for kw in all_keywords:
-            if kw in text_lower:
+            if _has(text, kw):
                 keywords.append(kw)
-        return list(set(keywords))[:10]
+        return list(dict.fromkeys(keywords))[:10]
