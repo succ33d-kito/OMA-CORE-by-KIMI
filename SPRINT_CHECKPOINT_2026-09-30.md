@@ -245,3 +245,16 @@ excluded explicitly. These are selected-case diagnostics, not production accurac
 negation and clause/subject scope; single-output loss on multi-topic text.
 No rule changes or scientific promotion. Next: human adjudication of the fixed
 reference, then a small clause-scoped negation/context experiment, not more keywords.
+
+## 2026-10-01 — Event Intelligence intervention v1 closure
+
+KEEP_WITH_LIMITATIONS. Same fixed 24 proposed-reference cases; baseline_v1 and
+HUMAN_GOLD unchanged. BEFORE equals frozen metrics; evaluator/reference hashes
+match AFTER. Event-type micro-F1 .8400 -> .9600; sentiment macro-F1 .4531 ->
+.7381, accuracy .6818 -> .8636. Assets unchanged. Seven corrected cases,
+zero observed scored regressions; 38 relevant tests pass. No further rule tuning.
+Report: `research/event_intelligence/intervention_v1/README.md`, with paired
+predictions, metrics, confusion matrices and unchanged failures. Provisional
+freeze only: small known diagnostic set, no human gold or production validation.
+No protected scientific/capture components touched. User requested STOP with
+local changes preserved, no commit/push; no next experiment launched.

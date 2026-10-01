@@ -1,0 +1,275 @@
+[
+  {
+    "assets": [],
+    "entities": [],
+    "event_types": [
+      "geopolitical"
+    ],
+    "id": "C01",
+    "sentiment": "neutral",
+    "sentiment_score": 0.0
+  },
+  {
+    "assets": [],
+    "entities": [],
+    "event_types": [
+      "news"
+    ],
+    "id": "C02",
+    "sentiment": "neutral",
+    "sentiment_score": 0.0
+  },
+  {
+    "assets": [],
+    "entities": [],
+    "event_types": [
+      "news"
+    ],
+    "id": "C03",
+    "sentiment": "neutral",
+    "sentiment_score": 0.0
+  },
+  {
+    "assets": [],
+    "entities": [],
+    "event_types": [
+      "news"
+    ],
+    "id": "C04",
+    "sentiment": "neutral",
+    "sentiment_score": 0.0
+  },
+  {
+    "assets": [
+      "BTC"
+    ],
+    "entities": [],
+    "event_types": [
+      "hack_exploit"
+    ],
+    "id": "C05",
+    "sentiment": "neutral",
+    "sentiment_score": 0.0
+  },
+  {
+    "assets": [],
+    "entities": [],
+    "event_types": [
+      "regulatory"
+    ],
+    "id": "C06",
+    "sentiment": "neutral",
+    "sentiment_score": 0.0
+  },
+  {
+    "assets": [
+      "BTC"
+    ],
+    "entities": [],
+    "event_types": [
+      "news"
+    ],
+    "id": "N01",
+    "sentiment": "bullish",
+    "sentiment_score": 0.4
+  },
+  {
+    "assets": [
+      "ETH"
+    ],
+    "entities": [],
+    "event_types": [
+      "news"
+    ],
+    "id": "N02",
+    "sentiment": "bearish",
+    "sentiment_score": -0.4
+  },
+  {
+    "assets": [
+      "BTC"
+    ],
+    "entities": [],
+    "event_types": [
+      "hack_exploit"
+    ],
+    "id": "N03",
+    "sentiment": "neutral",
+    "sentiment_score": 0.0
+  },
+  {
+    "assets": [
+      "BTC"
+    ],
+    "entities": [],
+    "event_types": [
+      "regulatory"
+    ],
+    "id": "N04",
+    "sentiment": "neutral",
+    "sentiment_score": 0.0
+  },
+  {
+    "assets": [],
+    "entities": [],
+    "event_types": [
+      "hack_exploit"
+    ],
+    "id": "N05",
+    "sentiment": "neutral",
+    "sentiment_score": 0.0
+  },
+  {
+    "assets": [
+      "BTC"
+    ],
+    "entities": [],
+    "event_types": [
+      "news"
+    ],
+    "id": "N06",
+    "sentiment": "neutral",
+    "sentiment_score": 0.0
+  },
+  {
+    "assets": [
+      "BTC"
+    ],
+    "entities": [],
+    "event_types": [
+      "hack_exploit"
+    ],
+    "id": "M01",
+    "sentiment": "neutral",
+    "sentiment_score": 0.0
+  },
+  {
+    "assets": [],
+    "entities": [],
+    "event_types": [
+      "regulatory"
+    ],
+    "id": "M02",
+    "sentiment": "neutral",
+    "sentiment_score": 0.0
+  },
+  {
+    "assets": [
+      "BTC",
+      "ETH"
+    ],
+    "entities": [],
+    "event_types": [
+      "news"
+    ],
+    "id": "M03",
+    "sentiment": "neutral",
+    "sentiment_score": 0.0
+  },
+  {
+    "assets": [
+      "AAPL"
+    ],
+    "entities": [],
+    "event_types": [
+      "geopolitical"
+    ],
+    "id": "M04",
+    "sentiment": "bullish",
+    "sentiment_score": 0.4
+  },
+  {
+    "assets": [
+      "BTC"
+    ],
+    "entities": [],
+    "event_types": [
+      "geopolitical"
+    ],
+    "id": "M05",
+    "sentiment": "bullish",
+    "sentiment_score": 0.4
+  },
+  {
+    "assets": [
+      "GOLD",
+      "OIL"
+    ],
+    "entities": [],
+    "event_types": [
+      "news"
+    ],
+    "id": "M06",
+    "sentiment": "bullish",
+    "sentiment_score": 0.4
+  },
+  {
+    "assets": [
+      "BTC",
+      "ETH"
+    ],
+    "entities": [],
+    "event_types": [
+      "news"
+    ],
+    "id": "A01",
+    "sentiment": "neutral",
+    "sentiment_score": 0.0
+  },
+  {
+    "assets": [],
+    "entities": [],
+    "event_types": [
+      "news"
+    ],
+    "id": "A02",
+    "sentiment": "neutral",
+    "sentiment_score": 0.0
+  },
+  {
+    "assets": [],
+    "entities": [],
+    "event_types": [
+      "earnings"
+    ],
+    "id": "A03",
+    "sentiment": "bullish",
+    "sentiment_score": 0.4
+  },
+  {
+    "assets": [
+      "ADA"
+    ],
+    "entities": [],
+    "event_types": [
+      "regulatory"
+    ],
+    "id": "A04",
+    "sentiment": "neutral",
+    "sentiment_score": 0.0
+  },
+  {
+    "assets": [
+      "BTC"
+    ],
+    "entities": [],
+    "event_types": [
+      "news"
+    ],
+    "id": "A05",
+    "sentiment": "neutral",
+    "sentiment_score": 0.0
+  },
+  {
+    "assets": [
+      "ETH"
+    ],
+    "entities": [],
+    "event_types": [
+      "news"
+    ],
+    "id": "A06",
+    "sentiment": "neutral",
+    "sentiment_score": 0.0
+  }
+]

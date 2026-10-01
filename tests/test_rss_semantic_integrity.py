@@ -63,13 +63,15 @@ def test_controlled_feed_to_database_to_opportunities(collector, tmp_path):
         feed={'title':'controlled semantic regression'}))
     events = collector.collect()
     assert len(events) == 3
-    assert all(e.metadata['classification_rule_version'] == 'rss-token-context-v1' for e in events)
+    assert all(e.metadata['classification_rule_version'] == 'rss-clause-negation-v1.1' for e in events)
     pipeline = Pipeline(tmp_path/'controlled.db')
     result = pipeline.run(events, min_score=0)
     assert result['events_stored'] == 3
     opportunities = {o['event_id']:o for o in result['top_opportunities']}
     assert opportunities[events[0].id]['opportunity_type'] != 'REGULATORY_TAILWIND'
-    assert opportunities[events[1].id]['opportunity_type'] != 'REGULATORY_TAILWIND'
+    # 'strong' describes political prose, not a directional financial signal.
+    assert events[1].sentiment == Sentiment.NEUTRAL
+    assert events[1].id not in opportunities
     assert opportunities[events[2].id]['opportunity_type'] == 'REGULATORY_TAILWIND'
     assert pipeline.db.get_recent_events(hours=1, limit=10)
 

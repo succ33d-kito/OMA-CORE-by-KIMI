@@ -36,6 +36,22 @@ def _visible_text(text):
 def _has(text, term, flags=re.IGNORECASE):
     return re.search(r'(?<!\w)' + re.escape(term.strip()) + r'(?!\w)', text, flags) is not None
 
+
+def _affirmed_clauses(title, summary):
+    """Conservative lexical scope, not a parser or a claim of full negation support.
+
+    Keep titles/summaries and explicit clause boundaries separate. Negated text
+    is ignored up to punctuation; negation never implies the opposite sentiment.
+    Colons retain subject context (e.g. 'Bitcoin wallet: hacked').
+    """
+    clauses = []
+    for source in (title, summary):
+        text = re.sub(r"n['’]t\b", ' not', _visible_text(source), flags=re.IGNORECASE)
+        for clause in re.split(r'[;.!?\n]+|\b(?:but|however|while)\b', text, flags=re.IGNORECASE):
+            clauses.append(re.sub(r'\b(?:not(?!\s+only\b)|no|never|without)\b[^,:;.!?]*',
+                                  ' ', clause, flags=re.IGNORECASE))
+    return clauses
+
 class RSSCollector(BaseCollector):
     RSS_SOURCES = {
         "rss_reuters_business": {
@@ -150,7 +166,7 @@ class RSSCollector(BaseCollector):
                     assets=assets, keywords=keywords, sentiment=sentiment,
                     sentiment_score=sentiment_score, urgency=urgency,
                     confidence=config["confidence"], language=config["language"],
-                    metadata={"source_name": source_name, "feed_title": feed.feed.get("title", ""), "published": entry.get("published", ""), "focus_areas": config["focus"], "classification_rule_version": "rss-token-context-v1"}
+                    metadata={"source_name": source_name, "feed_title": feed.feed.get("title", ""), "published": entry.get("published", ""), "focus_areas": config["focus"], "classification_rule_version": "rss-clause-negation-v1.1"}
                 ))
             except Exception as e:
                 print(f"[rss] Error procesando entrada: {e}")
@@ -159,8 +175,11 @@ class RSSCollector(BaseCollector):
 
     def _classify_news(self, title, summary, focus):
         text = _visible_text(title + " " + summary)
+        clauses = _affirmed_clauses(title, summary)
         has = lambda terms: any(_has(text, kw) for kw in terms)
-        if has(self.KEYWORDS_HACK) or (has(self.SECURITY_ACTIONS) and has(self.SECURITY_CONTEXT)):
+        if any(any(_has(c, kw) for kw in self.KEYWORDS_HACK) or
+               (any(_has(c, kw) for kw in self.SECURITY_ACTIONS) and
+                any(_has(c, kw) for kw in self.SECURITY_CONTEXT)) for c in clauses):
             event_type = EventType.HACK_EXPLOIT
             urgency = Urgency.CRITICAL
         elif has(self.KEYWORDS_REGULATORY):
@@ -181,8 +200,18 @@ class RSSCollector(BaseCollector):
         else:
             event_type = EventType.NEWS
             urgency = Urgency.LOW
-        bullish_count = sum(1 for w in self.BULLISH_WORDS if _has(text, w))
-        bearish_count = sum(1 for w in self.BEARISH_WORDS if _has(text, w))
+        def sentiment_present(word):
+            for clause in clauses:
+                if not _has(clause, word):
+                    continue
+                # Generic evaluative adjectives need local financial context.
+                if word in ('strong', 'weak') and not any(_has(clause, term) for term in
+                        self.KEYWORDS_CRYPTO + self.KEYWORDS_STOCKS + ['price', 'prices', 'market', 'markets']):
+                    continue
+                return True
+            return False
+        bullish_count = sum(sentiment_present(w) for w in self.BULLISH_WORDS)
+        bearish_count = sum(sentiment_present(w) for w in self.BEARISH_WORDS)
         if bullish_count > bearish_count:
             sentiment = Sentiment.BULLISH
             sentiment_score = min(0.3 + (bullish_count - bearish_count) * 0.1, 1.0)
