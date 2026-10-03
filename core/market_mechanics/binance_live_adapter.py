@@ -4,6 +4,7 @@ Returns complete 5m metrics only when all endpoint periods align. The caller
 records actual receipt time after the *last* response, not response timestamps.
 """
 import hashlib,json
+import time
 from datetime import datetime,timezone,timedelta
 from math import isfinite
 
@@ -71,10 +72,26 @@ def fetch_once(session,*,api_key=None,clock=None,timeout=8):
     return {'bar':bar,'metric':metric,'raw_metrics_sha256':hashlib.sha256(material).hexdigest(),'raw_metrics':raw}
 
 
-def capture_price_receipt(session, ledger, *, clock=None, timeout=10, expected_event_time=None):
+def capture_price_receipt(session, ledger, *, clock=None, timeout=10, expected_event_time=None, monotonic=None, capture_deadline=None):
     """Two public requests, price only; no retries, metrics, history or trading."""
     from core.scientific.prospective_receipts import append_observation, _utc
     utc_now = clock or (lambda: datetime.now(timezone.utc))
+    from core.scientific.capture_clock import preflight, continuous
+    tick = monotonic or time.monotonic
+    started, started_tick = _utc(utc_now()), tick()
+    checkpoint_wall, checkpoint_tick = started, started_tick
+    def check_clock(wall):
+        nonlocal checkpoint_wall, checkpoint_tick
+        current_tick = tick()
+        continuous(checkpoint_wall, wall, current_tick-checkpoint_tick)
+        continuous(started, wall, current_tick-started_tick)
+        checkpoint_wall, checkpoint_tick = wall, current_tick
+    def check_window(wall):
+        if capture_deadline is not None:
+            deadline = _utc(capture_deadline)
+            if not deadline-timedelta(minutes=2) <= wall <= deadline:
+                raise ValueError('capture retry window exhausted; no backdating')
+    check_window(started)
     def request(path, params=None):
         response = session.get(BASE + path, params=params, timeout=timeout)
         if response.status_code == 451:
@@ -85,12 +102,17 @@ def capture_price_receipt(session, ledger, *, clock=None, timeout=10, expected_e
         return raw, received
     server_raw, server_received = request('/fapi/v1/time')
     server_ms = int(json.loads(server_raw)['serverTime'])
-    if datetime.fromtimestamp(server_ms/1000, timezone.utc) > server_received:
-        raise ValueError('server clock ahead of local receipt clock')
+    evidence = preflight(started, server_received,
+                         datetime.fromtimestamp(server_ms/1000, timezone.utc), tick()-started_tick)
+    checkpoint_wall, checkpoint_tick = server_received, started_tick + evidence["round_trip_seconds"]
     requested = _utc(utc_now())
+    check_clock(requested)
+    check_window(requested)
     if requested < server_received:
         raise ValueError('clock moved backwards')
     raw, received = request('/fapi/v1/klines', {'symbol':'BTCUSDT','interval':'1h','limit':3})
+    check_clock(received)
+    check_window(received)
     rows = json.loads(raw)
     if received < requested:
         raise ValueError('clock moved backwards')
@@ -103,12 +125,19 @@ def capture_price_receipt(session, ledger, *, clock=None, timeout=10, expected_e
         raise ValueError('scheduled slot mismatch; no historical backfill')
     payload = latest_closed_kline([row], datetime.fromtimestamp(server_ms/1000, timezone.utc))
     payload.update(open_time_ms=int(row[0]), close_time_ms=int(row[6]))
+    def admission_clock():
+        admission = _utc(utc_now())
+        check_clock(admission)
+        check_window(admission)
+        return admission
+    admission_clock()  # Reject late completion before opening the ledger, then recheck at append.
     return append_observation(ledger, source=BASE+'/fapi/v1/klines', instrument='BTCUSDT',
         feature='Price/OHLCV', event_time=start+timedelta(hours=1),
         source_metric_at=datetime.fromtimestamp(int(row[6])/1000, timezone.utc),
-        received_at=received, payload=payload, clock=utc_now,
+        received_at=received, payload=payload, clock=admission_clock, admission_check=admission_clock,
         provenance={'contract':'binance-usdm-h1-rest-v1','bar_closed':True,
                     'raw_server_time':server_raw,'raw_klines':raw,
                     'server_received_at':server_received.isoformat(),
                     'klines_requested_at':requested.isoformat(),
+                    'clock_health':evidence,
                     'clock':'host UTC wall clock; decision must use the same clock domain'})

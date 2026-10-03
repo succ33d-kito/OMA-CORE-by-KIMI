@@ -187,10 +187,11 @@ def test_scheduled_slot_mismatch_never_persists(tmp_path):
     from types import SimpleNamespace
     from core.market_mechanics.binance_live_adapter import capture_price_receipt
     a = args_at(0)
+    a['provenance']['raw_server_time'] = json.dumps({'serverTime':int((T+timedelta(seconds=5)).timestamp()*1000)})
     class Session:
         def get(self, url, **kwargs):
             raw = a['provenance']['raw_server_time' if url.endswith('/time') else 'raw_klines']
             return SimpleNamespace(status_code=200, text=raw, raise_for_status=lambda:None)
     with pytest.raises(ValueError, match='scheduled slot mismatch'):
-        capture_price_receipt(Session(), tmp_path/'r.db', clock=lambda:T+timedelta(seconds=5), expected_event_time=T-timedelta(hours=1))
+        capture_price_receipt(Session(), tmp_path/'r.db', clock=lambda:T+timedelta(seconds=5), monotonic=lambda:0, expected_event_time=T-timedelta(hours=1))
     assert not (tmp_path/'r.db').exists()

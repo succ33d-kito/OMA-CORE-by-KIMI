@@ -14,6 +14,7 @@ from core.scientific.price_continuity import (next_capture_at, hour, status, anc
                                              exclusive_json)
 from core.market_mechanics.binance_live_adapter import capture_price_receipt
 from core.scientific.prospective_receipts import load_observations, _utc
+from core.scientific.capture_clock import ClockHealthError
 
 
 def now():
@@ -68,6 +69,7 @@ def refresh(ledger, state, delay=5):
     report['capture_running'] = running(state)
     heartbeat = Path(state)/'heartbeat.json'
     report['runner'] = json.loads(heartbeat.read_text()) if heartbeat.exists() else None
+    report.update(capture_health(report, state))
     atomic_json(Path(state)/'status.json', report)
     if report['certificate']:
         cert = report['certificate']
@@ -80,24 +82,111 @@ def refresh(ledger, state, delay=5):
     return report
 
 
-def attempt(session, ledger, state, boundary):
+def capture_health(report, state):
+    results = [json.loads(p.read_text()) for p in (Path(state)/'attempts').glob('*-result.json')]
+    results.sort(key=lambda x: (x['completed_at'], x.get('attempt_id', '')))
+    failures = 0
+    for result in reversed(results):
+        if result['status'] == 'SUCCESS':
+            break
+        if result["status"] in ("FAILED", "CONFLICT"):
+            failures += 1
+    reference = _utc(report['reference_at'])
+    receipt = report.get('last_receipt_at')
+    age = (reference-_utc(receipt)).total_seconds() if receipt else None
+    runner = report.get('runner') or {}
+    heartbeat_age = (reference-_utc(runner['at'])).total_seconds() if runner.get('at') else None
+    healthy = (report['capture_running'] and report['ledger_integrity'] == 'PASS'
+               and heartbeat_age is not None and 0 <= heartbeat_age <= 60
+               and age is not None and 0 <= age <= 3600+125 and not failures
+               and runner.get('state') != 'CLOCK_REGRESSION')
+    health = 'HEALTHY' if healthy else 'DEGRADED'
+    if (not report['capture_running'] or report['ledger_integrity'] != 'PASS'
+            or heartbeat_age is None or not 0 <= heartbeat_age <= 60
+            or runner.get('state') == 'CLOCK_REGRESSION'
+            or (results and results[-1].get('failure_kind') == 'CLOCK')):
+        health = 'UNHEALTHY'
+    return dict(capture_health=health, capture_healthy=healthy,
+                last_success_at=next((x['completed_at'] for x in reversed(results)
+                                      if x['status'] == 'SUCCESS'), None),
+                receipt_age_seconds=age, heartbeat_age_seconds=heartbeat_age,
+                consecutive_failures=failures,
+                missed_slots=sum(x.get('missed_slots', 1) for x in results if x['status'] == 'MISSED_SLOT'),
+                clock_failures=sum(x['status'] == 'FAILED' and x.get('failure_kind') == 'CLOCK' for x in results))
+
+
+def attempt(session, ledger, state, boundary, deadline=None):
     identity = uuid.uuid4().hex
     started = now()
     base = dict(attempt_id=identity, expected_event_time=boundary.isoformat(), started_at=started.isoformat())
     exclusive_json(Path(state)/'attempts'/(identity+'-start.json'), dict(base, status='STARTED'))
     try:
-        x = capture_price_receipt(session, ledger, expected_event_time=boundary)
+        options = dict(expected_event_time=boundary)
+        if deadline is not None:
+            options.update(capture_deadline=deadline, timeout=min(10, max(.1, (deadline-started).total_seconds()/2)))
+        x = capture_price_receipt(session, ledger, **options)
         body = dict(base, status='SUCCESS', receipt_id=x['id'])
     except Exception as exc:
         body = dict(base, status='CONFLICT' if 'conflicting observation' in str(exc) else 'FAILED', error=str(exc))
+        body['failure_kind'] = 'CLOCK' if isinstance(exc, ClockHealthError) or 'clock' in str(exc) else 'CAPTURE'
     body['completed_at'] = now().isoformat()
     exclusive_json(Path(state)/'attempts'/(identity+'-result.json'), body)
     return body
 
 
-def run(ledger, state, delay=5):
+def capture_slot(session, ledger, state, target):
+    deadline = target + timedelta(minutes=2)
+    current = now()
+    if current > deadline:
+        exclusive_json(Path(state)/'attempts'/(uuid.uuid4().hex+'-result.json'),
+            dict(status='MISSED_SLOT', expected_event_time=hour(target).isoformat(),
+                 completed_at=current.isoformat(), missed_slots=1+int((hour(current)-hour(target)).total_seconds()/3600)))
+        return
+    previous = current
+    result = None
+    def exhausted(result):
+        exclusive_json(Path(state)/'attempts'/(uuid.uuid4().hex+'-result.json'),
+            dict(status='MISSED_SLOT', expected_event_time=hour(target).isoformat(),
+                 completed_at=now().isoformat(), missed_slots=1,
+                 failure_kind=result.get('failure_kind'), error=result.get('error')))
+        return result
+    while target <= current < deadline:
+        result = attempt(session, ledger, state, hour(target), deadline)
+        if result['status'] != 'FAILED':
+            return result
+        current = now()
+        if current < previous:
+            raise ClockHealthError('clock moved backwards during retries')
+        remaining = (deadline-current).total_seconds()
+        if remaining <= 0:
+            return exhausted(result)
+        time.sleep(min(20, remaining))
+        previous, current = current, now()
+        if current < previous:
+            raise ClockHealthError('clock moved backwards during retry wait')
+    return exhausted(result) if result else None
+
+
+@contextmanager
+def prevent_sleep(enabled=False):
+    """Optional thread-scoped Windows request; release even on exceptions."""
+    if not enabled or os.name != 'nt':
+        yield
+        return
+    import ctypes
+    set_state = ctypes.windll.kernel32.SetThreadExecutionState
+    if not set_state(0x80000001):
+        raise OSError('Windows sleep protection request failed')
+    try:
+        yield
+    finally:
+        if not set_state(0x80000000):
+            raise OSError('Windows sleep protection release failed')
+
+
+def run(ledger, state, delay=5, keep_awake=False):
     import requests
-    with runner_lock(state), requests.Session() as session:
+    with runner_lock(state), requests.Session() as session, prevent_sleep(keep_awake):
         report = refresh(ledger, state, delay)
         if report['ledger_integrity'] != 'PASS':
             raise ValueError(report.get('integrity_error', 'ledger integrity failure'))
@@ -120,17 +209,8 @@ def run(ledger, state, delay=5):
             if current < target:
                 time.sleep(min(20, (target-current).total_seconds()))
                 continue
-            boundary = hour(target)
             # A resumed/suspended host never catches up old slots. Retry window 2 min.
-            if current <= target + timedelta(minutes=2):
-                result = attempt(session, ledger, state, boundary)
-                if result['status'] == 'FAILED':
-                    time.sleep(20)
-                    if target <= now() <= target + timedelta(minutes=2):
-                        attempt(session, ledger, state, boundary)
-            else:
-                exclusive_json(Path(state)/'attempts'/(uuid.uuid4().hex+'-result.json'),
-                    dict(status='MISSED_SLOT', expected_event_time=boundary.isoformat(), completed_at=current.isoformat()))
+            capture_slot(session, ledger, state, target)
             completed = now()
             if completed < current or any(_utc(x['recorded_at']) > completed for x in load_observations(ledger).values()):
                 raise ValueError('clock regression during capture')
@@ -150,12 +230,13 @@ def main():
     parser.add_argument('--state', required=True)
     parser.add_argument('--delay', type=int, default=5)
     parser.add_argument('--json', action='store_true')
+    parser.add_argument('--keep-awake', action='store_true', help='Request thread-scoped Windows sleep protection while running')
     args = parser.parse_args()
     next_capture_at(now(), args.delay)
     Path(args.state).mkdir(parents=True, exist_ok=True)
     if args.command == 'run':
         try:
-            run(args.ledger, args.state, args.delay)
+            run(args.ledger, args.state, args.delay, args.keep_awake)
         except Exception as exc:
             exclusive_json(Path(args.state)/'errors'/(uuid.uuid4().hex+'.json'),
                            dict(at=now().isoformat(), error=str(exc)))
@@ -167,7 +248,8 @@ def main():
     if args.json:
         print(json.dumps(report, indent=2))
     else:
-        for key in ['capture_running', 'last_valid_event_time', 'last_receipt_at',
+        for key in ['capture_running', 'capture_health', 'last_success_at', 'receipt_age_seconds',
+                    'consecutive_failures', 'missed_slots', 'clock_failures', 'last_valid_event_time', 'last_receipt_at',
                     'current_streak', 'longest_streak', 'gaps', 'conflicts', 'invalid',
                     'bars_to_81', 'regime_input_ready', 'ledger_integrity', 'last_external_anchor']:
             print(f'{key.upper()}: {report[key]}')

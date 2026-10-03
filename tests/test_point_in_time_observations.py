@@ -102,6 +102,7 @@ def test_capture_uses_only_two_public_price_requests(tmp_path):
         def get(self,url,**kwargs):
             calls.append(url)
             return Response(a['provenance']['raw_server_time'] if url.endswith('/time') else a['provenance']['raw_klines'])
-    x=capture_price_receipt(Session(),tmp_path/'r.db',clock=lambda:T+timedelta(seconds=5))
+    a['provenance']['raw_server_time']=json.dumps({'serverTime':int((T+timedelta(seconds=5)).timestamp()*1000)})
+    x=capture_price_receipt(Session(),tmp_path/'r.db',clock=lambda:T+timedelta(seconds=5),monotonic=lambda:0)
     assert len(calls)==2
     assert is_causally_available(tmp_path/'r.db',x['id'],T+timedelta(seconds=6))

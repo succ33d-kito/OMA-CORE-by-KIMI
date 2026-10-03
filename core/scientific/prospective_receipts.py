@@ -137,7 +137,7 @@ def load_observations(path):
 
 def append_observation(path, *, source, instrument, feature, event_time,
                        source_metric_at, received_at, payload, provenance,
-                       dependencies=(), derived=False, clock=None):
+                       dependencies=(), derived=False, clock=None, admission_check=None):
     """Trusted capture boundary; explicit clock injection is for tests only.
 
     All live callers obtain received_at immediately after consuming response
@@ -172,13 +172,21 @@ def append_observation(path, *, source, instrument, feature, event_time,
     try:
         con.execute('BEGIN IMMEDIATE')
         existing = con.execute('SELECT body FROM observations_v2 WHERE id=?', (identity,)).fetchone()
+        last = con.execute('SELECT body,receipt_hash FROM observations_v2 ORDER BY seq DESC LIMIT 1').fetchone()
+        if admission_check is not None:
+            admitted = _utc(admission_check())
+            if admitted < now:
+                raise ValueError('clock moved backwards during ledger admission')
+            item['recorded_at'] = admitted.isoformat()
+            if feature == 'Price/OHLCV' and not derived:
+                item['available_at'] = admitted.isoformat()
+            now = admitted
         if existing:
             old = json.loads(existing[0])
             if old['payload_hash'] != item['payload_hash']:
                 raise ValueError('conflicting observation; no silent overwrite')
             con.rollback()
             return old
-        last = con.execute('SELECT body,receipt_hash FROM observations_v2 ORDER BY seq DESC LIMIT 1').fetchone()
         if last and _utc(json.loads(last[0])['recorded_at']) > now:
             raise ValueError('clock moved backwards')
         previous = last[1] if last else '0' * 64
