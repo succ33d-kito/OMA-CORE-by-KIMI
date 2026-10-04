@@ -96,7 +96,7 @@ class ExecutionReceipt:
     def payload(self):
         data = json.loads(self.response_json, object_pairs_hook=_pairs)
         extras = {
-            EvidenceKind.BOOK: {"bidQty", "askQty", "time"},
+            EvidenceKind.BOOK: {"bidQty", "askQty", "time", "lastUpdateId"},
             EvidenceKind.MARK_FUNDING: {"estimatedSettlePrice", "interestRate", "nextFundingTime", "time"},
             EvidenceKind.USER_FEES: {"rpiCommissionRate"},
         }[self.kind]
@@ -104,6 +104,10 @@ class ExecutionReceipt:
         if type(data) is not dict or set(data) - allowed or data.get("symbol") != "BTCUSDT":
             raise ValueError("wrong symbol or unsupported response fields")
         for key, value in tuple(data.items()):
+            if key == "lastUpdateId":
+                if type(value) is not int or value < 0:
+                    raise ValueError("exchange update identifier must be a nonnegative integer")
+                continue
             if key == "symbol" or value is None:
                 continue
             if key in ("time", "nextFundingTime"):
@@ -121,6 +125,11 @@ class ExecutionReceipt:
         if bid is not None and ask is not None and bid > ask:
             raise ValueError("crossed book: bid exceeds ask")
         return data
+
+    @property
+    def source_update_id(self):
+        """Opaque exchange update metadata, never a timestamp or trade ID."""
+        return self.payload().get("lastUpdateId")
 
     @property
     def exchange_at(self):

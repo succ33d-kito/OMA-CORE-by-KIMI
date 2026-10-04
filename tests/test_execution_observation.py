@@ -15,6 +15,23 @@ from core.scientific.nuisance_pilot_contracts import DatasetRole, InputStatus
 T = datetime(2020, 1, 1, tzinfo=timezone.utc)
 
 
+def test_update_metadata_preserved_in_identity_not_time():
+    body = dict(symbol="BTCUSDT", bidPrice="100", askPrice="101", lastUpdateId=11733694562833)
+    first = receipt(payload=body, received_at=None, available_at=None)
+    second = receipt(payload={**body, "lastUpdateId": body["lastUpdateId"] + 1}, received_at=None, available_at=None)
+    assert first.source_update_id == body["lastUpdateId"]
+    assert first.exchange_at is None
+    assert first.status_at(T) is InputStatus.UNKNOWN
+    assert first.identity != second.identity
+    assert observation((first,)).observation_id != observation((second,)).observation_id
+
+
+@pytest.mark.parametrize("value", [-1, True, "123", 123.0, None])
+def test_invalid_update_metadata_rejected(value):
+    with pytest.raises(ValueError):
+        receipt(payload=dict(symbol="BTCUSDT", lastUpdateId=value))
+
+
 def receipt(kind=e.EvidenceKind.BOOK, payload=None, **changes):
     body = payload if payload is not None else {"symbol": "BTCUSDT", "bidPrice": "100.10", "askPrice": "100.30", "time": 1577836800000}
     return e.ExecutionReceipt(**{**dict(kind=kind, source=kind.value, receipt_id=kind.name,
