@@ -109,3 +109,67 @@ class OrderIntent:
     @property
     def role(self):
         return self.plan.role
+
+
+class QualityState(Enum):
+    PASS = 'PASS'
+    DEFER = 'DEFER'
+    REJECT = 'REJECT'
+
+
+@dataclass(frozen=True, slots=True)
+class QualityPolicy:
+    registered_at: datetime
+    max_book_age_seconds: Decimal | None
+    max_relative_spread: Decimal | None
+    policy_id: str = field(init=False)
+
+    def __post_init__(self):
+        utc(self.registered_at)
+        for value in (self.max_book_age_seconds, self.max_relative_spread):
+            if value is not None: number(value)
+        upstream._seal(self, 'policy_id')
+
+
+@dataclass(frozen=True, slots=True)
+class ExecutionQualityGate:
+    decision: upstream.ShadowCapitalDecision
+    candidate_id: str
+    policy: QualityPolicy
+    state: QualityState = field(init=False)
+    reason: str = field(init=False)
+    evidence_refs: tuple[str, ...] = field(init=False)
+    gate_id: str = field(init=False)
+
+    def __post_init__(self):
+        verify(self.decision, upstream.ShadowCapitalDecision)
+        verify(self.policy, QualityPolicy)
+        if self.policy.registered_at > self.decision.world.as_of:
+            raise ValueError('quality policy must precede input world')
+        candidates = [c for c in self.decision.radar.candidates if c.candidate_id == self.candidate_id]
+        if len(candidates) != 1: raise ValueError('candidate not in decision')
+        markets = [m for m in self.decision.world.markets if m.symbol in candidates[0].markets]
+        refs = tuple(m.book.observation_id for m in markets if m.book is not None)
+        state, reason = QualityState.PASS, 'CAUSAL_BOOK_WITHIN_EXPLICIT_LIMITS'
+        if any(m.book is None for m in markets):
+            state, reason = QualityState.DEFER, 'MISSING_BOOK'
+        elif self.policy.max_book_age_seconds is None or self.policy.max_relative_spread is None:
+            state, reason = QualityState.DEFER, 'UNKNOWN_REQUIRED_QUALITY_LIMIT'
+        else:
+            with localcontext() as ctx:
+                ctx.prec = 100
+                for m in markets:
+                    if m.book.available_at > self.decision.available_at:
+                        raise ValueError('future quote')
+                    if m.book.exchange_at is None:
+                        state, reason = QualityState.DEFER, 'UNKNOWN_EXCHANGE_TIME'
+                        break
+                    age = Decimal(str((self.decision.available_at - m.book.exchange_at).total_seconds()))
+                    if age < 0: raise ValueError('future exchange evidence')
+                    if age > self.policy.max_book_age_seconds or m.spread / m.mid > self.policy.max_relative_spread:
+                        state, reason = QualityState.REJECT, 'BOOK_OUTSIDE_EXPLICIT_LIMITS'
+                        break
+        object.__setattr__(self, 'state', state)
+        object.__setattr__(self, 'reason', reason)
+        object.__setattr__(self, 'evidence_refs', refs)
+        upstream._seal(self, 'gate_id')

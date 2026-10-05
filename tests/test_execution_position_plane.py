@@ -1,6 +1,7 @@
 """Synthetic fixtures only: these tests are not prospective execution evidence."""
 from dataclasses import FrozenInstanceError, replace
 from decimal import Decimal
+from datetime import timedelta
 import pytest
 from core.scientific import execution_position_plane as e
 from core.scientific import trading_decision_plane as t
@@ -59,3 +60,19 @@ def test_intent_cannot_invent_venue_parameters_or_fill(tmp_path, monkeypatch):
     with pytest.raises(TypeError): replace(intent, fill_price=Decimal('1'))
     with pytest.raises(ValueError): replace(intent, actionable=True)
     with pytest.raises(ValueError): e.OrderIntent(plan(tmp_path/'risk', monkeypatch))
+
+
+def gate(p, **changes):
+    args = dict(registered_at=p.decision.world.as_of,max_book_age_seconds=Decimal('10000'),max_relative_spread=Decimal('1'))
+    args.update(changes)
+    return e.ExecutionQualityGate(p.decision,p.candidate_id,e.QualityPolicy(**args))
+
+
+def test_quality_causal_limits_unknown_and_rejection(tmp_path, monkeypatch):
+    p = plan(tmp_path, monkeypatch)
+    assert gate(p).state is e.QualityState.PASS
+    assert gate(p,max_relative_spread=None).state is e.QualityState.DEFER
+    assert gate(p,max_relative_spread=Decimal('0')).state is e.QualityState.REJECT
+    with pytest.raises(ValueError): gate(p,registered_at=p.available_at+timedelta(seconds=1))
+    with pytest.raises(TypeError): replace(gate(p),pnl=1)
+    assert replace(gate(p)) == gate(p)
