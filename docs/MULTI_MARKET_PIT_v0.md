@@ -57,3 +57,14 @@ simultaneous or a low-latency quote certification. Directory:
 `O-C data/prospective/multi-market/diagnostics/startup-2026-10-05-after-tls-timeout`.
 No diagnostic cycle enters official H1 population. The earlier failed directory
 remains untouched. Collector + capture validation: 18 focal tests passed.
+
+## Universe snapshot v0
+
+`universe_snapshot.load_snapshot(cycle_directory, universe_directory, as_of=...)`
+returns an immutable causal view backed only by verified persisted evidence.
+Before cycle availability it exposes neither member values, cycle identity nor
+future missingness. At/after availability, each symbol is AVAILABLE with its
+evidence or MISSING without imputation. The universe itself must already be frozen
+at the cutoff. DIAGNOSTIC remains explicitly distinct from H1. No rankings,
+signals or outcomes are introduced. Four snapshot tests plus twelve capture tests
+pass; compile/diff checks pass. This is a data view, not a trading World State engine.
