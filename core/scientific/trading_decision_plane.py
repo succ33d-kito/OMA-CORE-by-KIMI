@@ -406,3 +406,117 @@ def build_exposure_graph(portfolio,*,proposals=()):
             if reasons: links.append(ExposureLink(p.reference_id,other.reference_id,tuple(reasons)))
     return ExposureGraph(portfolio.portfolio_id,tuple(p.reference_id for p in all_exposures),tuple(links),
         tuple((v,p,n) for (v,p),n in sorted(venue.items())),tuple(sorted(families.items())))
+
+
+class RiskState(Enum):
+    APPROVE='APPROVE'
+    REDUCE='REDUCE'
+    DEFER='DEFER'
+    REJECT='REJECT'
+    HALT='HALT'
+
+
+class FutureRiskControl(Enum):
+    DRAWDOWN='DRAWDOWN'
+    DAILY_LOSS='DAILY_LOSS'
+    EVENT_CONCENTRATION='EVENT_CONCENTRATION'
+    VOLATILITY='VOLATILITY'
+    EXECUTION_COST='EXECUTION_COST'
+    CORRELATION='CORRELATION'
+
+
+@dataclass(frozen=True,slots=True)
+class RiskPolicy:
+    registered_at: datetime
+    unit: CapitalUnit
+    position_limit: Decimal | None
+    aggregate_limit: Decimal | None
+    max_positions: int | None
+    max_age_seconds: Decimal | None
+    max_instrument_positions: int | None
+    max_family_positions: int | None
+    max_venue_product_positions: int | None
+    require_book: bool
+    required_future_controls: tuple[FutureRiskControl,...]
+    label: str
+    policy_id: str = field(init=False)
+
+    def __post_init__(self):
+        utc(self.registered_at)
+        if type(self.unit) is not CapitalUnit or self.label!='PILOT_SYNTHETIC_LIMITS' or type(self.require_book) is not bool: raise ValueError('explicit synthetic risk policy required')
+        for v in (self.position_limit,self.aggregate_limit,self.max_age_seconds):
+            if v is not None:
+                _finite(v)
+                if v<0: raise ValueError('negative risk limit')
+        for v in (self.max_positions,self.max_instrument_positions,self.max_family_positions,self.max_venue_product_positions):
+            if v is not None and (type(v) is not int or v<0): raise ValueError('nonnegative explicit count required')
+        if type(self.required_future_controls) is not tuple or any(type(x) is not FutureRiskControl for x in self.required_future_controls): raise TypeError('closed required risk controls')
+        _seal(self,'policy_id')
+
+
+@dataclass(frozen=True,slots=True)
+class RiskAuthorization:
+    candidate: OpportunityCandidate
+    world: WorldState
+    portfolio: PortfolioState
+    request: Exposure
+    policy: RiskPolicy
+    kill_switch: bool | None
+    available_at: datetime
+    state: RiskState
+    cap: CapitalAmount
+    reasons: tuple[str,...]
+    authorization_id: str = field(init=False)
+
+    def __post_init__(self): _seal(self,'authorization_id')
+
+
+def authorize_risk(candidate,world,portfolio,request,policy,*,kill_switch,available_at):
+    if (type(candidate),type(world),type(portfolio),type(request),type(policy))!=(OpportunityCandidate,WorldState,PortfolioState,Exposure,RiskPolicy): raise TypeError('closed risk inputs required')
+    utc(available_at)
+    if not policy.registered_at<=world.as_of<=available_at or candidate.available_at>available_at or portfolio.available_at>available_at:
+        raise ValueError('noncausal risk inputs')
+    if candidate.world_state_id!=world.world_state_id or request.reference_id!=candidate.candidate_id or request.family is not candidate.family or {l.symbol for l in request.legs}!=set(candidate.markets):
+        raise ValueError('risk request scope mismatch')
+    if kill_switch is not None and type(kill_switch) is not bool: raise TypeError('explicit kill switch state required')
+    def result(state,cap,reason):
+        return RiskAuthorization(candidate,world,portfolio,request,policy,kill_switch,available_at,state,CapitalAmount(policy.unit,cap),(reason,))
+    if kill_switch is True: return result(RiskState.HALT,Decimal(0),'KILL_SWITCH')
+    if kill_switch is None: return result(RiskState.DEFER,None,'KILL_SWITCH_UNKNOWN')
+    if policy.required_future_controls: return result(RiskState.DEFER,None,'UNOBSERVED_REQUIRED_CONTROLS:'+','.join(x.value for x in policy.required_future_controls))
+    limits=(policy.position_limit,policy.aggregate_limit,policy.max_positions,policy.max_age_seconds,
+            policy.max_instrument_positions,policy.max_family_positions,policy.max_venue_product_positions)
+    if any(x is None for x in limits): return result(RiskState.DEFER,None,'LIMIT_UNKNOWN')
+    if portfolio.equity.value is None or request.risk.value is None or portfolio.available_risk_budget.value is None or any(p.risk.value is None for p in portfolio.positions):
+        return result(RiskState.DEFER,None,'CAPITAL_OR_RISK_UNKNOWN')
+    if request.risk.unit is not policy.unit or portfolio.available_risk_budget.unit is not policy.unit or any(p.risk.unit is not policy.unit for p in portfolio.positions):
+        return result(RiskState.DEFER,None,'INCOMPATIBLE_RISK_UNITS')
+    if any(l.direction not in (Direction.LONG,Direction.SHORT) for l in request.legs): return result(RiskState.DEFER,None,'DIRECTION_UNKNOWN')
+    if candidate.status is CandidateStatus.REJECTED: return result(RiskState.REJECT,Decimal(0),'CANDIDATE_REJECTED')
+    markets={m.symbol:m for m in world.markets}
+    for symbol in candidate.markets:
+        m=markets[symbol]
+        if policy.require_book and m.book is None: return result(RiskState.DEFER,None,'EXECUTION_EVIDENCE_UNKNOWN')
+        ages=[(available_at-e.exchange_at).total_seconds() if e.exchange_at is not None else None for e in (m.book,m.premium) if e is not None]
+        if not ages or any(a is None for a in ages): return result(RiskState.DEFER,None,'FRESHNESS_UNKNOWN')
+        if max(Decimal(str(a)) for a in ages)>policy.max_age_seconds: return result(RiskState.DEFER,None,'STALE_EVIDENCE')
+    if len(portfolio.positions)>=policy.max_positions: return result(RiskState.REJECT,Decimal(0),'MAX_POSITIONS')
+    for leg in request.legs:
+        if sum(any(l.symbol==leg.symbol for l in p.legs) for p in portfolio.positions)>=policy.max_instrument_positions:
+            return result(RiskState.REJECT,Decimal(0),'INSTRUMENT_CONCENTRATION')
+        if sum(any((l.venue,l.product)==(leg.venue,leg.product) for l in p.legs) for p in portfolio.positions)>=policy.max_venue_product_positions:
+            return result(RiskState.REJECT,Decimal(0),'VENUE_PRODUCT_CONCENTRATION')
+    if sum(p.family is request.family for p in portfolio.positions)>=policy.max_family_positions: return result(RiskState.REJECT,Decimal(0),'FAMILY_CONCENTRATION')
+    from decimal import localcontext
+    with localcontext() as ctx:
+        ctx.prec=100
+        remaining=policy.aggregate_limit-sum((p.risk.value for p in portfolio.positions),Decimal(0))
+        cap=max(Decimal(0),min(request.risk.value,policy.position_limit,remaining,portfolio.available_risk_budget.value))
+    if cap==0: return result(RiskState.REJECT,cap,'NO_RISK_CAPACITY')
+    return result(RiskState.REDUCE if cap<request.risk.value else RiskState.APPROVE,cap,'EXPLICIT_SYNTHETIC_LIMITS')
+
+
+def verify_authorization(auth):
+    if type(auth) is not RiskAuthorization: raise TypeError('risk authorization required')
+    expected=authorize_risk(auth.candidate,auth.world,auth.portfolio,auth.request,auth.policy,kill_switch=auth.kill_switch,available_at=auth.available_at)
+    if auth!=expected: raise ValueError('risk authorization cannot be forged or overridden')

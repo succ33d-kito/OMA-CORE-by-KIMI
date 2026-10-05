@@ -35,3 +35,14 @@ explicit units without conversion; unknown risk stays None. ExposureGraph counts
 instrument/underlying/direction, shared legs, venue/product and family overlap.
 These are factual overlaps, not correlations. No validated relationship evidence
 adapter exists here, so correlation remains UNKNOWN rather than zero.
+
+## Independent risk
+
+RiskPolicy is versioned by content identity and explicitly PILOT_SYNTHETIC_LIMITS.
+All core limits are explicit; None causes DEFER. Kill switch TRUE causes HALT,
+unknown causes DEFER. Position/aggregate budgets, count concentration, freshness,
+direction and book observability are checked independently of ranking. Required
+drawdown/daily-loss/event/volatility/cost/correlation controls are represented but
+not observed by this data plane: requesting them causes DEFER, never assumed zero.
+Authorization can be recomputed and verified; a forged cap is rejected. Risk policy
+registration time is contractual until frozen by the runner configuration.

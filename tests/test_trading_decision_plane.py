@@ -108,3 +108,35 @@ def test_shadow_capital_units_unknown_and_overlaps(tmp_path,monkeypatch):
     with pytest.raises(ValueError): replace(p,provenance='BROKER_OBSERVED')
     with pytest.raises(ValueError): t.CapitalAmount(t.CapitalUnit.FRACTION_OF_CAPITAL,Decimal('10'))
     with pytest.raises(TypeError): t.CapitalAmount(t.CapitalUnit.USD_NOTIONAL,1.0)
+
+
+def risk_policy(at,**changes):
+    args=dict(registered_at=at,unit=t.CapitalUnit.RISK_UNIT,position_limit=Decimal('2'),aggregate_limit=Decimal('10'),
+        max_positions=5,max_age_seconds=Decimal('10000'),max_instrument_positions=1,max_family_positions=5,max_venue_product_positions=5,
+        require_book=True,required_future_controls=(),label='PILOT_SYNTHETIC_LIMITS')
+    args.update(changes); return t.RiskPolicy(**args)
+
+
+def authorization(w,c,**changes):
+    p=portfolio(w.as_of); request=t.Exposure(c.candidate_id,c.family,tuple(t.ExposureLeg(s,t.Direction.LONG) for s in c.markets),t.CapitalAmount(t.CapitalUnit.RISK_UNIT,Decimal('3')))
+    args=dict(candidate=c,world=w,portfolio=p,request=request,policy=risk_policy(w.as_of),kill_switch=False,available_at=w.as_of)
+    args.update(changes); return t.authorize_risk(**args)
+
+
+def test_risk_halt_unknown_reduce_and_no_forgery(tmp_path,monkeypatch):
+    w,radar,r=ranked(tmp_path,monkeypatch); c=radar.candidates[0]
+    a=authorization(w,c)
+    assert a.state is t.RiskState.REDUCE and a.cap.value==2<a.request.risk.value
+    t.verify_authorization(a)
+    assert authorization(w,c,kill_switch=True).state is t.RiskState.HALT
+    assert authorization(w,c,kill_switch=None).state is t.RiskState.DEFER
+    assert authorization(w,c,policy=risk_policy(w.as_of,position_limit=None)).state is t.RiskState.DEFER
+    assert authorization(w,c,policy=risk_policy(w.as_of,required_future_controls=(t.FutureRiskControl.EXECUTION_COST,))).state is t.RiskState.DEFER
+    assert authorization(w,c,policy=risk_policy(w.as_of,max_positions=0)).state is t.RiskState.REJECT
+    with pytest.raises(ValueError): t.verify_authorization(replace(a,cap=t.CapitalAmount(t.CapitalUnit.RISK_UNIT,Decimal('99'))))
+
+
+def test_unknown_position_risk_is_not_zero(tmp_path,monkeypatch):
+    w,radar,r=ranked(tmp_path,monkeypatch); c=radar.candidates[0]
+    old=t.Exposure('old',c.family,(t.ExposureLeg('BTCUSDT',t.Direction.LONG),),t.CapitalAmount(t.CapitalUnit.RISK_UNIT,None))
+    assert authorization(w,c,portfolio=portfolio(w.as_of,(old,))).state is t.RiskState.DEFER
