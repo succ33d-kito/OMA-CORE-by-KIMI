@@ -74,3 +74,38 @@ class ExecutionPlan:
     @property
     def role(self):
         return self.decision.role
+
+
+@dataclass(frozen=True, slots=True)
+class OrderIntent:
+    """Notional intention only. No venue quantity/conversion adapter is installed."""
+    plan: ExecutionPlan
+    instrument: str = field(init=False)
+    direction: upstream.Direction = field(init=False)
+    venue: str = field(init=False)
+    product: str = field(init=False)
+    quantity: Decimal = field(init=False)
+    quantity_unit: str = field(init=False, default='USD_NOTIONAL')
+    actionable: bool = field(init=False, default=False)
+    reason: str = field(init=False, default='MISSING_VENUE_QUANTITY_AND_ORDER_PARAMETERS')
+    intent_id: str = field(init=False)
+
+    def __post_init__(self):
+        verify(self.plan, ExecutionPlan)
+        if self.plan.state is not PlanState.READY:
+            raise ValueError('NO_ORDER plan cannot form order intent')
+        row = next(r for r in self.plan.decision.allocation.rows if r.candidate_id == self.plan.candidate_id)
+        leg = row.effective_authorization.request.legs[0]
+        for name, value in (('instrument', leg.symbol), ('direction', leg.direction),
+                            ('venue', leg.venue), ('product', leg.product),
+                            ('quantity', self.plan.notional_usd)):
+            object.__setattr__(self, name, value)
+        upstream._seal(self, 'intent_id')
+
+    @property
+    def mode(self):
+        return self.plan.mode
+
+    @property
+    def role(self):
+        return self.plan.role

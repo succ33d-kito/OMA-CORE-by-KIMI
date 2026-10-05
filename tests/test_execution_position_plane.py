@@ -48,3 +48,14 @@ def test_notional_is_not_venue_quantity(tmp_path, monkeypatch):
     assert p.state is e.PlanState.READY and p.notional_usd == Decimal('2')
     assert p.reason == 'AUTHORIZED_NOTIONAL_ONLY_NOT_VENUE_QUANTITY'
     assert replace(p,mode=e.Mode.PAPER).plan_id != p.plan_id
+
+
+def test_intent_cannot_invent_venue_parameters_or_fill(tmp_path, monkeypatch):
+    p = notional_plan(tmp_path, monkeypatch)
+    intent = e.OrderIntent(p)
+    assert intent.quantity_unit == 'USD_NOTIONAL' and intent.quantity == p.notional_usd
+    assert not intent.actionable and intent.direction is t.Direction.LONG
+    assert intent.mode is e.Mode.SHADOW and replace(intent) == intent
+    with pytest.raises(TypeError): replace(intent, fill_price=Decimal('1'))
+    with pytest.raises(ValueError): replace(intent, actionable=True)
+    with pytest.raises(ValueError): e.OrderIntent(plan(tmp_path/'risk', monkeypatch))
