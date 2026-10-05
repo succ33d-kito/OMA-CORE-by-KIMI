@@ -1,11 +1,12 @@
 """Outcome-blind SHADOW/PAPER contracts; never broker or execution evidence."""
 from dataclasses import dataclass, field, replace
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 from decimal import Decimal, localcontext
 from enum import Enum
 
 from . import trading_decision_plane as upstream
 from .nuisance_pilot_contracts import utc
+from . import multi_market_capture as capture
 
 
 class Mode(Enum):
@@ -30,6 +31,21 @@ def number(value, *, positive=False):
         raise TypeError('finite Decimal required')
     if value < 0 or (positive and value == 0):
         raise ValueError('invalid magnitude')
+
+
+def check_book(book, cutoff):
+    """Check materialized fields against wire; full receipt proof stays in loader."""
+    if type(book) is not capture.MarketObservation: raise TypeError('book observation required')
+    utc(cutoff); utc(book.received_at); utc(book.available_at)
+    if not book.received_at <= book.available_at <= cutoff:
+        raise ValueError('noncausal book timestamps')
+    upstream._hash(book.observation_id); upstream._hash(book.raw_commitment)
+    if book.role != 'PILOT': raise ValueError('book role mismatch')
+    row = capture._rows('['+book.wire_json+']',book.received_at).get(book.symbol)
+    if row is None: raise ValueError('missing wire member')
+    at = None if 'time' not in row else datetime(1970,1,1,tzinfo=timezone.utc)+timedelta(milliseconds=row['time'])
+    if (book.bid,book.ask,book.exchange_at,book.source_update_id) != (Decimal(row['bidPrice']),Decimal(row['askPrice']),at,row.get('lastUpdateId')):
+        raise ValueError('book fields conflict with source wire')
 
 
 @dataclass(frozen=True, slots=True)
@@ -76,12 +92,18 @@ class ExecutionPlan:
         return self.decision.role
 
 
+class Side(Enum):
+    BUY = 'BUY'
+    SELL = 'SELL'
+
+
 @dataclass(frozen=True, slots=True)
 class OrderIntent:
     """Notional intention only. No venue quantity/conversion adapter is installed."""
     plan: ExecutionPlan
     instrument: str = field(init=False)
     direction: upstream.Direction = field(init=False)
+    side: Side = field(init=False)
     venue: str = field(init=False)
     product: str = field(init=False)
     quantity: Decimal = field(init=False)
@@ -96,6 +118,9 @@ class OrderIntent:
             raise ValueError('NO_ORDER plan cannot form order intent')
         row = next(r for r in self.plan.decision.allocation.rows if r.candidate_id == self.plan.candidate_id)
         leg = row.effective_authorization.request.legs[0]
+        if leg.direction not in (upstream.Direction.LONG,upstream.Direction.SHORT):
+            raise ValueError('unsupported order direction')
+        object.__setattr__(self, 'side', Side.BUY if leg.direction is upstream.Direction.LONG else Side.SELL)
         for name, value in (('instrument', leg.symbol), ('direction', leg.direction),
                             ('venue', leg.venue), ('product', leg.product),
                             ('quantity', self.plan.notional_usd)):
@@ -149,6 +174,8 @@ class ExecutionQualityGate:
         candidates = [c for c in self.decision.radar.candidates if c.candidate_id == self.candidate_id]
         if len(candidates) != 1: raise ValueError('candidate not in decision')
         markets = [m for m in self.decision.world.markets if m.symbol in candidates[0].markets]
+        for m in markets:
+            if m.book is not None: check_book(m.book,self.decision.available_at)
         refs = tuple(m.book.observation_id for m in markets if m.book is not None)
         state, reason = QualityState.PASS, 'CAUSAL_BOOK_WITHIN_EXPLICIT_LIMITS'
         if any(m.book is None for m in markets):
@@ -268,6 +295,7 @@ class ThesisLifecycle:
             raise ValueError('lifecycle requires later causal world')
         thesis = next(t for t in decision.theses if t.thesis_id == self.position.thesis_id)
         market = next(m for m in self.world.markets if m.symbol == self.position.instrument)
+        if market.book is not None: check_book(market.book,self.world.as_of)
         if thesis.expiry is not None and self.assessed_at >= thesis.expiry:
             state, reason = ThesisState.TIMEOUT, 'EXPLICIT_THESIS_EXPIRY'
         elif market.book is None:

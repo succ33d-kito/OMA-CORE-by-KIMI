@@ -59,6 +59,7 @@ def test_intent_cannot_invent_venue_parameters_or_fill(tmp_path, monkeypatch):
     intent = e.OrderIntent(p)
     assert intent.quantity_unit == 'USD_NOTIONAL' and intent.quantity == p.notional_usd
     assert not intent.actionable and intent.direction is t.Direction.LONG
+    assert intent.side is e.Side.BUY
     assert intent.mode is e.Mode.SHADOW and replace(intent) == intent
     with pytest.raises(TypeError): replace(intent, fill_price=Decimal('1'))
     with pytest.raises(ValueError): replace(intent, actionable=True)
@@ -169,3 +170,78 @@ def test_attribution_schema_unknown_is_not_zero_or_learning(tmp_path, monkeypatc
     with pytest.raises(ValueError): replace(schema,components=parts[:-1])
     with pytest.raises(ValueError): replace(parts[0],value_usd=Decimal('0'))
     with pytest.raises(TypeError): e.ExecutionPlan(schema,p.candidate_id,e.Mode.SHADOW)
+
+
+def test_adversarial_book_future_materialized_quote_and_naive(tmp_path, monkeypatch):
+    p = plan(tmp_path,monkeypatch)
+    book = next(m.book for m in p.decision.world.markets if m.book is not None)
+    e.check_book(book,p.available_at)
+    with pytest.raises(ValueError): e.check_book(replace(book,bid=book.bid+Decimal('1')),p.available_at)
+    with pytest.raises(ValueError): e.check_book(replace(book,received_at=p.available_at+timedelta(seconds=1)),p.available_at)
+    with pytest.raises(ValueError): e.check_book(replace(book,available_at=p.available_at+timedelta(seconds=1)),p.available_at)
+    with pytest.raises(ValueError): e.check_book(replace(book,received_at=book.received_at.replace(tzinfo=None)),p.available_at)
+    with pytest.raises(TypeError): e.check_book(e.ExecutionEstimate(gate(p)),p.available_at)
+
+
+def test_adversarial_forged_cap_and_intent_as_position(tmp_path, monkeypatch):
+    p = notional_plan(tmp_path,monkeypatch)
+    intent = e.OrderIntent(p)
+    with pytest.raises(TypeError): e.PositionState(p,p.available_at,p.available_at)
+    with pytest.raises(TypeError): replace(intent,mode='LIVE')
+    with pytest.raises(TypeError): replace(p,outcome='profit')
+    row = p.decision.allocation.rows[0]
+    badrow = replace(row,amount=t.CapitalAmount(t.CapitalUnit.USD_NOTIONAL,Decimal('999')))
+    with pytest.raises(ValueError): replace(p.decision,allocation=replace(p.decision.allocation,rows=(badrow,)+p.decision.allocation.rows[1:]))
+    object.__setattr__(intent,'actionable',True)
+    with pytest.raises(ValueError): e.PositionState(intent,p.available_at,p.available_at)
+
+
+def test_no_legacy_or_learning_imports():
+    import ast
+    from pathlib import Path
+    forbidden = ('paper_trading','slippage','criterion','knowledge','outcome','council')
+    for filename in ('execution_position_plane.py','shadow_execution_intent_runner.py'):
+        tree = ast.parse((Path(e.__file__).parent/filename).read_text())
+        for node in ast.walk(tree):
+            if isinstance(node,ast.Import): names = [n.name for n in node.names]
+            elif isinstance(node,ast.ImportFrom): names = [node.module or '']+[n.name for n in node.names]
+            else: continue
+            assert not any(term in name.lower() for name in names for term in forbidden)
+
+
+def rebuild_with_theses(d, theses, radar=None):
+    radar = d.radar if radar is None else radar
+    forecasts = tuple(replace(f,thesis=th) for f,th in zip(d.forecasts,theses))
+    old = d.allocation
+    ranking = t.GlobalOpportunityRanker._rank(d.world,radar,old.ranking.policy,theses=theses,forecasts=forecasts,available_at=d.available_at)
+    auths = tuple(t.authorize_risk(c,d.world,old.portfolio,
+        replace(a.request,reference_id=c.candidate_id,family=c.family,legs=tuple(t.ExposureLeg(s,t.Direction.LONG) for s in c.markets)),
+        a.policy,kill_switch=a.kill_switch,available_at=d.available_at)
+        for c,a in zip(radar.candidates,old.authorizations))
+    alloc = t.allocate_capital(ranking,old.portfolio,auths,old.budget,old.policy,available_at=d.available_at)
+    return replace(d,radar=radar,theses=theses,forecasts=forecasts,allocation=alloc)
+
+
+def test_explicit_expiry_yields_exit_not_close(tmp_path,monkeypatch):
+    p = notional_plan(tmp_path,monkeypatch)
+    d = p.decision
+    expiry = d.available_at+timedelta(seconds=1)
+    d = rebuild_with_theses(d,tuple(replace(th,expiry=expiry) for th in d.theses))
+    p = e.ExecutionPlan(d,d.allocation.rows[0].candidate_id,e.Mode.PAPER)
+    pending = e.PositionState(e.OrderIntent(p),p.available_at,p.available_at)
+    assessment = e.ThesisLifecycle(pending,d.world,expiry)
+    assert assessment.state is e.ThesisState.TIMEOUT
+    assert e.ExitIntent(assessment).position.phase is e.PositionPhase.PENDING_EXECUTION
+    assert e.Reallocation(d,expiry).state is e.ReallocationState.DEFER
+
+
+def test_multileg_cannot_be_fabricated_from_notional(tmp_path,monkeypatch):
+    d = notional_plan(tmp_path,monkeypatch).decision
+    candidates = tuple(replace(c,markets=tuple(sorted(set(c.markets)|{'BTCUSDT','ETHUSDT'})),family=t.CandidateFamily.CROSS_MARKET) for c in d.radar.candidates)
+    radar = replace(d.radar,candidates=candidates)
+    theses = tuple(replace(th,candidate=c) for th,c in zip(d.theses,candidates))
+    d = rebuild_with_theses(d,theses,radar)
+    positive = next(row for row in d.allocation.rows if row.amount.value>0)
+    p = e.ExecutionPlan(d,positive.candidate_id,e.Mode.SHADOW)
+    assert p.state is e.PlanState.NO_ORDER and p.reason=='UNSUPPORTED_MULTILEG_EXPRESSION'
+    with pytest.raises(ValueError): e.OrderIntent(p)

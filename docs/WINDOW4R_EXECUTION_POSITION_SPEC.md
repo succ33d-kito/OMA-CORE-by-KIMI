@@ -85,3 +85,55 @@ HEAD, origin/main and worktree. Success requires all stages published and a clea
 tree with HEAD equal to origin/main. No real capture or operational deployment is
 implied. Edge, Regime validation and Mechanics validation remain NO; no policy
 winner is selected.
+
+## Implementation record — Window #4R
+
+New modules: `core/scientific/execution_position_plane.py` and
+`core/scientific/shadow_execution_intent_runner.py`. They reuse finalized shadow
+decisions and the existing risk/allocation revalidation, without changing those
+upstream contracts. No local collectors, captures or operational ledgers changed.
+
+Explicit supported limits:
+
+- ExecutionPlan READY means authorized single-leg **USD notional**, never a venue
+  order. There is no factual risk-to-notional conversion adapter.
+- OrderIntent has BUY/SELL, instrument, venue, product, mode and USD_NOTIONAL
+  units. All intents remain non-actionable: USD notional is not USDT/base quantity,
+  and the venue quantity/order-parameter adapter is absent. The runner records
+  NO_ORDER even when a descriptive notional intent can be represented.
+- PositionState is PENDING_EXECUTION only, in SHADOW or PAPER. Filled quantity,
+  entry price and execution reference are unknown. Opening/closing factual
+  inventory is deliberately unavailable until an accredited result adapter exists.
+- Lifecycle ACTIVE means tracked, not validated. Only missing causal book and
+  explicit thesis expiry yield EXECUTION_RISK and TIMEOUT. No strengthening,
+  predictive invalidation, Regime/Mechanics change or target evaluator is supplied.
+- Reallocation can reauthorize additions to an empty portfolio. Any incumbents
+  defer comparison, even if an ID matches ranking. No disposal/turnover is modeled.
+- Attribution declarations are SCHEMA_ONLY_UNVERIFIED_NOT_EDGE; evidence references
+  and method declarations do not constitute independently validated attribution.
+
+Trust boundary: input worlds must come from the existing verified loaders and
+quality policies from the caller's frozen configuration. These object contracts
+do not authenticate the internet or accredit a caller-supplied registration time.
+Book materialized fields are checked against wire and temporal order; proving
+the full raw-response commitment remains the responsibility of the existing
+loader. No fixtures or caller-constructed objects constitute real capture proof.
+
+Opt-in API: `run_shadow_intents(decision, quality_policy, directory, enabled=True)`.
+Choose a dedicated artifact directory outside the repository and outside all
+Price/Event capture ledgers. No runner is installed or scheduled. Artifacts bind
+the full plan/gate provenance, original upstream state, per-candidate reasons and
+null position/lifecycle hooks. Identical replay reads the existing bytes without
+rewriting them. Conflicting or interrupted partial files fail closed; automatic
+repair or overwrite is intentionally absent. Changing any committed input creates
+a different run identity, not a revision of the original artifact.
+
+Adversarial review added wire/materialized-field and received/available checks,
+explicit BUY/SELL semantics, and regression coverage for tampered caps/identities,
+future/naive timestamps, intent/estimate substitution, unsupported multi-leg
+execution, expiry, unknown costs, absent incumbent comparison, and preserved
+HALT/DEFER/REJECT/abstention. Legacy execution and learning imports are excluded.
+
+Validation: 26 Window #4R focal tests and 61 direct upstream regressions passed.
+Core compileall and git diff whitespace checks passed. Tests use synthetic
+fixtures only, with no claim of prospective execution or trading evidence.
