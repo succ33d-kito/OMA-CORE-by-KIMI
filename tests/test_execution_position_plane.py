@@ -89,3 +89,21 @@ def test_estimate_unknowns_never_become_zero_or_funding_payment(tmp_path, monkey
     assert e.ExecutionEstimate(gate(p,max_relative_spread=None)).reference_quote_usdt_per_base is None
     with pytest.raises(TypeError): replace(estimate,realized_pnl=1)
     assert replace(estimate) == estimate
+
+
+def position(tmp_path, monkeypatch, mode=e.Mode.SHADOW):
+    p = replace(notional_plan(tmp_path,monkeypatch),mode=mode)
+    return e.PositionState(e.OrderIntent(p),p.available_at,p.available_at)
+
+
+@pytest.mark.parametrize('mode', list(e.Mode))
+def test_position_is_pending_not_filled_in_either_mode(tmp_path, monkeypatch, mode):
+    p = position(tmp_path,monkeypatch,mode)
+    assert p.phase is e.PositionPhase.PENDING_EXECUTION
+    assert p.filled_quantity_base is None and p.entry_execution_ref is None
+    assert p.entry_price_usdt_per_base is None and p.mode is mode
+    assert p.thesis_id in {t.thesis_id for t in p.intent.plan.decision.theses}
+    with pytest.raises(ValueError): replace(p,filled_quantity_base=Decimal('1'))
+    with pytest.raises(TypeError): replace(p,intent=e.ExecutionEstimate(gate(p.intent.plan)))
+    with pytest.raises(ValueError): replace(p,created_at=p.created_at-timedelta(seconds=1))
+    assert replace(p) == p

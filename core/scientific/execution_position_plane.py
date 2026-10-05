@@ -196,3 +196,46 @@ class ExecutionEstimate:
         object.__setattr__(self, 'reference_quote_usdt_per_base', market.mid if usable else None)
         object.__setattr__(self, 'spread_usdt_per_base', market.spread if usable else None)
         upstream._seal(self, 'estimate_id')
+
+
+class PositionPhase(Enum):
+    PENDING_EXECUTION = 'PENDING_EXECUTION'
+
+
+@dataclass(frozen=True, slots=True)
+class PositionState:
+    """Pending position only; no accredited execution-result adapter exists yet.
+
+    Intended USD notional is not a filled base quantity. In particular this
+    contract cannot establish factual PAPER inventory from an order intention.
+    """
+    intent: OrderIntent
+    created_at: datetime
+    available_at: datetime
+    thesis_id: str = field(init=False)
+    phase: PositionPhase = field(init=False, default=PositionPhase.PENDING_EXECUTION)
+    filled_quantity_base: Decimal | None = field(init=False, default=None)
+    entry_price_usdt_per_base: Decimal | None = field(init=False, default=None)
+    entry_execution_ref: str | None = field(init=False, default=None)
+    position_id: str = field(init=False)
+
+    def __post_init__(self):
+        verify(self.intent, OrderIntent)
+        utc(self.created_at); utc(self.available_at)
+        if not self.intent.plan.available_at <= self.created_at <= self.available_at:
+            raise ValueError('noncausal position record')
+        thesis = next(t for t in self.intent.plan.decision.theses if t.candidate_id == self.intent.plan.candidate_id)
+        object.__setattr__(self, 'thesis_id', thesis.thesis_id)
+        upstream._seal(self, 'position_id')
+
+    @property
+    def mode(self): return self.intent.mode
+
+    @property
+    def role(self): return self.intent.role
+
+    @property
+    def instrument(self): return self.intent.instrument
+
+    @property
+    def direction(self): return self.intent.direction
