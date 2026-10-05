@@ -1,5 +1,5 @@
 """PILOT shadow decision contracts. No broker, outcomes, or demonstrated Edge."""
-from dataclasses import dataclass,field,fields,is_dataclass
+from dataclasses import dataclass,field,fields,is_dataclass,replace
 from datetime import datetime
 from decimal import Decimal
 from enum import Enum
@@ -520,3 +520,86 @@ def verify_authorization(auth):
     if type(auth) is not RiskAuthorization: raise TypeError('risk authorization required')
     expected=authorize_risk(auth.candidate,auth.world,auth.portfolio,auth.request,auth.policy,kill_switch=auth.kill_switch,available_at=auth.available_at)
     if auth!=expected: raise ValueError('risk authorization cannot be forged or overridden')
+
+
+@dataclass(frozen=True,slots=True)
+class AllocationPolicy:
+    registered_at: datetime
+    reject_shared_instruments: bool
+    label: str = 'PILOT_ALLOCATOR'
+    policy_id: str = field(init=False)
+
+    def __post_init__(self):
+        utc(self.registered_at)
+        if type(self.reject_shared_instruments) is not bool or self.label!='PILOT_ALLOCATOR': raise ValueError('explicit PILOT allocation policy required')
+        _seal(self,'policy_id')
+
+
+@dataclass(frozen=True,slots=True)
+class AllocationRow:
+    candidate_id: str
+    amount: CapitalAmount
+    reason: str
+    effective_authorization: RiskAuthorization | None
+
+
+@dataclass(frozen=True,slots=True)
+class AllocationPlan:
+    ranking: GlobalRanking
+    portfolio: PortfolioState
+    authorizations: tuple[RiskAuthorization,...]
+    budget: CapitalAmount
+    policy: AllocationPolicy
+    available_at: datetime
+    rows: tuple[AllocationRow,...]
+    unallocated: CapitalAmount
+    plan_id: str = field(init=False)
+
+    def __post_init__(self): _seal(self,'plan_id')
+
+
+def allocate_capital(ranking,portfolio,authorizations,budget,policy,*,available_at):
+    if (type(ranking),type(portfolio),type(budget),type(policy))!=(GlobalRanking,PortfolioState,CapitalAmount,AllocationPolicy) or type(authorizations) is not tuple: raise TypeError('closed allocation inputs required')
+    utc(available_at)
+    if ranking.available_at>available_at or portfolio.available_at>available_at or policy.registered_at>ranking.available_at: raise ValueError('noncausal allocation')
+    auths={a.candidate.candidate_id:a for a in authorizations}
+    if len(auths)!=len(authorizations) or tuple(sorted(auths))!=ranking.candidate_ids or commitment(ranking.candidate_ids)!=ranking.candidate_set_commitment:
+        raise ValueError('candidate set changed after ranking')
+    excluded={cid:reason for cid,reason in ranking.excluded}
+    if len(set(ranking.ordered))!=len(ranking.ordered) or set(ranking.ordered)&set(excluded) or set(ranking.ordered)|set(excluded)!=set(auths): raise ValueError('ranking population mismatch')
+    for a in authorizations:
+        verify_authorization(a)
+        if a.portfolio!=portfolio or a.world.world_state_id!=ranking.world_state_id or a.available_at>available_at or a.cap.unit is not budget.unit: raise ValueError('authorization portfolio/world/time/unit mismatch')
+    if budget.unit is not portfolio.available_risk_budget.unit: raise ValueError('budget unit mismatch')
+    if budget.value is not None and portfolio.available_risk_budget.value is not None and budget.value>portfolio.available_risk_budget.value: raise ValueError('budget exceeds available portfolio risk')
+    halt=any(a.state is RiskState.HALT for a in authorizations)
+    remaining=budget.value; rows=[]; selected=[]
+    from decimal import localcontext
+    with localcontext() as ctx:
+        ctx.prec=100
+        for cid in ranking.ordered+tuple(sorted(excluded)):
+            a=auths[cid]; effective=None; amount=Decimal(0)
+            if halt: reason='HALTED'
+            elif cid in excluded: reason=excluded[cid]
+            elif remaining is None or portfolio.available_risk_budget.value is None: reason='DEFERRED_UNKNOWN_BUDGET'
+            elif a.state is RiskState.DEFER: reason='DEFERRED'
+            elif a.state is RiskState.REJECT: reason='RISK_REJECTED'
+            elif remaining==0: reason='CAPITAL_CONSTRAINED'
+            elif policy.reject_shared_instruments and {l.symbol for p in selected for l in p.legs}&{l.symbol for l in a.request.legs}: reason='REDUNDANT_EXPOSURE'
+            else:
+                current=replace(portfolio,positions=portfolio.positions+tuple(selected),available_risk_budget=CapitalAmount(budget.unit,remaining),available_at=available_at)
+                effective=authorize_risk(a.candidate,a.world,current,a.request,a.policy,kill_switch=a.kill_switch,available_at=available_at)
+                if effective.state in (RiskState.APPROVE,RiskState.REDUCE):
+                    amount=min(remaining,a.cap.value,effective.cap.value)
+                    reason='AUTHORIZED_PRIORITY_ALLOCATION'
+                    selected.append(replace(a.request,risk=CapitalAmount(budget.unit,amount)))
+                    remaining-=amount
+                else: reason='DEFERRED' if effective.state is RiskState.DEFER else 'PORTFOLIO_RISK_REJECTED'
+            rows.append(AllocationRow(cid,CapitalAmount(budget.unit,amount),reason,effective))
+    return AllocationPlan(ranking,portfolio,tuple(sorted(authorizations,key=lambda a:a.candidate.candidate_id)),budget,policy,available_at,tuple(rows),CapitalAmount(budget.unit,remaining))
+
+
+def verify_allocation(plan):
+    if type(plan) is not AllocationPlan: raise TypeError('allocation plan required')
+    expected=allocate_capital(plan.ranking,plan.portfolio,plan.authorizations,plan.budget,plan.policy,available_at=plan.available_at)
+    if plan!=expected: raise ValueError('allocation cannot bypass risk or be overwritten')

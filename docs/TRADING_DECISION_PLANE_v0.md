@@ -46,3 +46,12 @@ drawdown/daily-loss/event/volatility/cost/correlation controls are represented b
 not observed by this data plane: requesting them causes DEFER, never assumed zero.
 Authorization can be recomputed and verified; a forged cap is rejected. Risk policy
 registration time is contractual until frozen by the runner configuration.
+
+## Joint allocation
+
+PILOT_ALLOCATOR uses frozen priority order, never Kelly or expected returns. It
+verifies every authorization and exact candidate population, then reauthorizes
+each proposed allocation against positions already selected in that plan. HALT
+anywhere halts the plan; DEFER/REJECT allocate zero. Cash is valid. Unknown budget
+leaves unallocated budget unknown, not zero. Shared-instrument exclusion is an
+explicit policy switch. Every zero allocation retains a reason.

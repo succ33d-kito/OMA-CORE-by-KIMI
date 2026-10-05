@@ -140,3 +140,28 @@ def test_unknown_position_risk_is_not_zero(tmp_path,monkeypatch):
     w,radar,r=ranked(tmp_path,monkeypatch); c=radar.candidates[0]
     old=t.Exposure('old',c.family,(t.ExposureLeg('BTCUSDT',t.Direction.LONG),),t.CapitalAmount(t.CapitalUnit.RISK_UNIT,None))
     assert authorization(w,c,portfolio=portfolio(w.as_of,(old,))).state is t.RiskState.DEFER
+
+
+def allocation(tmp_path,monkeypatch,*,budget=Decimal('3'),max_positions=5,halt=False):
+    w,radar,r=ranked(tmp_path,monkeypatch)
+    auths=tuple(authorization(w,c,policy=risk_policy(w.as_of,max_positions=max_positions),kill_switch=(halt and i==0)) for i,c in enumerate(radar.candidates))
+    return t.allocate_capital(r,portfolio(w.as_of),auths,t.CapitalAmount(t.CapitalUnit.RISK_UNIT,budget),t.AllocationPolicy(w.as_of,True),available_at=w.as_of)
+
+
+def test_allocation_joint_budget_halt_and_unknown(tmp_path,monkeypatch):
+    p=allocation(tmp_path/'normal',monkeypatch)
+    assert [r.amount.value for r in p.rows]==[Decimal('2'),Decimal('1')] and p.unallocated.value==0
+    t.verify_allocation(p)
+    h=allocation(tmp_path/'halt',monkeypatch,halt=True)
+    assert all(r.amount.value==0 and r.reason=='HALTED' for r in h.rows) and h.unallocated.value==3
+    unknown=allocation(tmp_path/'unknown',monkeypatch,budget=None)
+    assert all(r.amount.value==0 for r in unknown.rows) and unknown.unallocated.value is None
+
+
+def test_joint_position_limit_and_tamper(tmp_path,monkeypatch):
+    p=allocation(tmp_path,monkeypatch,max_positions=1)
+    assert sum(r.amount.value for r in p.rows)==2 and p.unallocated.value==1
+    assert p.rows[1].reason=='PORTFOLIO_RISK_REJECTED'
+    bad=replace(p,rows=(replace(p.rows[0],amount=t.CapitalAmount(t.CapitalUnit.RISK_UNIT,Decimal('99'))),p.rows[1]))
+    with pytest.raises(ValueError): t.verify_allocation(bad)
+    with pytest.raises(ValueError): t.allocate_capital(p.ranking,p.portfolio,p.authorizations[:1],p.budget,p.policy,available_at=p.available_at)
