@@ -38,3 +38,15 @@ can produce quality-watch candidates, never fabricated prices.
 Config timestamps are contractual assertions; durable ex-ante registration must
 be supplied by the caller before operational use. No outcome-based calibration
 has been performed. Candidate status remains OBSERVED, not validated Alpha.
+
+## Coverage and visibility
+
+Coverage records are create-once canonical JSON with commitments; exact replay
+does not rewrite their recording time. The timestamp is the radar generation
+time; recorded_at is the internal submission time, not a source receipt time.
+Full-universe radar coverage is labeled OMA-FULL. Frozen Retail-1/5/20 and OMA-FULL
+masks are separate primitives chosen lexicographically from the frozen universe,
+without price/performance inputs. Retail-20 currently contains only five markets
+(requested size remains 20). These masks do not claim a masked radar experiment:
+that would require recomputing comparative primitives using only visible inputs.
+No attention/performance comparison has been run.
