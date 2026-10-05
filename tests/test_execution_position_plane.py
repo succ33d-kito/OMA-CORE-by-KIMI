@@ -157,3 +157,15 @@ def test_reallocation_matching_incumbent_id_is_not_comparable_basis(tmp_path, mo
     assert a.state is e.ReallocationState.DEFER and a.allocation is None
     assert a.reason == 'MISSING_COMMON_INCUMBENT_COMPARISON_BASIS'
     assert a.opportunity_cost_usd is None
+
+
+def test_attribution_schema_unknown_is_not_zero_or_learning(tmp_path, monkeypatch):
+    p = plan(tmp_path,monkeypatch)
+    parts = tuple(e.AttributionComponent(k,None,(),None) for k in e.ContributionKind)
+    schema = e.AttributionSchema(p.plan_id,p.available_at,parts)
+    assert all(c.value_usd is None for c in schema.components)
+    assert 'UNVERIFIED_NOT_EDGE' in schema.status
+    assert replace(schema,components=parts[::-1]) == schema
+    with pytest.raises(ValueError): replace(schema,components=parts[:-1])
+    with pytest.raises(ValueError): replace(parts[0],value_usd=Decimal('0'))
+    with pytest.raises(TypeError): e.ExecutionPlan(schema,p.candidate_id,e.Mode.SHADOW)

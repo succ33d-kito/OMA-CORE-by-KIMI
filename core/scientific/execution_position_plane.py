@@ -340,3 +340,58 @@ class Reallocation:
         object.__setattr__(self, 'reason', reason)
         object.__setattr__(self, 'allocation', allocation)
         upstream._seal(self, 'reallocation_id')
+
+
+class ContributionKind(Enum):
+    FORECAST = 'forecast'
+    SELECTION = 'selection'
+    REGIME = 'regime'
+    MECHANICS = 'mechanics'
+    SIZING = 'sizing'
+    PORTFOLIO = 'portfolio'
+    EXECUTION = 'execution'
+    EXIT = 'exit'
+    FEES = 'fees'
+    FUNDING = 'funding'
+    SLIPPAGE = 'slippage'
+    OPPORTUNITY_COST = 'opportunity_cost'
+    RESIDUAL = 'residual'
+
+
+@dataclass(frozen=True, slots=True)
+class AttributionComponent:
+    kind: ContributionKind
+    value_usd: Decimal | None
+    evidence_refs: tuple[str, ...]
+    method_ref: str | None
+
+    def __post_init__(self):
+        if type(self.kind) is not ContributionKind: raise TypeError('closed contribution kind')
+        upstream._refs(self.evidence_refs)
+        if self.value_usd is not None:
+            if type(self.value_usd) is not Decimal or not self.value_usd.is_finite():
+                raise TypeError('finite signed attribution required')
+            if not self.evidence_refs or type(self.method_ref) is not str or not self.method_ref:
+                raise ValueError('declared attribution needs evidence and method')
+        elif self.evidence_refs or self.method_ref is not None:
+            raise ValueError('unknown contribution has no claimed decomposition')
+
+
+@dataclass(frozen=True, slots=True)
+class AttributionSchema:
+    """Unverified declarations only. No sum, fit, validation, or decision input."""
+    subject_id: str
+    recorded_at: datetime
+    components: tuple[AttributionComponent, ...]
+    status: str = field(init=False, default='SCHEMA_ONLY_UNVERIFIED_NOT_EDGE')
+    attribution_id: str = field(init=False)
+
+    def __post_init__(self):
+        upstream._hash(self.subject_id); utc(self.recorded_at)
+        if type(self.components) is not tuple or any(type(c) is not AttributionComponent for c in self.components):
+            raise TypeError('immutable attribution components required')
+        if len(self.components) != len(ContributionKind) or {c.kind for c in self.components} != set(ContributionKind):
+            raise ValueError('every contribution represented exactly once')
+        for c in self.components: verify(c, AttributionComponent)
+        object.__setattr__(self, 'components', tuple(sorted(self.components,key=lambda c:c.kind.value)))
+        upstream._seal(self, 'attribution_id')
