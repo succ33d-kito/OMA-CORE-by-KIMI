@@ -50,3 +50,25 @@ without price/performance inputs. Retail-20 currently contains only five markets
 (requested size remains 20). These masks do not claim a masked radar experiment:
 that would require recomputing comparative primitives using only visible inputs.
 No attention/performance comparison has been run.
+
+## One-shot integration runner
+
+RUNNER_CODE_READY / LIVE_RUNTIME_UNVERIFIED. `radar_runner.freeze_config` persists
+explicit parameters before sampling their freeze time and committing config.
+`run_once` accepts only source cycles starting after that registration and already
+available at its internally sampled cutoff. It performs no network requests.
+WorldState, full radar output and coverage are persisted with deterministic links;
+same source pair + config reopens its existing run without changing timestamps.
+Incomplete runs and corrupted ledgers stop rather than reconstructing evidence.
+This is a callable one-shot runner, not an installed scheduler.
+
+The cross-market module represents nodes, evidence-backed observations and closed
+relationship hypotheses. All relationships remain UNVALIDATED. No return,
+correlation, lead-lag, propagation or volatility-transmission estimate was fitted.
+
+Next local check: inspect the existing collector PID/lock and H1 attempt records;
+verify raw commitments, times, completed/failed slots and next target without
+backfill. A running old process has not loaded these repository changes. Deploy
+the updated collector only through a controlled restart, then observe future-slot
+continuity. Register explicit PILOT radar config before new source captures and
+verify one local multi-market premium receipt before any live radar run.
