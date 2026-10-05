@@ -64,7 +64,7 @@ def anchor(ledger, state, now):
     return a
 
 
-def status(ledger, state, reference, delay=5):
+def status(ledger, state, reference, delay=5, *, read_only=False):
     reference = _utc(reference)
     result = dict(schema='price-continuity-v1', reference_at=reference.isoformat(),
         total_receipts=0, valid_price_receipts=0, current_streak=0, longest_streak=0,
@@ -73,7 +73,7 @@ def status(ledger, state, reference, delay=5):
         bars_to_81=81, regime_input_ready=False, ledger_integrity='FAIL',
         last_external_anchor=None, certificate=None)
     try:
-        obs, prefixes = observation_snapshot(ledger)
+        obs, prefixes = observation_snapshot(ledger,read_only=True) if read_only else observation_snapshot(ledger)
         result['total_receipts'] = len(obs)
         result['last_external_anchor'] = verify_anchors(state, obs, prefixes)
         result['ledger_head'] = prefixes[-1] if prefixes else '0'*64

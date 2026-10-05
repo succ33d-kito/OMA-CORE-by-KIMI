@@ -112,8 +112,8 @@ def _observation_db(path):
     return con
 
 
-def observation_snapshot(path):
-    con = _observation_db(path)
+def observation_snapshot(path, *, read_only=False):
+    con = sqlite3.connect(Path(path).resolve().as_uri()+'?mode=ro',uri=True) if read_only else _observation_db(path)
     try:
         rows = con.execute('SELECT id,body,previous_hash,receipt_hash FROM observations_v2 ORDER BY seq').fetchall()
     finally:
