@@ -239,3 +239,41 @@ class PositionState:
 
     @property
     def direction(self): return self.intent.direction
+
+
+class ThesisState(Enum):
+    ACTIVE = 'ACTIVE'
+    EXECUTION_RISK = 'EXECUTION_RISK'
+    TIMEOUT = 'TIMEOUT'
+
+
+@dataclass(frozen=True, slots=True)
+class ThesisLifecycle:
+    """ACTIVE means tracked, not strengthened, valid Alpha, or an open trade."""
+    position: PositionState
+    world: upstream.WorldState
+    assessed_at: datetime
+    state: ThesisState = field(init=False)
+    reason: str = field(init=False)
+    assessment_id: str = field(init=False)
+
+    def __post_init__(self):
+        verify(self.position, PositionState)
+        verify(self.world, upstream.WorldState)
+        utc(self.assessed_at)
+        decision = self.position.intent.plan.decision
+        if self.world.role != self.position.role or self.world.universe_id != decision.world.universe_id:
+            raise ValueError('lifecycle role/universe mismatch')
+        if not self.position.available_at <= self.world.as_of <= self.assessed_at:
+            raise ValueError('lifecycle requires later causal world')
+        thesis = next(t for t in decision.theses if t.thesis_id == self.position.thesis_id)
+        market = next(m for m in self.world.markets if m.symbol == self.position.instrument)
+        if thesis.expiry is not None and self.assessed_at >= thesis.expiry:
+            state, reason = ThesisState.TIMEOUT, 'EXPLICIT_THESIS_EXPIRY'
+        elif market.book is None:
+            state, reason = ThesisState.EXECUTION_RISK, 'MISSING_CAUSAL_BOOK'
+        else:
+            state, reason = ThesisState.ACTIVE, 'TRACKED_NO_SUPPORTED_INVALIDATION_EVALUATOR'
+        object.__setattr__(self, 'state', state)
+        object.__setattr__(self, 'reason', reason)
+        upstream._seal(self, 'assessment_id')

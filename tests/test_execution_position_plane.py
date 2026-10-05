@@ -107,3 +107,15 @@ def test_position_is_pending_not_filled_in_either_mode(tmp_path, monkeypatch, mo
     with pytest.raises(TypeError): replace(p,intent=e.ExecutionEstimate(gate(p.intent.plan)))
     with pytest.raises(ValueError): replace(p,created_at=p.created_at-timedelta(seconds=1))
     assert replace(p) == p
+
+
+def test_lifecycle_causal_role_bound_and_not_performance(tmp_path, monkeypatch):
+    p = position(tmp_path,monkeypatch)
+    w = p.intent.plan.decision.world
+    a = e.ThesisLifecycle(p,w,w.as_of)
+    assert a.state is e.ThesisState.ACTIVE and replace(a) == a
+    assert 'NO_SUPPORTED_INVALIDATION' in a.reason
+    with pytest.raises(ValueError): replace(a,assessed_at=w.as_of-timedelta(seconds=1))
+    with pytest.raises(TypeError): replace(a,pnl=100)
+    with pytest.raises(ValueError): replace(a,world=replace(w,universe_id='f'*64))
+    assert set(e.ThesisState) == {e.ThesisState.ACTIVE,e.ThesisState.EXECUTION_RISK,e.ThesisState.TIMEOUT}
