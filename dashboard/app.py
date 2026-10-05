@@ -32,6 +32,10 @@ def api_system():
 @app.route('/')
 def index():
     """Página principal del dashboard."""
+    return render_template('mission_control.html')
+
+@app.get('/legacy')
+def legacy_index():
     return render_template('index.html')
 
 @app.route('/api/opportunities')

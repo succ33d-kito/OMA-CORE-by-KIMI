@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>OSIRIS · Mission Control</title>
+  <style>
+    body{font:15px system-ui,sans-serif;background:#10151c;color:#e4eaf0;margin:0;padding:24px}
+    header{display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap}
+    h1{font-size:24px;margin-bottom:4px}h2{font-size:16px;color:#b9cce0}
+    p{line-height:1.5}.notice{border-left:4px solid #e6b657;padding:12px;background:#1c2631}
+    main{display:grid;grid-template-columns:repeat(auto-fit,minmax(310px,1fr));gap:16px}
+    section{background:#19212b;border:1px solid #374656;border-radius:6px;padding:16px;min-width:0}
+    pre{white-space:pre-wrap;overflow-wrap:anywhere;font:13px/1.5 ui-monospace,monospace;max-height:440px;overflow:auto}
+    button,a{color:#d9eaff}button{background:#243c52;border:1px solid #728ba1;padding:10px;cursor:pointer}
+    .state{font-weight:600;color:#e6b657}.warning{color:#e6b657}small{color:#b6c1cd}
+  </style>
+</head>
+<body>
+<header><div><h1>OSIRIS · Mission Control</h1><p>Read-only observability · OMA-CORE</p></div>
+<nav><button id="refresh" type="button">Refresh snapshot</button> <a href="/legacy">Legacy dashboard (separate runtime)</a></nav></header>
+<p class="notice">EDGE: NOT DEMONSTRATED · REGIME: NOT VALIDATED · MECHANICS: NOT VALIDATED · POLICY WINNER: NONE</p>
+<p id="connection" class="state" role="status">UNKNOWN — snapshot not loaded</p>
+<main>
+  <section><h2>SYSTEM</h2><pre id="system">UNKNOWN</pre></section>
+  <section><h2>DATA FABRIC</h2><pre id="data">UNKNOWN</pre></section>
+  <section><h2>WORLD STATE</h2><pre id="world">UNAVAILABLE</pre></section>
+  <section><h2>OPPORTUNITY RADAR</h2><small>Descriptive candidates, no economic winner.</small><pre id="radar">UNAVAILABLE</pre></section>
+  <section><h2>DECISION</h2><small>Forecast semantics and calibration remain explicit.</small><pre id="decisions">UNAVAILABLE</pre></section>
+  <section><h2>PORTFOLIO</h2><pre id="portfolio">UNKNOWN</pre></section>
+  <section><h2>EXECUTION</h2><p class="warning">NO EXECUTION EVIDENCE · Intent ≠ execution · Estimate ≠ observation</p><pre id="execution">UNAVAILABLE</pre></section>
+  <section><h2>POSITIONS</h2><p class="warning">Pending ≠ factual open position · SHADOW ≠ PAPER ≠ LIVE</p><pre id="positions">UNAVAILABLE</pre></section>
+  <section><h2>SCIENTIFIC STATUS</h2><pre id="science">81H_INPUT_READINESS: UNKNOWN</pre></section>
+</main>
+<p><small>Artifact availability does not prove process liveness. STALE evidence is historical. Source references and commitments identify the configured evidence node; independent ledgers are never merged.</small></p>
+<script src="/static/mission_control.js"></script>
+</body></html>
