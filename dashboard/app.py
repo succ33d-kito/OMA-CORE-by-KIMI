@@ -8,10 +8,26 @@ from flask import Flask, render_template, jsonify
 # Añadir el directorio padre al path para importar core
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
-from core.database.db import OMACoreDatabase
-
 app = Flask(__name__)
-db = OMACoreDatabase(os.path.join(os.path.dirname(__file__), '..', 'oma_core.db'))
+db = None
+
+def legacy_db():
+    """Legacy endpoints retain their database; new observability never initializes it."""
+    global db
+    if db is None:
+        from core.database.db import OMACoreDatabase
+        db = OMACoreDatabase(os.path.join(os.path.dirname(__file__), '..', 'oma_core.db'))
+    return db
+
+@app.get('/api/system')
+def api_system():
+    from core.runtime.snapshot import load_config, build_system_snapshot
+    try:
+        config_path=app.config.get('OMA_RUNTIME_CONFIG',os.environ.get('OMA_RUNTIME_CONFIG'))
+        snapshot=build_system_snapshot(load_config(config_path),snapshot_at=datetime.now(timezone.utc).isoformat())
+        return jsonify(snapshot.to_dict())
+    except Exception as exc:
+        return jsonify(status='INVALID',reason='RUNTIME_CONFIGURATION_ERROR',error_type=type(exc).__name__),503
 
 @app.route('/')
 def index():
@@ -22,7 +38,7 @@ def index():
 def api_opportunities():
     """API: Retorna oportunidades activas en JSON."""
     try:
-        opps = db.get_active_opportunities(limit=100)
+        opps = legacy_db().get_active_opportunities(limit=100)
         return jsonify({
             "status": "ok",
             "count": len(opps),
@@ -36,7 +52,7 @@ def api_opportunities():
 def api_stats():
     """API: Retorna estadísticas del sistema."""
     try:
-        stats = db.get_event_stats()
+        stats = legacy_db().get_event_stats()
         return jsonify({
             "status": "ok",
             "timestamp": datetime.now(timezone.utc).isoformat(),
@@ -51,7 +67,7 @@ def api_events():
     try:
         hours = int(request.args.get('hours', 24))
         limit = int(request.args.get('limit', 50))
-        events = db.get_recent_events(hours=hours, limit=limit)
+        events = legacy_db().get_recent_events(hours=hours, limit=limit)
         return jsonify({
             "status": "ok",
             "count": len(events),
