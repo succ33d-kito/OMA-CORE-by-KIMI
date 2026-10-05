@@ -5,6 +5,7 @@ from decimal import Decimal
 from enum import Enum
 from .world_state import WorldState,_normalize
 from .opportunity_candidate import OpportunityCandidate
+from .opportunity_candidate import Direction
 from .multi_market_capture import commitment
 from .nuisance_pilot_contracts import utc
 
@@ -88,3 +89,88 @@ class Thesis:
     @property
     def contradiction_state(self):
         return 'CONFLICTING' if set(self.supporting_evidence_refs)&set(self.contradicting_evidence_refs) else ('PRESENT' if self.contradicting_evidence_refs else 'NONE_DECLARED')
+
+
+class ForecastKind(Enum):
+    RAW_SCORE='RAW_SCORE'
+    PROBABILITY='PROBABILITY'
+    EXPECTED_RETURN='EXPECTED_RETURN'
+    DISTRIBUTION='DISTRIBUTION'
+    DIRECTIONAL_VIEW='DIRECTIONAL_VIEW'
+
+
+class CalibrationState(Enum):
+    UNKNOWN='UNKNOWN'
+    UNCALIBRATED='UNCALIBRATED'
+    CALIBRATED='CALIBRATED'
+
+
+def _finite(value):
+    if type(value) is not Decimal or not value.is_finite(): raise TypeError('finite Decimal required; no implicit unit conversion')
+
+
+@dataclass(frozen=True,slots=True)
+class Forecast:
+    thesis: Thesis
+    kind: ForecastKind
+    value: Decimal | Direction | tuple | None
+    calibration: CalibrationState
+    method_id: str
+    method_provenance_commitment: str
+    evidence_refs: tuple[str,...]
+    created_at: datetime
+    available_at: datetime
+    uncertainty_interval: tuple[Decimal,Decimal] | None = None
+    forecast_id: str = field(init=False)
+
+    def __post_init__(self):
+        if type(self.thesis) is not Thesis or type(self.kind) is not ForecastKind or type(self.calibration) is not CalibrationState: raise TypeError('closed forecast types required')
+        utc(self.created_at); utc(self.available_at)
+        if not self.thesis.available_at<=self.created_at<=self.available_at: raise ValueError('noncausal forecast')
+        _hash(self.method_provenance_commitment); _refs(self.evidence_refs,empty=False)
+        if type(self.method_id) is not str or not self.method_id: raise ValueError('identified method required')
+        known=evidence_times(self.thesis.world)
+        if any(r not in known or known[r]>self.available_at for r in self.evidence_refs): raise ValueError('unknown/future forecast evidence')
+        if self.calibration is CalibrationState.CALIBRATED:
+            raise ValueError('v0 has no accredited calibration proof adapter; CALIBRATED unavailable')
+        probabilistic=self.kind in (ForecastKind.PROBABILITY,ForecastKind.DISTRIBUTION)
+        if not probabilistic and self.calibration is not CalibrationState.UNKNOWN: raise ValueError('calibration applies to probability/distribution')
+        if self.kind is ForecastKind.EXPECTED_RETURN and self.value is not None:
+            raise ValueError('expected return UNKNOWN: no accredited forecasting method registered in v0')
+        if self.value is not None:
+            if self.kind is ForecastKind.DIRECTIONAL_VIEW:
+                if type(self.value) is not Direction: raise TypeError('explicit directional view required')
+            elif self.kind is ForecastKind.DISTRIBUTION:
+                if type(self.value) is not tuple or not self.value: raise TypeError('immutable discrete distribution required')
+                from decimal import localcontext
+                with localcontext() as ctx:
+                    ctx.prec=100
+                    total=Decimal(0); outcomes=[]
+                    for point in self.value:
+                        if type(point) is not tuple or len(point)!=2: raise TypeError('scenario return fraction, probability pairs required')
+                        x,p=point; _finite(x); _finite(p)
+                        if not 0<=p<=1: raise ValueError('probability outside [0,1]')
+                        total+=p; outcomes.append(x)
+                    if total!=1 or len(set(outcomes))!=len(outcomes): raise ValueError('invalid distribution mass/scenarios')
+            else:
+                _finite(self.value)
+                if self.kind is ForecastKind.PROBABILITY and not 0<=self.value<=1: raise ValueError('probability outside [0,1]')
+        if self.uncertainty_interval is not None:
+            if self.kind in (ForecastKind.DIRECTIONAL_VIEW,ForecastKind.DISTRIBUTION) or type(self.uncertainty_interval) is not tuple or len(self.uncertainty_interval)!=2:
+                raise TypeError('explicit scalar uncertainty interval required')
+            low,high=self.uncertainty_interval; _finite(low); _finite(high)
+            if low>high or (self.value is not None and not low<=self.value<=high): raise ValueError('invalid uncertainty bounds')
+            if self.kind is ForecastKind.PROBABILITY and not 0<=low<=high<=1: raise ValueError('probability interval outside [0,1]')
+        _seal(self,'forecast_id')
+
+    @property
+    def role(self): return self.thesis.role
+    @property
+    def horizon_seconds(self): return self.thesis.candidate_horizon
+    @property
+    def economic_probability(self): return None  # No accredited calibration in v0.
+    @property
+    def unit(self):
+        return {ForecastKind.RAW_SCORE:'ARBITRARY_SCORE',ForecastKind.PROBABILITY:'PROBABILITY_FRACTION',
+            ForecastKind.EXPECTED_RETURN:'RETURN_FRACTION',ForecastKind.DISTRIBUTION:'RETURN_FRACTION_PROBABILITY_MASS',
+            ForecastKind.DIRECTIONAL_VIEW:'DIRECTION'}[self.kind]
