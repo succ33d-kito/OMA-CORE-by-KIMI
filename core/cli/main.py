@@ -1,4 +1,10 @@
 #!/usr/bin/env python3
+import sys
+# Dispatch read-only observability before importing/constructing legacy runtime.
+if __name__ == '__main__' and sys.argv[1:2] == ['system']:
+    from core.runtime.cli import main as runtime_main
+    raise SystemExit(runtime_main(sys.argv[2:]))
+
 from dotenv import load_dotenv
 load_dotenv()
 """O.M.A.-C.O.R.E. CLI Interface"""

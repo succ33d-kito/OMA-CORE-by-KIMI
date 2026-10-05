@@ -94,3 +94,21 @@ def test_snapshot_unconfigured_is_not_healthy():
     assert result['node']['runtime_state']=='UNVERIFIED'
     assert result['execution']['execution_claim']=='NO_EXECUTION_EVIDENCE'
     assert result['positions']['open_position_claim']=='NO_FACTUAL_OPEN_POSITION_EVIDENCE'
+
+
+def test_cli_read_only_dispatch_avoids_legacy(tmp_path,monkeypatch,capsys):
+    import builtins,runpy,sys
+    real_import=builtins.__import__
+    def guarded(name,*args,**kwargs):
+        if name.startswith(('core.database','core.collectors','core.engines','core.council')):
+            raise AssertionError('legacy runtime imported by observability')
+        return real_import(name,*args,**kwargs)
+    monkeypatch.setattr(builtins,'__import__',guarded)
+    monkeypatch.delenv('OMA_RUNTIME_CONFIG',raising=False)
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr(sys,'argv',['oma','system','status','--json','--at',AT])
+    with pytest.raises(SystemExit) as stopped: runpy.run_module('core.cli.main',run_name='__main__')
+    assert stopped.value.code==0
+    result=json.loads(capsys.readouterr().out)
+    assert result['mode']=='UNKNOWN' and result['science']['edge']=='NOT DEMONSTRATED'
+    assert list(tmp_path.iterdir())==[]
