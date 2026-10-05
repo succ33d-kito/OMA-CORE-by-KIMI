@@ -63,7 +63,8 @@ def _payload(radar):
         observed=radar.observed,candidate_count=len(radar.candidates),candidate_identities=tuple(x.candidate_id for x in radar.candidates),
         candidate_subjects=radar.candidate_subjects,non_candidates=radar.non_candidates,missing_markets=radar.missing,
         world_state_id=radar.world_state_id,radar_id=radar.radar_id,radar_version=radar.version,config_id=radar.config_id,
-        universe_id=radar.universe_id,timestamp=radar.generated_at,role=radar.role,visibility='OMA-FULL'))
+        universe_id=radar.universe_id,timestamp=radar.generated_at,role=radar.role,visible_symbols=radar.visible_symbols,
+        visibility='OMA-FULL' if radar.visible_symbols==radar.universe else 'MASKED_PROJECTION'))
 
 
 def load_entry(path):
