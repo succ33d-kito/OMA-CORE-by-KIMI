@@ -55,3 +55,11 @@ each proposed allocation against positions already selected in that plan. HALT
 anywhere halts the plan; DEFER/REJECT allocate zero. Cash is valid. Unknown budget
 leaves unallocated budget unknown, not zero. Shared-instrument exclusion is an
 explicit policy switch. Every zero allocation retains a reason.
+
+## Frozen shadow decision
+
+ShadowCapitalDecision binds the exact world, radar population, theses, forecasts,
+ranking evidence IDs, portfolio, risk authorizations and verified allocation.
+All availability precedes decision availability. Replacing a thesis after ranking
+fails; new configuration changes identity. No order, fill or outcome fields exist.
+WOULD_ALLOCATE is a shadow authorization result, never a profitable-trade claim.

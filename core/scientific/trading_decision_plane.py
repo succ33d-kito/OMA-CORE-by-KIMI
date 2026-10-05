@@ -248,6 +248,8 @@ class GlobalRanking:
     excluded: tuple[tuple[str,str],...]
     policy: RankingPolicy
     available_at: datetime
+    thesis_ids: tuple[str,...]
+    forecast_ids: tuple[str,...]
     label: str = 'PILOT_PRIORITY'
     ranking_id: str = field(init=False)
 
@@ -296,7 +298,8 @@ class GlobalOpportunityRanker:
             return (*result,v.candidate_id)
         excluded_ids={cid for cid,_ in excluded}; ordered=tuple(v.candidate_id for v in sorted(vectors,key=key) if v.candidate_id not in excluded_ids)
         ids=tuple(sorted(candidates))
-        return GlobalRanking(radar.radar_id,world.world_state_id,commitment(ids),ids,ordered,tuple(vectors),tuple(excluded),policy,available_at)
+        return GlobalRanking(radar.radar_id,world.world_state_id,commitment(ids),ids,ordered,tuple(vectors),tuple(excluded),policy,available_at,
+            tuple(sorted(x.thesis_id for x in theses)),tuple(sorted(x.forecast_id for x in forecasts)))
 
 
 class CapitalUnit(Enum):
@@ -603,3 +606,50 @@ def verify_allocation(plan):
     if type(plan) is not AllocationPlan: raise TypeError('allocation plan required')
     expected=allocate_capital(plan.ranking,plan.portfolio,plan.authorizations,plan.budget,plan.policy,available_at=plan.available_at)
     if plan!=expected: raise ValueError('allocation cannot bypass risk or be overwritten')
+
+
+class ShadowState(Enum):
+    WOULD_ALLOCATE='WOULD_ALLOCATE'
+    WOULD_ABSTAIN='WOULD_ABSTAIN'
+    DEFERRED='DEFERRED'
+    RISK_REJECTED='RISK_REJECTED'
+    HALTED='HALTED'
+
+
+@dataclass(frozen=True,slots=True)
+class ShadowCapitalDecision:
+    world: WorldState
+    radar: RadarResult
+    theses: tuple[Thesis,...]
+    forecasts: tuple[Forecast,...]
+    allocation: AllocationPlan
+    available_at: datetime
+    configuration_commitment: str
+    state: ShadowState = field(init=False)
+    decision_id: str = field(init=False)
+
+    def __post_init__(self):
+        utc(self.available_at); _hash(self.configuration_commitment)
+        if type(self.world) is not WorldState or type(self.radar) is not RadarResult or type(self.theses) is not tuple or type(self.forecasts) is not tuple:
+            raise TypeError('immutable complete shadow chain required')
+        verify_allocation(self.allocation)
+        r=self.allocation.ranking; candidates={c.candidate_id:c for c in self.radar.candidates}
+        if r.world_state_id!=self.world.world_state_id or self.radar.world_state_id!=self.world.world_state_id or r.radar_id!=self.radar.radar_id or tuple(sorted(candidates))!=r.candidate_ids:
+            raise ValueError('shadow world/radar/population conflict')
+        tm={x.candidate_id:x for x in self.theses}; fm={x.thesis.candidate_id:x for x in self.forecasts}
+        if len(tm)!=len(self.theses) or len(fm)!=len(self.forecasts) or set(tm)!=set(candidates) or set(fm)!=set(candidates): raise ValueError('incomplete/duplicate thesis-forecast chain')
+        if tuple(sorted(x.thesis_id for x in self.theses))!=r.thesis_ids or tuple(sorted(x.forecast_id for x in self.forecasts))!=r.forecast_ids:
+            raise ValueError('ranking used different thesis/forecast evidence')
+        for cid,candidate in candidates.items():
+            if tm[cid].candidate!=candidate or tm[cid].world!=self.world or fm[cid].thesis!=tm[cid]: raise ValueError('candidate/thesis/forecast mismatch')
+        if any(x.available_at>self.available_at for x in self.theses+self.forecasts+(self.allocation,)) or self.radar.generated_at>self.available_at or self.world.as_of>self.available_at:
+            raise ValueError('future evidence in shadow decision')
+        if any(a.state is RiskState.HALT for a in self.allocation.authorizations): state=ShadowState.HALTED
+        elif any(row.amount.value>0 for row in self.allocation.rows): state=ShadowState.WOULD_ALLOCATE
+        elif any(row.reason.startswith('DEFERRED') for row in self.allocation.rows): state=ShadowState.DEFERRED
+        elif any('REJECTED' in row.reason for row in self.allocation.rows): state=ShadowState.RISK_REJECTED
+        else: state=ShadowState.WOULD_ABSTAIN
+        object.__setattr__(self,'state',state); _seal(self,'decision_id')
+
+    @property
+    def role(self): return self.world.role

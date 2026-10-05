@@ -165,3 +165,25 @@ def test_joint_position_limit_and_tamper(tmp_path,monkeypatch):
     bad=replace(p,rows=(replace(p.rows[0],amount=t.CapitalAmount(t.CapitalUnit.RISK_UNIT,Decimal('99'))),p.rows[1]))
     with pytest.raises(ValueError): t.verify_allocation(bad)
     with pytest.raises(ValueError): t.allocate_capital(p.ranking,p.portfolio,p.authorizations[:1],p.budget,p.policy,available_at=p.available_at)
+
+
+def shadow(tmp_path,monkeypatch):
+    w,radar,_=ranked(tmp_path,monkeypatch)
+    theses=tuple(t.Thesis(c,w,w.as_of,w.as_of,'REFERENCE only',c.evidence_refs,(),('descriptive',),('unvalidated',),('invalid input',),'a'*64) for c in radar.candidates)
+    forecasts=tuple(forecast(a,kind=t.ForecastKind.DIRECTIONAL_VIEW,value=t.Direction.UNSPECIFIED) for a in theses)
+    ranking=t.GlobalOpportunityRanker.rank(w,radar,tmp_path/'ranking',theses=theses,forecasts=forecasts,available_at=w.as_of)
+    auths=tuple(authorization(w,c) for c in radar.candidates)
+    plan=t.allocate_capital(ranking,portfolio(w.as_of),auths,t.CapitalAmount(t.CapitalUnit.RISK_UNIT,Decimal('3')),t.AllocationPolicy(w.as_of,True),available_at=w.as_of)
+    return t.ShadowCapitalDecision(w,radar,theses,forecasts,plan,w.as_of,'d'*64)
+
+
+def test_shadow_frozen_complete_chain_and_new_config_identity(tmp_path,monkeypatch):
+    d=shadow(tmp_path,monkeypatch)
+    assert d.state is t.ShadowState.WOULD_ALLOCATE and replace(d)==d
+    assert replace(d,configuration_commitment='e'*64).decision_id!=d.decision_id
+    with pytest.raises(FrozenInstanceError): d.state=t.ShadowState.HALTED
+    with pytest.raises(TypeError): replace(d,pnl=1)
+    with pytest.raises(ValueError): replace(d,available_at=d.available_at-timedelta(seconds=1))
+    with pytest.raises(ValueError): replace(d,theses=())
+    altered=replace(d.theses[0],assumptions=('different assumptions',))
+    with pytest.raises(ValueError): replace(d,theses=(altered,)+d.theses[1:])
