@@ -198,6 +198,14 @@ class RankingPolicy:
     policy_id: str
     label: str = 'PILOT_PRIORITY'
 
+    def __post_init__(self):
+        utc(self.registered_at)
+        if type(self.criteria) is not tuple or not self.criteria or any(type(c) is not RankingCriterion for c in self.criteria) or len(set(self.criteria))!=len(self.criteria) or self.label!='PILOT_PRIORITY':
+            raise ValueError('immutable closed ranking policy required')
+        params=dict(criteria=[c.value for c in self.criteria],label=self.label,tie_break='CANDIDATE_ID_ASC',unknown='LAST')
+        if self.policy_id!=commitment(dict(parameters=params,registered_at=self.registered_at.isoformat())):
+            raise ValueError('ranking policy content does not match registration')
+
 
 def register_ranking_policy(directory,*,criteria):
     if type(criteria) is not tuple or not criteria or any(type(c) is not RankingCriterion for c in criteria) or len(set(criteria))!=len(criteria):
@@ -237,6 +245,17 @@ class OpportunityQualityVector:
     candidate_age_seconds: float
 
 
+def _ranking_key(v,criteria):
+    values={RankingCriterion.COMPLETENESS:(v.completeness,True),RankingCriterion.CONTRADICTIONS:(v.contradictions,False),
+        RankingCriterion.EVIDENCE_BREADTH:(v.evidence_breadth,True),RankingCriterion.FRESHNESS:(v.freshness_seconds,False),
+        RankingCriterion.FORECAST_AVAILABLE:(int(v.forecast_available),True),RankingCriterion.EXECUTION_OBSERVED:(int(v.execution_observed),True),
+        RankingCriterion.CANDIDATE_AGE:(v.candidate_age_seconds,False)}
+    result=[]
+    for criterion in criteria:
+        value,descending=values[criterion]; result.append((value is None,0 if value is None else (-value if descending else value)))
+    return (*result,v.candidate_id)
+
+
 @dataclass(frozen=True,slots=True)
 class GlobalRanking:
     radar_id: str
@@ -253,15 +272,27 @@ class GlobalRanking:
     label: str = 'PILOT_PRIORITY'
     ranking_id: str = field(init=False)
 
-    def __post_init__(self): _seal(self,'ranking_id')
+    def __post_init__(self):
+        for values in (self.candidate_ids,self.ordered,self.vectors,self.excluded,self.thesis_ids,self.forecast_ids):
+            if type(values) is not tuple: raise TypeError('immutable ranking required')
+        if tuple(sorted(set(self.candidate_ids)))!=self.candidate_ids or self.candidate_set_commitment!=commitment(self.candidate_ids): raise ValueError('candidate commitment mismatch')
+        if tuple(v.candidate_id for v in self.vectors)!=self.candidate_ids or len({cid for cid,_ in self.excluded})!=len(self.excluded): raise ValueError('ranking vector/exclusion mismatch')
+        excluded={cid for cid,_ in self.excluded}
+        expected=tuple(v.candidate_id for v in sorted(self.vectors,key=lambda v:_ranking_key(v,self.policy.criteria)) if v.candidate_id not in excluded)
+        if self.ordered!=expected or excluded-set(self.candidate_ids): raise ValueError('ranking order changed after policy')
+        _seal(self,'ranking_id')
 
 
 class GlobalOpportunityRanker:
     @staticmethod
     def rank(world,radar,policy_directory,*,theses=(),forecasts=(),available_at):
+        return GlobalOpportunityRanker._rank(world,radar,load_ranking_policy(policy_directory),theses=theses,forecasts=forecasts,available_at=available_at)
+
+    @staticmethod
+    def _rank(world,radar,policy,*,theses,forecasts,available_at):
         if type(world) is not WorldState or type(radar) is not RadarResult or type(theses) is not tuple or type(forecasts) is not tuple:
             raise TypeError('immutable world/radar/theses/forecasts required')
-        utc(available_at); policy=load_ranking_policy(policy_directory)
+        utc(available_at)
         if not policy.registered_at<=world.as_of<=radar.generated_at<=available_at or radar.world_state_id!=world.world_state_id:
             raise ValueError('noncausal ranking or changed world')
         candidates={c.candidate_id:c for c in radar.candidates}
@@ -287,16 +318,7 @@ class GlobalOpportunityRanker:
                 vectors.append(v)
                 if c.status is CandidateStatus.REJECTED: excluded.append((cid,'CANDIDATE_REJECTED'))
                 elif cid in tm and tm[cid].expiry is not None and tm[cid].expiry<=available_at: excluded.append((cid,'THESIS_EXPIRED'))
-        def key(v):
-            values={RankingCriterion.COMPLETENESS:(v.completeness,True),RankingCriterion.CONTRADICTIONS:(v.contradictions,False),
-                RankingCriterion.EVIDENCE_BREADTH:(v.evidence_breadth,True),RankingCriterion.FRESHNESS:(v.freshness_seconds,False),
-                RankingCriterion.FORECAST_AVAILABLE:(int(v.forecast_available),True),RankingCriterion.EXECUTION_OBSERVED:(int(v.execution_observed),True),
-                RankingCriterion.CANDIDATE_AGE:(v.candidate_age_seconds,False)}
-            result=[]
-            for criterion in policy.criteria:
-                value,descending=values[criterion]; result.append((value is None,0 if value is None else (-value if descending else value)))
-            return (*result,v.candidate_id)
-        excluded_ids={cid for cid,_ in excluded}; ordered=tuple(v.candidate_id for v in sorted(vectors,key=key) if v.candidate_id not in excluded_ids)
+        excluded_ids={cid for cid,_ in excluded}; ordered=tuple(v.candidate_id for v in sorted(vectors,key=lambda v:_ranking_key(v,policy.criteria)) if v.candidate_id not in excluded_ids)
         ids=tuple(sorted(candidates))
         return GlobalRanking(radar.radar_id,world.world_state_id,commitment(ids),ids,ordered,tuple(vectors),tuple(excluded),policy,available_at,
             tuple(sorted(x.thesis_id for x in theses)),tuple(sorted(x.forecast_id for x in forecasts)))
@@ -492,6 +514,7 @@ def authorize_risk(candidate,world,portfolio,request,policy,*,kill_switch,availa
     if any(x is None for x in limits): return result(RiskState.DEFER,None,'LIMIT_UNKNOWN')
     if portfolio.equity.value is None or request.risk.value is None or portfolio.available_risk_budget.value is None or any(p.risk.value is None for p in portfolio.positions):
         return result(RiskState.DEFER,None,'CAPITAL_OR_RISK_UNKNOWN')
+    if portfolio.equity.value==0: return result(RiskState.REJECT,Decimal(0),'ZERO_SHADOW_CAPITAL')
     if request.risk.unit is not policy.unit or portfolio.available_risk_budget.unit is not policy.unit or any(p.risk.unit is not policy.unit for p in portfolio.positions):
         return result(RiskState.DEFER,None,'INCOMPATIBLE_RISK_UNITS')
     if any(l.direction not in (Direction.LONG,Direction.SHORT) for l in request.legs): return result(RiskState.DEFER,None,'DIRECTION_UNKNOWN')
@@ -566,6 +589,7 @@ def allocate_capital(ranking,portfolio,authorizations,budget,policy,*,available_
     utc(available_at)
     if ranking.available_at>available_at or portfolio.available_at>available_at or policy.registered_at>ranking.available_at: raise ValueError('noncausal allocation')
     auths={a.candidate.candidate_id:a for a in authorizations}
+    if len({a.policy.policy_id for a in authorizations})>1: raise ValueError('joint allocation requires one frozen risk policy')
     if len(auths)!=len(authorizations) or tuple(sorted(auths))!=ranking.candidate_ids or commitment(ranking.candidate_ids)!=ranking.candidate_set_commitment:
         raise ValueError('candidate set changed after ranking')
     excluded={cid:reason for cid,reason in ranking.excluded}
@@ -642,8 +666,17 @@ class ShadowCapitalDecision:
             raise ValueError('ranking used different thesis/forecast evidence')
         for cid,candidate in candidates.items():
             if tm[cid].candidate!=candidate or tm[cid].world!=self.world or fm[cid].thesis!=tm[cid]: raise ValueError('candidate/thesis/forecast mismatch')
+            if tm[cid].expiry is not None and tm[cid].expiry<=self.available_at: raise ValueError('thesis expired before finalization')
+        expected=GlobalOpportunityRanker._rank(self.world,self.radar,r.policy,theses=self.theses,forecasts=self.forecasts,available_at=r.available_at)
+        if expected!=r: raise ValueError('ranking components do not match causal chain')
         if any(x.available_at>self.available_at for x in self.theses+self.forecasts+(self.allocation,)) or self.radar.generated_at>self.available_at or self.world.as_of>self.available_at:
             raise ValueError('future evidence in shadow decision')
+        for row in self.allocation.rows:
+            if row.amount.value>0:
+                a=row.effective_authorization
+                if a is None: raise ValueError('allocation lacks effective authorization')
+                fresh=authorize_risk(a.candidate,a.world,a.portfolio,a.request,a.policy,kill_switch=a.kill_switch,available_at=self.available_at)
+                if fresh.state not in (RiskState.APPROVE,RiskState.REDUCE) or fresh.cap.value<row.amount.value: raise ValueError('risk no longer authorizes final decision')
         if any(a.state is RiskState.HALT for a in self.allocation.authorizations): state=ShadowState.HALTED
         elif any(row.amount.value>0 for row in self.allocation.rows): state=ShadowState.WOULD_ALLOCATE
         elif any(row.reason.startswith('DEFERRED') for row in self.allocation.rows): state=ShadowState.DEFERRED

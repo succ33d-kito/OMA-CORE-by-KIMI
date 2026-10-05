@@ -187,3 +187,36 @@ def test_shadow_frozen_complete_chain_and_new_config_identity(tmp_path,monkeypat
     with pytest.raises(ValueError): replace(d,theses=())
     altered=replace(d.theses[0],assumptions=('different assumptions',))
     with pytest.raises(ValueError): replace(d,theses=(altered,)+d.theses[1:])
+
+
+def test_adversarial_rank_order_policy_and_final_freshness(tmp_path,monkeypatch):
+    d=shadow(tmp_path,monkeypatch); r=d.allocation.ranking
+    with pytest.raises(ValueError): replace(r,ordered=r.ordered[::-1])
+    with pytest.raises(ValueError): replace(r.policy,criteria=r.policy.criteria[::-1])
+    with pytest.raises(ValueError): replace(d,available_at=d.available_at+timedelta(seconds=20000))
+    changed=replace(r.vectors[0],evidence_breadth=999)
+    altered_vectors=(changed,)+r.vectors[1:]
+    # Even a self-consistent reordering with forged factual components is rejected.
+    ordered=tuple(v.candidate_id for v in sorted(altered_vectors,key=lambda v:t._ranking_key(v,r.policy.criteria)))
+    forged=replace(r,vectors=altered_vectors,ordered=ordered)
+    plan=t.allocate_capital(forged,d.allocation.portfolio,d.allocation.authorizations,d.allocation.budget,d.allocation.policy,available_at=d.available_at)
+    with pytest.raises(ValueError): replace(d,allocation=plan)
+
+
+def test_adversarial_mixed_risk_policy_and_zero_capital(tmp_path,monkeypatch):
+    w,radar,r=ranked(tmp_path,monkeypatch)
+    auths=tuple(authorization(w,c,policy=risk_policy(w.as_of,aggregate_limit=Decimal(10+i))) for i,c in enumerate(radar.candidates))
+    with pytest.raises(ValueError): t.allocate_capital(r,portfolio(w.as_of),auths,t.CapitalAmount(t.CapitalUnit.RISK_UNIT,Decimal(3)),t.AllocationPolicy(w.as_of,True),available_at=w.as_of)
+    zero=replace(portfolio(w.as_of),equity=t.CapitalAmount(t.CapitalUnit.USD_NOTIONAL,Decimal(0)))
+    assert authorization(w,radar.candidates[0],portfolio=zero).state is t.RiskState.REJECT
+
+
+def test_expiry_between_ranking_and_finalization(tmp_path,monkeypatch):
+    d=shadow(tmp_path,monkeypatch)
+    theses=tuple(replace(a,expiry=d.available_at+timedelta(seconds=1)) for a in d.theses)
+    forecasts=tuple(replace(f,thesis=a) for f,a in zip(d.forecasts,theses))
+    ranking=t.GlobalOpportunityRanker._rank(d.world,d.radar,d.allocation.ranking.policy,theses=theses,forecasts=forecasts,available_at=d.available_at)
+    p=d.allocation
+    plan=t.allocate_capital(ranking,p.portfolio,p.authorizations,p.budget,p.policy,available_at=p.available_at)
+    current=replace(d,theses=theses,forecasts=forecasts,allocation=plan)
+    with pytest.raises(ValueError,match='expired'): replace(current,available_at=d.available_at+timedelta(seconds=2))

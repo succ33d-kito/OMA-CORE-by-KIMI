@@ -82,3 +82,13 @@ access-control boundary. No mask performance comparison is performed.
 
 RUNNER_CODE_READY / LIVE_RUNTIME_UNVERIFIED. No prospective shadow decision has
 been created from real data in this window; all integration runs use fixtures.
+
+## Focused adversarial review
+
+Material guards added: ranking order must match its registered policy and vectors;
+final shadow construction recomputes vectors from the actual chain; joint allocation
+cannot mix risk policies; finalization rechecks positive allocations for freshness
+and rejects expired theses; zero shadow equity cannot authorize risk. Regression
+tests cover changed ranking/components, mixed policies, stale final decisions and
+zero capital. Other tested boundaries retain unknown calibration/correlation/risk,
+cost controls defer when required, immutable decisions and pre-capture mask freeze.
