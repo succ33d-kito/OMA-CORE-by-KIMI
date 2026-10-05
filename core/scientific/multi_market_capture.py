@@ -7,6 +7,7 @@ import json
 from pathlib import Path
 from time import monotonic
 from urllib.request import build_opener
+from urllib.error import URLError
 
 from .book_ticker_capture import _NoRedirect, _json, _write, _read_json, _now
 from .capture_clock import continuous
@@ -17,6 +18,10 @@ SYMBOLS = tuple(sorted(('BTCUSDT', 'ETHUSDT', 'SOLUSDT', 'XRPUSDT', 'BNBUSDT')))
 BOOK_URL = 'https://fapi.binance.com/fapi/v1/ticker/bookTicker'
 INFO_URL = 'https://fapi.binance.com/fapi/v1/exchangeInfo'
 LIMIT = 8 * 1024 * 1024
+
+
+class NetworkCaptureError(RuntimeError):
+    """Transport failed; no claim of a verified complete response."""
 
 
 def commitment(value):
@@ -30,14 +35,17 @@ def _http(url):
 def _receive(root, url):
     started = _now()
     tick = monotonic()
-    with _http(url) as response:
-        raw = response.read(LIMIT + 1)
-        received = _now()
-        elapsed = monotonic() - tick
-        meta = dict(source=url, response_url=response.geturl(), status=response.status,
-                    content_type=response.headers.get_content_type(), content_length=response.headers.get('Content-Length'),
-                    started_at=started.isoformat(), received_at=received.isoformat(), elapsed=elapsed,
-                    raw_sha256=hashlib.sha256(raw).hexdigest())
+    try:
+        with _http(url) as response:
+            raw = response.read(LIMIT + 1)
+            received = _now()
+            elapsed = monotonic() - tick
+            meta = dict(source=url, response_url=response.geturl(), status=response.status,
+                        content_type=response.headers.get_content_type(), content_length=response.headers.get('Content-Length'),
+                        started_at=started.isoformat(), received_at=received.isoformat(), elapsed=elapsed,
+                        raw_sha256=hashlib.sha256(raw).hexdigest())
+    except (URLError, TimeoutError, ConnectionError) as error:
+        raise NetworkCaptureError('HTTP transport failed') from error
     _write(root/'response.raw', raw)
     _write(root/'receipt.json', _json(meta))
     _verify_response(meta, raw, url)

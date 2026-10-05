@@ -38,8 +38,9 @@ Edge/Regime/Mechanics validation: NO. Policy winner: NONE.
 The runner holds a Windows process lock, verifies sealed configuration and prior
 attempts on restart, and targets the next UTC hour +5 seconds. No catch-up occurs.
 Each slot has an exclusive attempt directory; completed, failed, missed and
-interrupted slots cannot be overwritten or retried. Raw errors stop the process;
-restarting verifies history and resumes at the next future slot. This foreground
+interrupted slots cannot be overwritten or retried. Transport errors seal FAILED
+and the scheduler continues at the next future slot. Integrity/schema/clock errors
+still stop the process. Restarting verifies history without retrying prior slots. This foreground
 command can also be launched hidden with Start-Process. No scheduled-task/admin
 changes, automatic login restart or prevention of Windows suspension is claimed.
 

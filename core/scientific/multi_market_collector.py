@@ -123,6 +123,10 @@ def run(root,universe_directory):
             try:
                 run_slot(root,universe_directory,target.replace(second=0))
                 recover(root,universe_directory)
+            except c.NetworkCaptureError:
+                # run_slot already sealed FAILED. Never retry or backfill it;
+                # a transport outage must not disable future scheduled slots.
+                recover(root,universe_directory)
             except Exception:
                 health(root,target,'FAILED')
                 raise
