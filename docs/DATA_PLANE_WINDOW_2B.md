@@ -18,3 +18,23 @@ supports premiumIndex without a symbol (array response).
 REAL_CAPTURE_PENDING_LOCAL_VERIFICATION: no real HTTP capture attempted here.
 
 Edge/Regime/Mechanics validation = NO. Policy winner = NONE.
+
+## Descriptive radar v0
+
+WorldState verifies source directories and suppresses evidence unavailable at its
+cutoff. Quality reports raw span, timestamp skew and age without freshness gates.
+Unknown source times stay unknown; local clock continuity is not independent NTP
+accreditation. Caller-supplied representations alone are not signed evidence.
+
+Radar thresholds must be explicit positive decimal fractions, frozen no later
+than the WorldState cutoff, PILOT-only. Initial primitives: mark/index fraction,
+funding-rate difference from observed median, relative spread difference from
+observed median, and missing evidence. No history-dependent return primitives are
+implemented. Fixed primitive order and lexicographic market cap are selection
+conventions, not performance rankings. Every market retains findings and either
+a candidate-subject mapping or an explicit non-candidate reason. Missing markets
+can produce quality-watch candidates, never fabricated prices.
+
+Config timestamps are contractual assertions; durable ex-ante registration must
+be supplied by the caller before operational use. No outcome-based calibration
+has been performed. Candidate status remains OBSERVED, not validated Alpha.
