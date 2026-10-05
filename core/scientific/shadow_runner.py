@@ -11,6 +11,7 @@ from .coverage_ledger import load_masks
 from .world_state import load_world,WorldMarket
 from .data_quality import DataQuality
 from .opportunity_radar import scan
+from .shadow_decision_ledger import append_shadow_decision,verify_shadow_ledger
 
 
 def freeze_shadow_config(directory,universe_directory,radar_config_directory,ranking_policy_directory,mask_directory,*,
@@ -90,6 +91,7 @@ def run_shadow_once(universe_directory,book_directory,radar_config_directory,ran
             raise ValueError('shadow replay integrity failure')
         data=dict(old['decision']); identity=data.pop('decision_id')
         if identity!=c.commitment(data): raise ValueError('shadow decision identity mismatch')
+        if identity not in verify_shadow_ledger(Path(output_directory)/'shadow_decisions.sqlite'): raise ValueError('decision absent from durable ledger')
         return identity
     root.mkdir(parents=True,exist_ok=False)
     world=_mask_world(load_world(universe_directory,as_of=cutoff,book_directory=book_directory,premium_directory=premium_directory),mask)
@@ -108,5 +110,6 @@ def run_shadow_once(universe_directory,book_directory,radar_config_directory,ran
     plan=t.allocate_capital(ranking,portfolio,auths,_amount(params['budget']),ap,available_at=c._now())
     decision=t.ShadowCapitalDecision(world,radar,theses,forecasts,plan,c._now(),saved['commitment'])
     data=t._plain(decision)
+    append_shadow_decision(Path(output_directory)/'shadow_decisions.sqlite',decision)
     c._write(root/'decision.json',c._json(dict(inputs=inputs,decision=data,commitment=c.commitment((inputs,data)))))
     return decision.decision_id

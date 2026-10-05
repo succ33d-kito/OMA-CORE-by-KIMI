@@ -92,3 +92,17 @@ and rejects expired theses; zero shadow equity cannot authorize risk. Regression
 tests cover changed ranking/components, mixed policies, stale final decisions and
 zero capital. Other tested boundaries retain unknown calibration/correlation/risk,
 cost controls defer when required, immutable decisions and pre-capture mask freeze.
+
+## Durable shadow ledger (Stage 10 option A only)
+
+SQLite transactions with FULL synchronous commits append verified decisions under
+unique identities and a sequenced hash chain. Exact replay preserves the existing
+record; no update/delete API exists. Unrelated databases are refused before writes.
+The runner appends to its own `shadow_decisions.sqlite` before publishing the run
+artifact. A crash between ledger commit and artifact publication leaves durable
+evidence but requires explicit recovery; it is not silently regenerated.
+
+This protects normal API use and detects content/chain corruption, not privileged
+database deletion or tail truncation without an external anchor. recorded_at is
+ledger recording time, never a reconstructed market receipt. No live ledger was
+created in this window; tests use isolated temporary databases.
