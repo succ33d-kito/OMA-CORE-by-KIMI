@@ -30,3 +30,30 @@ does not protect against deliberate complete rehashing by a privileged attacker.
 real; no real multi-market book cycle has yet been captured at this checkpoint.
 No Price/Event ledger changes. No outcomes, signals, fills or costs.
 Edge/Regime/Mechanics validation: NO. Policy winner: NONE.
+
+## H1 collector checkpoint
+
+`python -B -m core.scientific.multi_market_collector --state "C:/Users/KiTO/Documents/O-C data/prospective/multi-market/h1-state" --universe "C:/Users/KiTO/Documents/O-C data/prospective/multi-market/universe-v0"`
+
+The runner holds a Windows process lock, verifies sealed configuration and prior
+attempts on restart, and targets the next UTC hour +5 seconds. No catch-up occurs.
+Each slot has an exclusive attempt directory; completed, failed, missed and
+interrupted slots cannot be overwritten or retried. Raw errors stop the process;
+restarting verifies history and resumes at the next future slot. This foreground
+command can also be launched hidden with Start-Process. No scheduled-task/admin
+changes, automatic login restart or prevention of Windows suspension is claimed.
+
+Startup verification: runner PID 8736 (launcher 16716), lock held, integrity PASS;
+next target 2026-10-05T01:00:05Z. Zero official H1 cycles at startup. Logs are in
+`O-C data/prospective/multi-market/runner-logs`. Health reports last verified state,
+not proof of current process liveness; verify PID and lock separately.
+
+One diagnostic TLS handshake timed out before a response. A separate second
+attempt produced a COMPLETE five-member DIAGNOSTIC cycle, reopened successfully:
+`d9e87b0d15312ade4b5cc111c6e0df8a41ce0e729352ab135a73bd456c16cd10`.
+Start 2026-10-05T00:02:16.853953Z; reception 00:03:39.229277Z;
+availability 00:03:39.249423Z. Capture span 82.39547 seconds; this is not
+simultaneous or a low-latency quote certification. Directory:
+`O-C data/prospective/multi-market/diagnostics/startup-2026-10-05-after-tls-timeout`.
+No diagnostic cycle enters official H1 population. The earlier failed directory
+remains untouched. Collector + capture validation: 18 focal tests passed.
