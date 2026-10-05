@@ -119,3 +119,17 @@ def test_lifecycle_causal_role_bound_and_not_performance(tmp_path, monkeypatch):
     with pytest.raises(TypeError): replace(a,pnl=100)
     with pytest.raises(ValueError): replace(a,world=replace(w,universe_id='f'*64))
     assert set(e.ThesisState) == {e.ThesisState.ACTIVE,e.ThesisState.EXECUTION_RISK,e.ThesisState.TIMEOUT}
+
+
+def test_exit_intent_does_not_close_position(tmp_path, monkeypatch):
+    p = position(tmp_path,monkeypatch)
+    w = p.intent.plan.decision.world
+    with pytest.raises(ValueError): e.ExitIntent(e.ThesisLifecycle(p,w,w.as_of))
+    missing = replace(w,markets=tuple(replace(m,book=None,book_age_seconds=None) if m.symbol==p.instrument else m for m in w.markets))
+    assessment = e.ThesisLifecycle(p,missing,missing.as_of)
+    assert assessment.state is e.ThesisState.EXECUTION_RISK
+    intent = e.ExitIntent(assessment)
+    assert not intent.actionable and intent.position == p
+    assert p.phase is e.PositionPhase.PENDING_EXECUTION and p.entry_execution_ref is None
+    assert intent.reason == 'MISSING_CAUSAL_BOOK' and replace(intent) == intent
+    with pytest.raises(TypeError): replace(intent,fill_price=Decimal('1'))

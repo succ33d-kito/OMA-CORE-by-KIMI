@@ -277,3 +277,27 @@ class ThesisLifecycle:
         object.__setattr__(self, 'state', state)
         object.__setattr__(self, 'reason', reason)
         upstream._seal(self, 'assessment_id')
+
+
+@dataclass(frozen=True, slots=True)
+class ExitIntent:
+    assessment: ThesisLifecycle
+    reason: str = field(init=False)
+    actionable: bool = field(init=False, default=False)
+    exit_id: str = field(init=False)
+
+    def __post_init__(self):
+        verify(self.assessment, ThesisLifecycle)
+        if self.assessment.state is ThesisState.ACTIVE:
+            raise ValueError('no supported exit reason')
+        object.__setattr__(self, 'reason', self.assessment.reason)
+        upstream._seal(self, 'exit_id')
+
+    @property
+    def position(self): return self.assessment.position
+
+    @property
+    def mode(self): return self.position.mode
+
+    @property
+    def available_at(self): return self.assessment.assessed_at
