@@ -76,3 +76,16 @@ def test_quality_causal_limits_unknown_and_rejection(tmp_path, monkeypatch):
     with pytest.raises(ValueError): gate(p,registered_at=p.available_at+timedelta(seconds=1))
     with pytest.raises(TypeError): replace(gate(p),pnl=1)
     assert replace(gate(p)) == gate(p)
+
+
+def test_estimate_unknowns_never_become_zero_or_funding_payment(tmp_path, monkeypatch):
+    p = plan(tmp_path, monkeypatch)
+    estimate = e.ExecutionEstimate(gate(p))
+    assert estimate.reference_quote_usdt_per_base > 0
+    assert estimate.spread_usdt_per_base > 0
+    for name in ('slippage_usdt_per_base','fee_usdt','funding_cashflow_usdt','latency_seconds','depth_base'):
+        assert getattr(estimate,name) is None
+        with pytest.raises(ValueError): replace(estimate,**{name:Decimal('0')})
+    assert e.ExecutionEstimate(gate(p,max_relative_spread=None)).reference_quote_usdt_per_base is None
+    with pytest.raises(TypeError): replace(estimate,realized_pnl=1)
+    assert replace(estimate) == estimate

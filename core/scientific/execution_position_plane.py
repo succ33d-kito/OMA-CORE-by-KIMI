@@ -173,3 +173,26 @@ class ExecutionQualityGate:
         object.__setattr__(self, 'reason', reason)
         object.__setattr__(self, 'evidence_refs', refs)
         upstream._seal(self, 'gate_id')
+
+
+@dataclass(frozen=True, slots=True)
+class ExecutionEstimate:
+    """Quote-based estimate, not a venue fill or an ExecutionObservation."""
+    gate: ExecutionQualityGate
+    reference_quote_usdt_per_base: Decimal | None = field(init=False)
+    spread_usdt_per_base: Decimal | None = field(init=False)
+    slippage_usdt_per_base: Decimal | None = field(init=False, default=None)
+    fee_usdt: Decimal | None = field(init=False, default=None)
+    funding_cashflow_usdt: Decimal | None = field(init=False, default=None)
+    latency_seconds: Decimal | None = field(init=False, default=None)
+    depth_base: Decimal | None = field(init=False, default=None)
+    estimate_id: str = field(init=False)
+
+    def __post_init__(self):
+        verify(self.gate, ExecutionQualityGate)
+        candidate = next(c for c in self.gate.decision.radar.candidates if c.candidate_id == self.gate.candidate_id)
+        market = next((m for m in self.gate.decision.world.markets if candidate.markets == (m.symbol,)), None)
+        usable = self.gate.state is QualityState.PASS and market is not None and market.book is not None
+        object.__setattr__(self, 'reference_quote_usdt_per_base', market.mid if usable else None)
+        object.__setattr__(self, 'spread_usdt_per_base', market.spread if usable else None)
+        upstream._seal(self, 'estimate_id')
