@@ -70,3 +70,27 @@ def test_shadow_reader_real_schema_no_write(tmp_path,monkeypatch):
     assert json.loads(result.details_json)['decision_id']==d.decision_id
     assert json.loads(result.details_json)['mode']=='SHADOW'
     assert path.read_bytes()==before
+
+
+def test_snapshot_partial_corruption_determinism_and_node_isolation(tmp_path):
+    from core.runtime.snapshot import RuntimeConfig,build_system_snapshot
+    from core.runtime.readers import Source
+    path=tmp_path/'broken.json'; path.write_text('{}')
+    sources=(Source('bad','collector',str(path),'laptop'),Source('absent','shadow',str(tmp_path/'missing.db'),'laptop'))
+    config=RuntimeConfig('laptop',sources)
+    s=build_system_snapshot(config,snapshot_at=AT)
+    assert s==build_system_snapshot(replace(config,sources=sources[::-1]),snapshot_at=AT)
+    assert next(x for x in s.sources if x.name=='collector').state is State.INVALID
+    assert s.decisions.state is State.UNAVAILABLE
+    assert s.to_dict()['science']['price_pit']['details']['81h_input_readiness'] is None
+    with pytest.raises(ValueError): RuntimeConfig('laptop',(replace(sources[0],node_id='WORK-PC'),))
+    assert not (tmp_path/'missing.db').exists()
+
+
+def test_snapshot_unconfigured_is_not_healthy():
+    from core.runtime.snapshot import RuntimeConfig,build_system_snapshot
+    result=build_system_snapshot(RuntimeConfig('laptop'),snapshot_at=AT).to_dict()
+    assert all(s['state']==State.UNAVAILABLE for s in result['sources'])
+    assert result['node']['runtime_state']=='UNVERIFIED'
+    assert result['execution']['execution_claim']=='NO_EXECUTION_EVIDENCE'
+    assert result['positions']['open_position_claim']=='NO_FACTUAL_OPEN_POSITION_EVIDENCE'
