@@ -90,3 +90,21 @@ def test_ranking_config_mutation_and_foreign_candidate_blocked(tmp_path,monkeypa
     with pytest.raises(ValueError): t.GlobalOpportunityRanker.rank(w,bad,tmp_path/'ranking',available_at=w.as_of)
     p=tmp_path/'ranking'/'parameters.json'; p.write_bytes(p.read_bytes().replace(b'LAST',b'FIRST'))
     with pytest.raises(ValueError): t.GlobalOpportunityRanker.rank(w,radar,tmp_path/'ranking',available_at=w.as_of)
+
+
+def portfolio(at,positions=()):
+    return t.PortfolioState(at,at,t.CapitalAmount(t.CapitalUnit.USD_NOTIONAL,Decimal('10000')),
+        t.CapitalAmount(t.CapitalUnit.RISK_UNIT,Decimal('10')),positions,'c'*64)
+
+
+def test_shadow_capital_units_unknown_and_overlaps(tmp_path,monkeypatch):
+    a=thesis(tmp_path,monkeypatch)
+    x=t.Exposure('x',t.CandidateFamily.CROSS_MARKET,(t.ExposureLeg('BTCUSDT',t.Direction.LONG),),t.CapitalAmount(t.CapitalUnit.RISK_UNIT,None))
+    y=t.Exposure('y',t.CandidateFamily.CROSS_MARKET,(t.ExposureLeg('BTCUSDT',t.Direction.LONG),t.ExposureLeg('ETHUSDT',t.Direction.SHORT)),t.CapitalAmount(t.CapitalUnit.RISK_UNIT,Decimal('2')))
+    p=portfolio(a.available_at,(x,)); g=t.build_exposure_graph(p,proposals=(y,))
+    assert p.provenance=='SHADOW_CONFIG' and x.risk.value is None
+    assert g.correlation_state=='UNKNOWN' and g.links[0].correlation is None
+    assert set(g.links[0].overlaps)=={'SAME_INSTRUMENT','SAME_UNDERLYING','SAME_DIRECTION','SHARED_MULTI_LEG','VENUE_PRODUCT','CANDIDATE_FAMILY'}
+    with pytest.raises(ValueError): replace(p,provenance='BROKER_OBSERVED')
+    with pytest.raises(ValueError): t.CapitalAmount(t.CapitalUnit.FRACTION_OF_CAPITAL,Decimal('10'))
+    with pytest.raises(TypeError): t.CapitalAmount(t.CapitalUnit.USD_NOTIONAL,1.0)

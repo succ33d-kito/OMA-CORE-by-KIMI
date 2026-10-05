@@ -12,6 +12,7 @@ from . import multi_market_capture as capture
 from pathlib import Path
 from .opportunity_radar import RadarResult
 from .opportunity_candidate import CandidateStatus
+from .opportunity_candidate import CandidateFamily
 
 
 def _plain(value):
@@ -296,3 +297,112 @@ class GlobalOpportunityRanker:
         excluded_ids={cid for cid,_ in excluded}; ordered=tuple(v.candidate_id for v in sorted(vectors,key=key) if v.candidate_id not in excluded_ids)
         ids=tuple(sorted(candidates))
         return GlobalRanking(radar.radar_id,world.world_state_id,commitment(ids),ids,ordered,tuple(vectors),tuple(excluded),policy,available_at)
+
+
+class CapitalUnit(Enum):
+    FRACTION_OF_CAPITAL='FRACTION_OF_CAPITAL'
+    USD_NOTIONAL='USD_NOTIONAL'
+    USD_MAX_LOSS='USD_MAX_LOSS'
+    RISK_UNIT='RISK_UNIT'
+
+
+@dataclass(frozen=True,slots=True)
+class CapitalAmount:
+    unit: CapitalUnit
+    value: Decimal | None
+
+    def __post_init__(self):
+        if type(self.unit) is not CapitalUnit: raise TypeError('explicit capital unit required')
+        if self.value is not None:
+            _finite(self.value)
+            if self.value<0 or (self.unit is CapitalUnit.FRACTION_OF_CAPITAL and self.value>1): raise ValueError('invalid amount in declared units')
+
+
+@dataclass(frozen=True,slots=True)
+class ExposureLeg:
+    symbol: str
+    direction: Direction
+    venue: str = 'Binance USDⓈ-M'
+    product: str = 'linear perpetual'
+
+    def __post_init__(self):
+        if self.symbol not in capture.SYMBOLS or type(self.direction) is not Direction or (self.venue,self.product)!=('Binance USDⓈ-M','linear perpetual'):
+            raise ValueError('invalid exposure leg')
+
+    @property
+    def underlying(self): return self.symbol[:-4]
+
+
+@dataclass(frozen=True,slots=True)
+class Exposure:
+    reference_id: str
+    family: CandidateFamily
+    legs: tuple[ExposureLeg,...]
+    risk: CapitalAmount
+
+    def __post_init__(self):
+        if type(self.reference_id) is not str or not self.reference_id or type(self.family) is not CandidateFamily or type(self.risk) is not CapitalAmount:
+            raise TypeError('explicit exposure identity/family/risk required')
+        if type(self.legs) is not tuple or not self.legs or any(type(x) is not ExposureLeg for x in self.legs) or len(set(self.legs))!=len(self.legs): raise ValueError('immutable distinct legs required')
+
+
+@dataclass(frozen=True,slots=True)
+class PortfolioState:
+    as_of: datetime
+    available_at: datetime
+    equity: CapitalAmount
+    available_risk_budget: CapitalAmount
+    positions: tuple[Exposure,...]
+    configuration_commitment: str
+    provenance: str = 'SHADOW_CONFIG'
+    role: str = 'PILOT'
+    portfolio_id: str = field(init=False)
+
+    def __post_init__(self):
+        utc(self.as_of); utc(self.available_at); _hash(self.configuration_commitment)
+        if self.as_of>self.available_at or self.provenance!='SHADOW_CONFIG' or self.role!='PILOT': raise ValueError('shadow-only causal portfolio required')
+        if type(self.equity) is not CapitalAmount or self.equity.unit is not CapitalUnit.USD_NOTIONAL or type(self.available_risk_budget) is not CapitalAmount: raise TypeError('explicit shadow capital/budget required')
+        if type(self.positions) is not tuple or any(type(p) is not Exposure for p in self.positions) or len({p.reference_id for p in self.positions})!=len(self.positions): raise ValueError('immutable distinct positions required')
+        _seal(self,'portfolio_id')
+
+
+@dataclass(frozen=True,slots=True)
+class ExposureLink:
+    left: str
+    right: str
+    overlaps: tuple[str,...]
+    correlation: None = None
+
+
+@dataclass(frozen=True,slots=True)
+class ExposureGraph:
+    portfolio_id: str
+    references: tuple[str,...]
+    links: tuple[ExposureLink,...]
+    venue_product_counts: tuple[tuple[str,str,int],...]
+    family_counts: tuple[tuple[str,int],...]
+    correlation_state: str = 'UNKNOWN'
+    graph_id: str = field(init=False)
+
+    def __post_init__(self): _seal(self,'graph_id')
+
+
+def build_exposure_graph(portfolio,*,proposals=()):
+    if type(portfolio) is not PortfolioState or type(proposals) is not tuple or any(type(p) is not Exposure for p in proposals): raise TypeError('explicit portfolio/proposals required')
+    all_exposures=tuple(sorted(portfolio.positions+proposals,key=lambda x:x.reference_id))
+    if len({p.reference_id for p in all_exposures})!=len(all_exposures): raise ValueError('duplicate exposure identity')
+    links=[]; venue={}; families={}
+    for i,p in enumerate(all_exposures):
+        families[p.family.value]=families.get(p.family.value,0)+1
+        for key in {(l.venue,l.product) for l in p.legs}: venue[key]=venue.get(key,0)+1
+        for other in all_exposures[i+1:]:
+            reasons=[]; shared={l.symbol for l in p.legs}&{l.symbol for l in other.legs}
+            if shared: reasons.append('SAME_INSTRUMENT')
+            if {l.underlying for l in p.legs}&{l.underlying for l in other.legs}: reasons.append('SAME_UNDERLYING')
+            if {l.direction for l in p.legs if l.direction is not Direction.UNSPECIFIED}&{l.direction for l in other.legs if l.direction is not Direction.UNSPECIFIED}: reasons.append('SAME_DIRECTION')
+            if shared and (len(p.legs)>1 or len(other.legs)>1): reasons.append('SHARED_MULTI_LEG')
+            if {(l.venue,l.product) for l in p.legs}&{(l.venue,l.product) for l in other.legs}: reasons.append('VENUE_PRODUCT')
+            if p.family is other.family: reasons.append('CANDIDATE_FAMILY')
+            if reasons: links.append(ExposureLink(p.reference_id,other.reference_id,tuple(reasons)))
+    return ExposureGraph(portfolio.portfolio_id,tuple(p.reference_id for p in all_exposures),tuple(links),
+        tuple((v,p,n) for (v,p),n in sorted(venue.items())),tuple(sorted(families.items())))

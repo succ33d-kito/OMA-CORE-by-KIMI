@@ -27,3 +27,11 @@ lexicographic criteria, UNKNOWN-last behavior and candidate-ID tie-break. Rankin
 covers the full radar candidate set with component vectors and explicit exclusions.
 Output is PILOT_PRIORITY, not economic utility; no forecast numeric value enters
 the ordering. Missing contradictions mean unknown, not proof of no contradiction.
+
+## Shadow portfolio and factual overlap
+
+Equity and positions are SHADOW_CONFIG, never broker observations. Amounts carry
+explicit units without conversion; unknown risk stays None. ExposureGraph counts
+instrument/underlying/direction, shared legs, venue/product and family overlap.
+These are factual overlaps, not correlations. No validated relationship evidence
+adapter exists here, so correlation remains UNKNOWN rather than zero.
