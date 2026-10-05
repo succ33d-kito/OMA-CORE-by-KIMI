@@ -301,3 +301,42 @@ class ExitIntent:
 
     @property
     def available_at(self): return self.assessment.assessed_at
+
+
+class ReallocationState(Enum):
+    DEFER = 'DEFER'
+    REAUTHORIZED_ADDITIONS_ONLY = 'REAUTHORIZED_ADDITIONS_ONLY'
+
+
+@dataclass(frozen=True, slots=True)
+class Reallocation:
+    """No turnover or economic opportunity cost inferred from priority ranks."""
+    decision: upstream.ShadowCapitalDecision
+    available_at: datetime
+    state: ReallocationState = field(init=False)
+    reason: str = field(init=False)
+    allocation: upstream.AllocationPlan | None = field(init=False)
+    opportunity_cost_usd: Decimal | None = field(init=False, default=None)
+    reallocation_id: str = field(init=False)
+
+    def __post_init__(self):
+        verify(self.decision, upstream.ShadowCapitalDecision)
+        utc(self.available_at)
+        if self.available_at < self.decision.available_at:
+            raise ValueError('noncausal reallocation')
+        source = self.decision.allocation
+        allocation = None
+        # Existing exposure has no comparable contemporaneous thesis/forecast
+        # valuation in this version. A matching string ID is not that evidence.
+        if source.portfolio.positions:
+            state, reason = ReallocationState.DEFER, 'MISSING_COMMON_INCUMBENT_COMPARISON_BASIS'
+        elif any(t.expiry is not None and t.expiry <= self.available_at for t in self.decision.theses):
+            state, reason = ReallocationState.DEFER, 'EXPIRED_THESIS'
+        else:
+            allocation = upstream.allocate_capital(source.ranking,source.portfolio,
+                source.authorizations,source.budget,source.policy,available_at=self.available_at)
+            state, reason = ReallocationState.REAUTHORIZED_ADDITIONS_ONLY, 'NO_DISPOSALS_CASH_VALID'
+        object.__setattr__(self, 'state', state)
+        object.__setattr__(self, 'reason', reason)
+        object.__setattr__(self, 'allocation', allocation)
+        upstream._seal(self, 'reallocation_id')

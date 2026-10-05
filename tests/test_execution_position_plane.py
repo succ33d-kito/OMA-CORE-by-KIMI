@@ -31,10 +31,13 @@ def test_plan_rejects_tamper_live_and_foreign_candidate(tmp_path, monkeypatch):
     with pytest.raises(ValueError): replace(p)
 
 
-def notional_plan(tmp_path, monkeypatch):
+def notional_plan(tmp_path, monkeypatch, *, incumbent=False):
     d = shadow(tmp_path, monkeypatch)
     old = d.allocation
     port = replace(old.portfolio, available_risk_budget=t.CapitalAmount(t.CapitalUnit.USD_NOTIONAL, Decimal('10')))
+    if incumbent:
+        exposure = replace(old.authorizations[0].request,risk=t.CapitalAmount(t.CapitalUnit.USD_NOTIONAL,Decimal('1')))
+        port = replace(port,positions=(exposure,))
     auths = tuple(t.authorize_risk(a.candidate,a.world,port,
         replace(a.request,risk=t.CapitalAmount(t.CapitalUnit.USD_NOTIONAL,Decimal('3'))),
         replace(a.policy,unit=t.CapitalUnit.USD_NOTIONAL),kill_switch=False,available_at=d.available_at)
@@ -133,3 +136,24 @@ def test_exit_intent_does_not_close_position(tmp_path, monkeypatch):
     assert p.phase is e.PositionPhase.PENDING_EXECUTION and p.entry_execution_ref is None
     assert intent.reason == 'MISSING_CAUSAL_BOOK' and replace(intent) == intent
     with pytest.raises(TypeError): replace(intent,fill_price=Decimal('1'))
+
+
+def test_reallocation_reauthorizes_and_stale_risk_cannot_trade(tmp_path, monkeypatch):
+    p = plan(tmp_path,monkeypatch)
+    a = e.Reallocation(p.decision,p.available_at)
+    assert a.state is e.ReallocationState.REAUTHORIZED_ADDITIONS_ONLY
+    t.verify_allocation(a.allocation)
+    assert a.opportunity_cost_usd is None
+    stale = replace(a,available_at=p.available_at+timedelta(seconds=20000))
+    assert all(r.amount.value == 0 for r in stale.allocation.rows)
+    assert stale.allocation.unallocated == p.decision.allocation.budget
+    with pytest.raises(ValueError): replace(a,available_at=p.available_at-timedelta(seconds=1))
+    with pytest.raises(TypeError): replace(a,expected_pnl=Decimal('10'))
+
+
+def test_reallocation_matching_incumbent_id_is_not_comparable_basis(tmp_path, monkeypatch):
+    p = notional_plan(tmp_path,monkeypatch,incumbent=True)
+    a = e.Reallocation(p.decision,p.available_at)
+    assert a.state is e.ReallocationState.DEFER and a.allocation is None
+    assert a.reason == 'MISSING_COMMON_INCUMBENT_COMPARISON_BASIS'
+    assert a.opportunity_cost_usd is None
