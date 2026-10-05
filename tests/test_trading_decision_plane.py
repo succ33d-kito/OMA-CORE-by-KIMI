@@ -59,3 +59,34 @@ def test_forecast_causality_units_and_distribution(tmp_path,monkeypatch):
         value=((Decimal('-0.01'),Decimal('0.5')),(Decimal('0.01'),Decimal('0.5'))))
     assert f.economic_probability is None and f.horizon_seconds==3600
     with pytest.raises(ValueError): replace(f,value=((Decimal('0'),Decimal('0.8')),))
+
+
+def ranked(tmp_path,monkeypatch):
+    from tests.test_opportunity_radar import config
+    from core.scientific.opportunity_radar import scan
+    from tests.test_multi_market_capture import T
+    w=world(tmp_path,monkeypatch); radar=scan(w,config(),generated_at=w.as_of)
+    monkeypatch.setattr(t.capture,'_now',lambda:T+timedelta(seconds=10))
+    t.register_ranking_policy(tmp_path/'ranking',criteria=(t.RankingCriterion.COMPLETENESS,t.RankingCriterion.CONTRADICTIONS,t.RankingCriterion.EVIDENCE_BREADTH))
+    r=t.GlobalOpportunityRanker.rank(w,radar,tmp_path/'ranking',available_at=w.as_of)
+    return w,radar,r
+
+
+def test_global_ranking_all_candidates_factual_deterministic(tmp_path,monkeypatch):
+    w,radar,r=ranked(tmp_path,monkeypatch)
+    assert len(r.ordered)==len(radar.candidates)==2
+    assert r.label=='PILOT_PRIORITY' and all(v.contradictions is None for v in r.vectors)
+    assert all(v.calibration is t.CalibrationState.UNKNOWN for v in r.vectors)
+    assert r==t.GlobalOpportunityRanker.rank(w,radar,tmp_path/'ranking',available_at=w.as_of)
+    assert r.ordered==tuple(sorted(r.ordered))
+    later=t.GlobalOpportunityRanker.rank(w,radar,tmp_path/'ranking',available_at=w.as_of+timedelta(seconds=10))
+    assert later.vectors[0].freshness_seconds==r.vectors[0].freshness_seconds+10
+    with pytest.raises(FrozenInstanceError): r.ordered=()
+
+
+def test_ranking_config_mutation_and_foreign_candidate_blocked(tmp_path,monkeypatch):
+    w,radar,r=ranked(tmp_path,monkeypatch)
+    bad=replace(radar,world_state_id='f'*64)
+    with pytest.raises(ValueError): t.GlobalOpportunityRanker.rank(w,bad,tmp_path/'ranking',available_at=w.as_of)
+    p=tmp_path/'ranking'/'parameters.json'; p.write_bytes(p.read_bytes().replace(b'LAST',b'FIRST'))
+    with pytest.raises(ValueError): t.GlobalOpportunityRanker.rank(w,radar,tmp_path/'ranking',available_at=w.as_of)

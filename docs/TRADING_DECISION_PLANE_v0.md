@@ -19,3 +19,11 @@ expected-return forecasting adapter exists in v0: CALIBRATED and numeric expecte
 return are blocked, rather than accepting a caller's unsupported validation claim.
 Uncalibrated probability/distribution may be represented but never exposed as
 economic_probability. Scenario distributions are hypotheses, not observed outcomes.
+
+## Global priority
+
+Ranking policy is create-once registered before the WorldState cutoff. It declares
+lexicographic criteria, UNKNOWN-last behavior and candidate-ID tie-break. Ranking
+covers the full radar candidate set with component vectors and explicit exclusions.
+Output is PILOT_PRIORITY, not economic utility; no forecast numeric value enters
+the ordering. Missing contradictions mean unknown, not proof of no contradiction.

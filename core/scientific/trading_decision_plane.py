@@ -8,6 +8,10 @@ from .opportunity_candidate import OpportunityCandidate
 from .opportunity_candidate import Direction
 from .multi_market_capture import commitment
 from .nuisance_pilot_contracts import utc
+from . import multi_market_capture as capture
+from pathlib import Path
+from .opportunity_radar import RadarResult
+from .opportunity_candidate import CandidateStatus
 
 
 def _plain(value):
@@ -174,3 +178,121 @@ class Forecast:
         return {ForecastKind.RAW_SCORE:'ARBITRARY_SCORE',ForecastKind.PROBABILITY:'PROBABILITY_FRACTION',
             ForecastKind.EXPECTED_RETURN:'RETURN_FRACTION',ForecastKind.DISTRIBUTION:'RETURN_FRACTION_PROBABILITY_MASS',
             ForecastKind.DIRECTIONAL_VIEW:'DIRECTION'}[self.kind]
+
+
+class RankingCriterion(Enum):
+    COMPLETENESS='COMPLETENESS'
+    CONTRADICTIONS='CONTRADICTIONS'
+    EVIDENCE_BREADTH='EVIDENCE_BREADTH'
+    FRESHNESS='FRESHNESS'
+    FORECAST_AVAILABLE='FORECAST_AVAILABLE'
+    EXECUTION_OBSERVED='EXECUTION_OBSERVED'
+    CANDIDATE_AGE='CANDIDATE_AGE'
+
+
+@dataclass(frozen=True,slots=True)
+class RankingPolicy:
+    criteria: tuple[RankingCriterion,...]
+    registered_at: datetime
+    policy_id: str
+    label: str = 'PILOT_PRIORITY'
+
+
+def register_ranking_policy(directory,*,criteria):
+    if type(criteria) is not tuple or not criteria or any(type(c) is not RankingCriterion for c in criteria) or len(set(criteria))!=len(criteria):
+        raise ValueError('explicit unique ranking criteria required')
+    root=Path(directory); root.mkdir(parents=True,exist_ok=False)
+    params=dict(criteria=[c.value for c in criteria],label='PILOT_PRIORITY',tie_break='CANDIDATE_ID_ASC',unknown='LAST')
+    capture._write(root/'parameters.json',capture._json(params))
+    at=capture._now(); utc(at)
+    payload=dict(parameters=params,registered_at=at.isoformat())
+    capture._write(root/'policy.json',capture._json(dict(payload=payload,commitment=commitment(payload))))
+    return load_ranking_policy(root)
+
+
+def load_ranking_policy(directory):
+    root=Path(directory); saved=capture._read_json(root/'policy.json'); p=saved['payload']
+    if set(saved)!={'payload','commitment'} or saved['commitment']!=commitment(p) or set(p)!={'parameters','registered_at'}:
+        raise ValueError('ranking registration mismatch')
+    params=capture._read_json(root/'parameters.json')
+    if p['parameters']!=params or set(params)!={'criteria','label','tie_break','unknown'} or (params['label'],params['tie_break'],params['unknown'])!=('PILOT_PRIORITY','CANDIDATE_ID_ASC','LAST'):
+        raise ValueError('ranking policy changed')
+    criteria=tuple(RankingCriterion(x) for x in params['criteria'])
+    if not criteria or len(set(criteria))!=len(criteria): raise ValueError('invalid ranking criteria')
+    at=datetime.fromisoformat(p['registered_at']); utc(at)
+    return RankingPolicy(criteria,at,saved['commitment'])
+
+
+@dataclass(frozen=True,slots=True)
+class OpportunityQualityVector:
+    candidate_id: str
+    completeness: Decimal
+    contradictions: int | None
+    evidence_breadth: int
+    freshness_seconds: float | None
+    forecast_available: bool
+    calibration: CalibrationState
+    execution_observed: bool
+    candidate_age_seconds: float
+
+
+@dataclass(frozen=True,slots=True)
+class GlobalRanking:
+    radar_id: str
+    world_state_id: str
+    candidate_set_commitment: str
+    candidate_ids: tuple[str,...]
+    ordered: tuple[str,...]
+    vectors: tuple[OpportunityQualityVector,...]
+    excluded: tuple[tuple[str,str],...]
+    policy: RankingPolicy
+    available_at: datetime
+    label: str = 'PILOT_PRIORITY'
+    ranking_id: str = field(init=False)
+
+    def __post_init__(self): _seal(self,'ranking_id')
+
+
+class GlobalOpportunityRanker:
+    @staticmethod
+    def rank(world,radar,policy_directory,*,theses=(),forecasts=(),available_at):
+        if type(world) is not WorldState or type(radar) is not RadarResult or type(theses) is not tuple or type(forecasts) is not tuple:
+            raise TypeError('immutable world/radar/theses/forecasts required')
+        utc(available_at); policy=load_ranking_policy(policy_directory)
+        if not policy.registered_at<=world.as_of<=radar.generated_at<=available_at or radar.world_state_id!=world.world_state_id:
+            raise ValueError('noncausal ranking or changed world')
+        candidates={c.candidate_id:c for c in radar.candidates}
+        if len(candidates)!=len(radar.candidates): raise ValueError('duplicate candidate')
+        tm={x.candidate_id:x for x in theses}; fm={x.thesis.candidate_id:x for x in forecasts}
+        if len(tm)!=len(theses) or len(fm)!=len(forecasts) or (set(tm)|set(fm))-candidates.keys(): raise ValueError('duplicate/foreign thesis or forecast')
+        for x in theses+forecasts:
+            thesis=x if type(x) is Thesis else x.thesis
+            if thesis.world_state_id!=world.world_state_id or x.available_at>available_at: raise ValueError('future/foreign ranking evidence')
+        market={m.symbol:m for m in world.markets}; vectors=[]; excluded=[]
+        from decimal import localcontext
+        with localcontext() as ctx:
+            ctx.prec=100
+            for cid,c in sorted(candidates.items()):
+                if c.world_state_id!=world.world_state_id or c.available_at>available_at: raise ValueError('future/foreign candidate')
+                ms=[market[s] for s in c.markets]; present=sum(e is not None for m in ms for e in (m.book,m.premium))
+                ages=[a for m in ms for a,e in ((m.book_age_seconds,m.book),(m.premium_age_seconds,m.premium)) if e is not None]
+                v=OpportunityQualityVector(cid,Decimal(present)/Decimal(2*len(ms)),
+                    len(tm[cid].contradicting_evidence_refs) if cid in tm else None,len(c.evidence_refs),
+                    max(ages)+(available_at-world.as_of).total_seconds() if ages and all(a is not None for a in ages) else None,cid in fm,
+                    fm[cid].calibration if cid in fm else CalibrationState.UNKNOWN,
+                    all(m.book is not None for m in ms),(available_at-c.created_at).total_seconds())
+                vectors.append(v)
+                if c.status is CandidateStatus.REJECTED: excluded.append((cid,'CANDIDATE_REJECTED'))
+                elif cid in tm and tm[cid].expiry is not None and tm[cid].expiry<=available_at: excluded.append((cid,'THESIS_EXPIRED'))
+        def key(v):
+            values={RankingCriterion.COMPLETENESS:(v.completeness,True),RankingCriterion.CONTRADICTIONS:(v.contradictions,False),
+                RankingCriterion.EVIDENCE_BREADTH:(v.evidence_breadth,True),RankingCriterion.FRESHNESS:(v.freshness_seconds,False),
+                RankingCriterion.FORECAST_AVAILABLE:(int(v.forecast_available),True),RankingCriterion.EXECUTION_OBSERVED:(int(v.execution_observed),True),
+                RankingCriterion.CANDIDATE_AGE:(v.candidate_age_seconds,False)}
+            result=[]
+            for criterion in policy.criteria:
+                value,descending=values[criterion]; result.append((value is None,0 if value is None else (-value if descending else value)))
+            return (*result,v.candidate_id)
+        excluded_ids={cid for cid,_ in excluded}; ordered=tuple(v.candidate_id for v in sorted(vectors,key=key) if v.candidate_id not in excluded_ids)
+        ids=tuple(sorted(candidates))
+        return GlobalRanking(radar.radar_id,world.world_state_id,commitment(ids),ids,ordered,tuple(vectors),tuple(excluded),policy,available_at)
