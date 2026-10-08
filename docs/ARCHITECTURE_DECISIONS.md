@@ -679,3 +679,112 @@ Future Outcome implementation remains blocked from:
 - Live Trading;
 - Pipeline redesign;
 - Object Model redesign.
+
+---
+
+## AD-009 - OSIRIS is the read-only operator interface
+
+**Status:** ACCEPTED
+
+**Date:** 2026-10-08
+
+**Context:**
+
+Architecture V2 retained OSIRIS as a possible interface/operator identity while
+describing the historical dashboard implementation as legacy. Window #4.5 later
+introduced and verified a new observability path:
+
+canonical evidence -> read-only adapters -> immutable SystemSnapshot ->
+CLI / GET /api/system -> Mission Control.
+
+The new path is independent from legacy database initialization and does not
+invoke capture, decision generation, execution, repair, or scientific learning.
+The Architecture V2 implementation-status text therefore became stale even
+though its higher-level architecture remained valid.
+
+**Decision:**
+
+OSIRIS is the operator/interface identity for O.M.A.-C.O.R.E.
+
+The current OSIRIS Mission Control is a read-only observability interface.
+Its canonical observability input is SystemSnapshot.
+
+SystemSnapshot is constructed from configured canonical evidence through
+read-only readers/adapters with explicit provenance, integrity, freshness,
+UNKNOWN and invalid-state semantics.
+
+OSIRIS has no authority to:
+
+- capture market or event data;
+- generate or alter decisions;
+- modify ranking, allocation, risk, or policy;
+- submit or simulate factual execution;
+- create factual positions from intents;
+- repair or backfill evidence;
+- promote Edge, Regime, Mechanics, Criterion, or learning state.
+
+Legacy dashboard endpoints remain isolated and may be deprecated only after
+replacement coverage is demonstrated. Their database semantics do not enter
+SystemSnapshot.
+
+Each evidence node retains independent provenance and configuration. A remote
+or preserved node must not be merged into a local writer merely for display.
+
+**Alternatives Considered:**
+
+1. Keep OSIRIS classified entirely as legacy.
+2. Replace the OSIRIS name with a new interface identity.
+3. Let Mission Control become an operational control plane.
+4. Recognize OSIRIS as the read-only operator interface while preserving
+   O.M.A.-C.O.R.E. as the system identity.
+
+Alternative 4 is accepted.
+
+**Consequences:**
+
+- O.M.A.-C.O.R.E. remains the system identity.
+- OSIRIS becomes the explicit operator/interface identity.
+- SystemSnapshot remains the immutable observability boundary.
+- UI and GET endpoints remain read-only.
+- Operational controls remain outside Mission Control.
+- Legacy dashboard semantics remain isolated.
+- Missing canonical adapters remain UNKNOWN rather than inferred.
+- Future external engines must not obtain authority merely by being displayed
+  through OSIRIS.
+
+**Evidence:**
+
+- Window #4.5 Unified Runtime / OSIRIS migration boundary.
+- Verified runtime observability tests.
+- Verified dashboard tests.
+- Verified fail-closed LOCAL_UNCONFIGURED behavior.
+- Verified separation from legacy database initialization.
+- Verified immutable SystemSnapshot and read-only evidence readers.
+
+**Affected Documents:**
+
+- `docs/ARCHITECTURE_V2.md`
+- `docs/UNIFIED_RUNTIME_MIGRATION.md`
+- `docs/ARCHITECTURE_DECISIONS.md`
+
+**Affected Modules:**
+
+- `core/runtime/contracts.py`
+- `core/runtime/readers.py`
+- `core/runtime/snapshot.py`
+- `core/runtime/cli.py`
+- `dashboard/app.py`
+- `dashboard/static/mission_control.js`
+- `dashboard/templates/mission_control.html`
+
+**Future Impact:**
+
+Future OSIRIS work must preserve the separation between observability and
+authority. Any proposal to allow UI-driven mutation, execution, policy changes,
+capture control, repair, learning promotion, or other governing behavior
+requires a later explicit Architecture Decision.
+
+Future adapter or external-engine integrations may provide additional
+observability inputs only after their canonical contracts and provenance rules
+are defined. Displaying a value in OSIRIS does not make that value factual,
+validated, causal, economically useful, or authoritative.

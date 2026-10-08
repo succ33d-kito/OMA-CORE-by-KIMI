@@ -232,7 +232,7 @@ Stronger Criterion (next cycle starts from a higher baseline)
 | Scarce Resources Model | RESEARCH | Listed in `05_NORTH_STAR.md`. No formal model, schema, or allocation logic. |
 | Innovation System | PLANNED | Not yet added. Will formalize research proposals and structured experimentation. |
 | Terminal Cockpit | IMPLEMENTED | CLI with 15+ commands (operational + scientific). Present in laptop version. |
-| OSIRIS / Dashboard | LEGACY | "OSIRIS" branding in code (39 occurrences). Dashboard not present in USB version. OSIRIS may be retained as UI/operator name. |
+| OSIRIS / Dashboard | IMPLEMENTED - READ-ONLY | Mission Control consumes immutable SystemSnapshot through GET /api/system. Legacy endpoints remain isolated under their existing URLs and /legacy. OSIRIS observes; it does not govern. |
 | Telegram Notifications | IMPLEMENTED | `core/engines/telegram_notifier.py` — operational notifications. |
 | CLI (scientific commands) | IMPLEMENTED | 7 commands: `hypothesis create/list/show/transition/archive`, `evidence add/list`, `scientific status`. |
 | Missed Opportunity Ledger | MISSING | Not designed. No tracking of opportunities the system evaluated but did not act on. |
@@ -279,7 +279,7 @@ The old architecture's operational components remain valid and continue to funct
 |---------|-------------|------------------------|
 | Trading | Primary purpose | First validation domain |
 | Profit | Success metric | Expected consequence of Criterion |
-| OSIRIS | Project identity | Interface/operator branding (LEGACY in code) |
+| OSIRIS | Project identity | Operator/interface identity for O.M.A.-C.O.R.E.; current Mission Control is read-only and has no capture, decision, execution, repair, or scientific authority. |
 | Dashboard | Intelligence core | Interface layer, not intelligence |
 | Agents | Opinion producers | Future hypothesis formatters |
 | Council | Decision maker | Future hypothesis evaluator |
@@ -578,8 +578,8 @@ The user's attention is the most scarce resource. Every notification, every reco
 │  │    RISK / SURVIVAL  │  │     MEMORY        │  │      INTERFACES          │ │
 │  │  CapitalGuard       │  │  Short-term       │  │  Terminal Cockpit (CLI) │ │
 │  │  CrashDetector      │  │  Long-term        │  │  Telegram Notifications │ │
-│  │  KnifeDetector      │  │  Performance      │  │  OSIRIS (legacy brand)  │ │
-│  │  DirectionController │  │  Memory           │  │  Dashboard (planned)   │ │
+│  │  KnifeDetector      │  │  Performance      │  │  OSIRIS / Mission Control  │ │
+│  │  DirectionController │  │  Memory           │  │  Dashboard (read-only)   │ │
 │  │  GapRisk            │  │  Scientific Store │  │                         │ │
 │  │  SlippageEngine     │  │  (separate DB)    │  │                         │ │
 │  └────────────────────┘  └──────────────────┘  └──────────────────────────┘ │
