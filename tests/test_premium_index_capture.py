@@ -69,3 +69,63 @@ def test_commitment_tampering(tmp_path, monkeypatch):
     p=tmp_path/'capture'/'response.raw'
     p.write_bytes(p.read_bytes().replace(b'100.1',b'999.1'))
     with pytest.raises(ValueError): c.load_premium(tmp_path/'capture')
+
+def test_admission_check_runs_before_transport(
+    tmp_path,
+    monkeypatch,
+):
+    calls = []
+
+    monkeypatch.setattr(
+        c,
+        "_now",
+        lambda: T,
+    )
+
+    def admission_check(started):
+        calls.append(
+            ("admission", started)
+        )
+
+        raise ValueError(
+            "request outside frozen slot window"
+        )
+
+    def forbidden_open():
+        calls.append(
+            ("open", None)
+        )
+
+        raise AssertionError(
+            "transport opened after rejected admission"
+        )
+
+    monkeypatch.setattr(
+        c,
+        "_open",
+        forbidden_open,
+    )
+
+    with pytest.raises(
+        ValueError,
+        match="outside frozen slot window",
+    ):
+        c.capture_premium(
+            tmp_path / "capture",
+            admission_check=admission_check,
+        )
+
+    assert calls == [
+        ("admission", T),
+    ]
+
+    assert (
+        tmp_path
+        / "capture"
+    ).is_dir()
+
+    assert not (
+        tmp_path
+        / "capture"
+        / "response.raw"
+    ).exists()

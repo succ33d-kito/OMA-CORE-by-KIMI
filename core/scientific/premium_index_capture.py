@@ -63,16 +63,39 @@ def _project(meta, raw, available_at, provenance):
     return receipt
 
 
-def capture_premium(directory):
+def capture_premium(
+    directory,
+    *,
+    admission_check=None,
+):
     """One HTTP request, internally sampled timestamps; directory must not exist.
 
     Persist raw before validating projection. No retries or replacement after a
     response. A failed/incomplete capture has no availability marker.
+
+    An optional admission_check receives the internally sampled request start
+    before transport is opened. It may reject the request but may not replace
+    or synthesize that timestamp.
     """
+    if (
+        admission_check is not None
+        and not callable(admission_check)
+    ):
+        raise TypeError(
+            "admission_check must be callable"
+        )
+
     root = Path(directory)
     root.mkdir(parents=True, exist_ok=False)
+
     started = _now()
+    utc(started)
+
+    if admission_check is not None:
+        admission_check(started)
+
     tick = monotonic()
+
     with _open() as response:
         raw = response.read(262145)
         received = _now()
