@@ -238,3 +238,32 @@ execution, realized/unrealized PnL, Outcome or learning. Closed-position state
 and PnL require separate future contracts. No broker actions or legacy simulation
 imports are introduced. Existing contracts remain unchanged.
 EDGE=NOT_DEMONSTRATED, REGIME_VALIDATED=NO, MECHANICS_VALIDATED=NO, POLICY_WINNER=NONE.
+
+### CP-7L: fully closed simulated PAPER inventory
+
+`PaperClosedPosition(exit_fill)` is a separate frozen/slotted inventory-state
+contract. Its sole input is an exact, integrity-verified SimulatedPaperExitFill;
+the open position is derived from that fill's exit-intent/lifecycle chain, never
+supplied separately. Existing sealing rules bind the complete chain through
+PaperOpenPosition, entry fill, request, pending position, order intent, execution
+plan and original ShadowCapitalDecision. Exact replay yields the same identity.
+
+The dedicated phase is PaperClosedPositionPhase.PAPER_CLOSED, mode PAPER, kind
+SIMULATED_PAPER_CLOSED_POSITION and actionable False. Full quantity must equal
+PaperOpenPosition.filled_quantity_base exactly, without conversion, recomputation,
+partial close or residual inventory. BUY entry requires SELL exit; SELL entry
+requires BUY exit. Entry and exit prices are inherited from the open position
+and exit fill respectively, with references to both fills and the exit intention.
+The original open-position and exit-fill records remain immutable provenance.
+
+opened_at equals open-position availability; closed_at equals exit-fill availability
+and must be strictly later. All three exit-evidence timestamps remain strictly
+post-exit-intent. closed_at means simulated close evidence became available,
+not broker settlement, venue acknowledgement or factual account-state time.
+
+PaperClosedPosition represents fully closed simulated PAPER inventory only.
+It does not compute realized PnL, returns, win/loss, economic performance, Outcome,
+Edge or learning eligibility, nor establish factual holdings or broker/venue
+execution. Economic accounting and any outcome boundary require separate future
+contracts. Existing phases and prior contract semantics remain unchanged.
+EDGE=NOT_DEMONSTRATED, REGIME_VALIDATED=NO, MECHANICS_VALIDATED=NO, POLICY_WINNER=NONE.
