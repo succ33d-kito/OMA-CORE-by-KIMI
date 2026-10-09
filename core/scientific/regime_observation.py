@@ -20,6 +20,7 @@ from .prospective_receipts import (
 
 CERTIFICATE_SCHEMA = "price-81h-certificate-v1"
 PRICE_FEATURE = "Price/OHLCV"
+PRICE_CONTRACT = "binance-usdm-h1-rest-v1"
 REGIME_FEATURE = "Regime"
 INSTRUMENT = "BTCUSDT"
 REGIME_PROVENANCE_SCHEMA = "regime-derived-observation-v1"
@@ -62,6 +63,9 @@ def append_certified_regime_observation(
 
     if certificate.get("feature") != PRICE_FEATURE:
         raise ValueError("certificate is not Price/OHLCV")
+
+    if certificate.get("contract") != PRICE_CONTRACT:
+        raise ValueError("unsupported price certificate contract")
 
     if certificate.get("number_of_bars") != 81:
         raise ValueError("regime requires exactly 81 certified bars")
@@ -142,12 +146,38 @@ def append_certified_regime_observation(
     ):
         raise ValueError("certificate dependency universe mismatch")
 
+    if any(
+        item.get("provenance", {}).get("contract") != PRICE_CONTRACT
+        for item in selected
+    ):
+        raise ValueError("dependency price contract mismatch")
+
+    dependency_source_metric_at = [
+        _utc(item["source_metric_at"])
+        for item in selected
+    ]
+
+    dependency_received_at = [
+        _utc(item["received_at"])
+        for item in selected
+    ]
+
     dependency_available = [
         _utc(item["available_at"])
         for item in selected
     ]
 
-    input_available_at = max(dependency_available)
+    latest_source_metric_at = max(
+        dependency_source_metric_at
+    )
+
+    latest_received_at = max(
+        dependency_received_at
+    )
+
+    input_available_at = max(
+        dependency_available
+    )
 
     if not all(
         snapshot_causally_available(
@@ -176,7 +206,7 @@ def append_certified_regime_observation(
         )
 
     source_id = (
-        str(certificate["contract"])
+        PRICE_CONTRACT
         + ":"
         + str(certificate["certified_set_hash"])
     )
@@ -206,7 +236,7 @@ def append_certified_regime_observation(
         "price_certificate_hash": certificate["certified_set_hash"],
         "price_ledger_head": certificate["ledger_head"],
         "price_receipt_count": len(receipt_ids),
-        "price_contract": certificate["contract"],
+        "price_contract": PRICE_CONTRACT,
         "market_state_id": state.state_id,
         "market_state_input_digest": state.input_digest,
         "market_state_algorithm_version": state.algorithm_version,
@@ -219,8 +249,8 @@ def append_certified_regime_observation(
         instrument=INSTRUMENT,
         feature=REGIME_FEATURE,
         event_time=event_times[-1],
-        source_metric_at=event_times[-1],
-        received_at=input_available_at,
+        source_metric_at=latest_source_metric_at,
+        received_at=latest_received_at,
         payload=regime.to_dict(),
         provenance=provenance,
         dependencies=receipt_ids,

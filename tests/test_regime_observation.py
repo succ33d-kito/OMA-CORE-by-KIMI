@@ -241,3 +241,173 @@ def test_certificate_safety_gates_fail_closed(
             certificate,
             clock=lambda: T + timedelta(hours=81, seconds=10),
         )
+
+def test_regime_rejects_tampered_certificate_contract(tmp_path):
+    import core.scientific.regime_observation as ro
+
+    ledger, certificate = certified_window(tmp_path)
+
+    certificate = dict(certificate)
+    certificate["contract"] = "tampered-contract-v999"
+
+    with pytest.raises(
+        ValueError,
+        match="price certificate contract",
+    ):
+        ro.append_certified_regime_observation(
+            ledger,
+            certificate,
+            clock=lambda:
+                T + timedelta(hours=81, seconds=10),
+        )
+
+
+def test_regime_explicitly_binds_dependency_price_contract(
+    tmp_path,
+    monkeypatch,
+):
+    import core.scientific.regime_observation as ro
+
+    ledger, certificate = certified_window(tmp_path)
+
+    known, prefixes = ro.observation_snapshot(
+        ledger,
+        read_only=True,
+    )
+
+    fake_known = {
+        identity: dict(item)
+        for identity, item in known.items()
+    }
+
+    bad_id = certificate["receipt_ids"][-1]
+
+    bad = dict(
+        fake_known[bad_id]
+    )
+
+    bad["provenance"] = dict(
+        bad["provenance"]
+    )
+
+    bad["provenance"]["contract"] = (
+        "tampered-dependency-contract-v999"
+    )
+
+    fake_known[bad_id] = bad
+
+    selected = [
+        fake_known[identity]
+        for identity
+        in certificate["receipt_ids"]
+    ]
+
+    certificate = dict(certificate)
+
+    certificate["certified_set_hash"] = (
+        ro.observation_hash(selected)
+    )
+
+    monkeypatch.setattr(
+        ro,
+        "observation_snapshot",
+        lambda *args, **kwargs:
+            (fake_known, prefixes),
+    )
+
+    # Isolate the adapter's explicit provenance binding
+    # from the lower generic Price causal gate.
+    monkeypatch.setattr(
+        ro,
+        "snapshot_causally_available",
+        lambda *args, **kwargs: True,
+    )
+
+    with pytest.raises(
+        ValueError,
+        match="dependency price contract",
+    ):
+        ro.append_certified_regime_observation(
+            ledger,
+            certificate,
+            clock=lambda:
+                T + timedelta(hours=81, seconds=10),
+        )
+
+
+def test_regime_inherits_dependency_temporal_semantics(tmp_path):
+    import core.scientific.regime_observation as ro
+
+    ledger, certificate = certified_window(tmp_path)
+
+    known, _ = ro.observation_snapshot(
+        ledger,
+        read_only=True,
+    )
+
+    selected = [
+        known[identity]
+        for identity
+        in certificate["receipt_ids"]
+    ]
+
+    expected_event_time = ro._utc(
+        certificate["last_event_time"]
+    )
+
+    expected_source_metric_at = max(
+        ro._utc(item["source_metric_at"])
+        for item in selected
+    )
+
+    expected_received_at = max(
+        ro._utc(item["received_at"])
+        for item in selected
+    )
+
+    expected_input_available_at = max(
+        ro._utc(item["available_at"])
+        for item in selected
+    )
+
+    computed_at = (
+        expected_input_available_at
+        + timedelta(seconds=1)
+    )
+
+    result = (
+        ro.append_certified_regime_observation(
+            ledger,
+            certificate,
+            clock=lambda: computed_at,
+        )
+    )
+
+    assert ro._utc(
+        result["event_time"]
+    ) == expected_event_time
+
+    assert ro._utc(
+        result["source_metric_at"]
+    ) == expected_source_metric_at
+
+    assert ro._utc(
+        result["received_at"]
+    ) == expected_received_at
+
+    assert ro._utc(
+        result["available_at"]
+    ) == computed_at
+
+    assert (
+        result["provenance"]["price_contract"]
+        == ro.PRICE_CONTRACT
+    )
+
+    assert (
+        expected_source_metric_at
+        < expected_event_time
+        < expected_received_at
+        < expected_input_available_at
+        < computed_at
+    )
