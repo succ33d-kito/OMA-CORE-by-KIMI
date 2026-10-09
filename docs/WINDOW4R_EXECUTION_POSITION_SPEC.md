@@ -137,3 +137,25 @@ HALT/DEFER/REJECT/abstention. Legacy execution and learning imports are excluded
 Validation: 26 Window #4R focal tests and 61 direct upstream regressions passed.
 Core compileall and git diff whitespace checks passed. Tests use synthetic
 fixtures only, with no claim of prospective execution or trading evidence.
+
+### CP-7H: separate simulated open inventory
+
+`core.scientific.paper_position.PaperOpenPosition(fill)` accepts only an exact,
+verified `SimulatedPaperFill`. It derives base quantity, entry price, fill and
+pending-position references, thesis and availability from that fill. The fill
+retains the complete request, quality gate, intent, quote and simulation provenance.
+PaperOpenPosition.entry_execution_ref references only SimulatedPaperFill.fill_id; it is not an ExecutionResult, venue fill, broker acknowledgement, or factual/live execution reference.
+The frozen contract has a deterministic position identity and a separate
+`PaperPositionPhase.PAPER_OPEN`; mode is PAPER and actionable remains false.
+Availability follows the quote's available_at, never an earlier exchange time.
+
+`PositionState` and `PositionPhase` remain PENDING_EXECUTION only. Construction
+does not mutate the pending record. None/NO_FILL, intents and estimates cannot
+open inventory. ThesisLifecycle, ExitIntent and reallocation are not extended
+to accept this contract. No runner, persistence or legacy bridge is introduced.
+
+PAPER_OPEN denotes simulated inventory, not venue/broker execution or factual
+holdings. CP-7G's supplied-cycle scope and nominal USD=USDT assumption remain.
+Fees, funding, realized PnL, exits, learning and execution accreditation are not
+established. EDGE remains NOT_DEMONSTRATED, REGIME_VALIDATED and
+MECHANICS_VALIDATED remain NO, and POLICY_WINNER remains NONE.
