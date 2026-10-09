@@ -87,13 +87,17 @@ artifacts, remain audit evidence only.
 
 They cannot be imported, relabeled, replayed, or counted toward this protocol.
 
-## Attempt state
+## Attempt and continuity state
 
-Every expected slot has exactly one immutable attempt directory:
+Only a slot for which a live attempt actually began has an immutable attempt
+directory:
 
 attempts/YYYYMMDDTHH0000Z/
 
-The attempt may contain:
+No attempt directory is synthesized retrospectively for a slot that was never
+attempted.
+
+A live attempt may contain:
 
 attempt.json
     slot identity and STARTED evidence
@@ -104,7 +108,7 @@ capture/
 result.json
     immutable final result when finalization occurred
 
-Allowed final semantic states:
+Allowed persisted result.json statuses:
 
 SUCCESS
     One capture exists, load_premium verifies it, source and scope match,
@@ -114,15 +118,19 @@ FAILED
     The one live attempt failed transport, validation, clock, persistence,
     or contract checks.
 
-MISSED_SLOT
-    The slot deadline passed without a valid live attempt.
+Derived continuity states:
 
 INCOMPLETE
-    Recovery finds STARTED evidence without a valid immutable final result.
-    This is preserved and never rewritten as success.
+    An attempt directory and STARTED evidence exist without a valid immutable
+    final result. This is preserved and never rewritten as success.
 
-INCOMPLETE is a recovery classification, not permission to mutate an old
-attempt.
+MISSED_SLOT
+    An expected slot reached its deadline with no attempt directory. This state
+    is derived by continuity accounting and is not written as a result.json
+    status.
+
+INCOMPLETE and MISSED_SLOT are continuity classifications, not permission to
+create, complete, or mutate historical attempts.
 
 ## Retry and recovery policy
 
