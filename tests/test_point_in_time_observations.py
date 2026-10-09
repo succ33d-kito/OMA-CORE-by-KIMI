@@ -106,3 +106,477 @@ def test_capture_uses_only_two_public_price_requests(tmp_path):
     x=capture_price_receipt(Session(),tmp_path/'r.db',clock=lambda:T+timedelta(seconds=5),monotonic=lambda:0)
     assert len(calls)==2
     assert is_causally_available(tmp_path/'r.db',x['id'],T+timedelta(seconds=6))
+
+def test_published_funding_rate_raw_causal_gate(tmp_path):
+    exchange = T + timedelta(seconds=1)
+    received = T + timedelta(seconds=2)
+    available = T + timedelta(seconds=3)
+
+    raw = {
+        'symbol': 'BTCUSDT',
+        'markPrice': '60000.00',
+        'indexPrice': '59990.00',
+        'estimatedSettlePrice': '59995.00',
+        'lastFundingRate': '-0.0001',
+        'interestRate': '0.0001',
+        'nextFundingTime': int(
+            (T + timedelta(hours=8)).timestamp() * 1000
+        ),
+        'time': int(exchange.timestamp() * 1000),
+    }
+
+    payload = {
+        'funding_rate': '-0.0001',
+        'mark_price': '60000.00',
+        'index_price': '59990.00',
+        'exchange_at': exchange.isoformat(),
+        'next_funding_at': (
+            T + timedelta(hours=8)
+        ).isoformat(),
+    }
+
+    x = append_observation(
+        tmp_path / 'r.db',
+        source='https://fapi.binance.com/fapi/v1/premiumIndex',
+        instrument='BTCUSDT',
+        feature='FundingRate/Published',
+        event_time=exchange,
+        source_metric_at=exchange,
+        received_at=received,
+        payload=payload,
+        provenance={
+            'contract': 'binance-usdm-published-funding-rate-v1',
+            'raw_response': json.dumps(
+                raw,
+                sort_keys=True,
+                separators=(',', ':'),
+            ),
+            'semantic_status': 'PUBLISHED_RATE_NOT_CASHFLOW',
+        },
+        clock=lambda: available,
+    )
+
+    assert x['derived'] is False
+    assert x['dependencies'] == []
+    assert x['available_at'] == available.isoformat()
+
+    assert is_causally_available(
+        tmp_path / 'r.db',
+        x['id'],
+        available,
+    )
+
+
+def test_published_funding_rate_tampering_fails_closed(tmp_path):
+    exchange = T + timedelta(seconds=1)
+    received = T + timedelta(seconds=2)
+    available = T + timedelta(seconds=3)
+
+    raw = {
+        'symbol': 'BTCUSDT',
+        'markPrice': '60000.00',
+        'indexPrice': '59990.00',
+        'lastFundingRate': '-0.0001',
+        'nextFundingTime': int(
+            (T + timedelta(hours=8)).timestamp() * 1000
+        ),
+        'time': int(exchange.timestamp() * 1000),
+    }
+
+    payload = {
+        'funding_rate': '0.9999',
+        'mark_price': '60000.00',
+        'index_price': '59990.00',
+        'exchange_at': exchange.isoformat(),
+        'next_funding_at': (
+            T + timedelta(hours=8)
+        ).isoformat(),
+    }
+
+    x = append_observation(
+        tmp_path / 'r.db',
+        source='https://fapi.binance.com/fapi/v1/premiumIndex',
+        instrument='BTCUSDT',
+        feature='FundingRate/Published',
+        event_time=exchange,
+        source_metric_at=exchange,
+        received_at=received,
+        payload=payload,
+        provenance={
+            'contract': 'binance-usdm-published-funding-rate-v1',
+            'raw_response': json.dumps(
+                raw,
+                sort_keys=True,
+                separators=(',', ':'),
+            ),
+        },
+        clock=lambda: available,
+    )
+
+    assert not is_causally_available(
+        tmp_path / 'r.db',
+        x['id'],
+        available,
+    )
+
+
+def test_published_funding_rate_future_exchange_fails_closed(tmp_path):
+    exchange = T + timedelta(seconds=3)
+    received = T + timedelta(seconds=2)
+    available = T + timedelta(seconds=4)
+
+    raw = {
+        'symbol': 'BTCUSDT',
+        'markPrice': '60000.00',
+        'indexPrice': '59990.00',
+        'lastFundingRate': '-0.0001',
+        'time': int(exchange.timestamp() * 1000),
+    }
+
+    with pytest.raises(ValueError):
+        append_observation(
+            tmp_path / 'r.db',
+            source='https://fapi.binance.com/fapi/v1/premiumIndex',
+            instrument='BTCUSDT',
+            feature='FundingRate/Published',
+            event_time=exchange,
+            source_metric_at=exchange,
+            received_at=received,
+            payload={
+                'funding_rate': '-0.0001',
+                'mark_price': '60000.00',
+                'index_price': '59990.00',
+                'exchange_at': exchange.isoformat(),
+                'next_funding_at': None,
+            },
+            provenance={
+                'contract': 'binance-usdm-published-funding-rate-v1',
+                'raw_response': json.dumps(raw),
+            },
+            clock=lambda: available,
+        )
+
+@pytest.mark.parametrize(
+    'field,value,payload_field,payload_value',
+    [
+        (
+            'markPrice',
+            '-1.00',
+            'mark_price',
+            '-1.00',
+        ),
+        (
+            'markPrice',
+            '0',
+            'mark_price',
+            '0',
+        ),
+        (
+            'indexPrice',
+            '-1.00',
+            'index_price',
+            '-1.00',
+        ),
+        (
+            'indexPrice',
+            '0',
+            'index_price',
+            '0',
+        ),
+    ],
+)
+def test_published_funding_rate_rejects_nonpositive_prices(
+    tmp_path,
+    field,
+    value,
+    payload_field,
+    payload_value,
+):
+    exchange = T + timedelta(seconds=1)
+    received = T + timedelta(seconds=2)
+    available = T + timedelta(seconds=3)
+
+    raw = {
+        'symbol': 'BTCUSDT',
+        'markPrice': '60000.00',
+        'indexPrice': '59990.00',
+        'lastFundingRate': '-0.0001',
+        'nextFundingTime': int(
+            (T + timedelta(hours=8)).timestamp()
+            * 1000
+        ),
+        'time': int(
+            exchange.timestamp() * 1000
+        ),
+    }
+
+    raw[field] = value
+
+    payload = {
+        'funding_rate': '-0.0001',
+        'mark_price': '60000.00',
+        'index_price': '59990.00',
+        'exchange_at': exchange.isoformat(),
+        'next_funding_at': (
+            T + timedelta(hours=8)
+        ).isoformat(),
+    }
+
+    payload[payload_field] = payload_value
+
+    x = append_observation(
+        tmp_path / 'r.db',
+        source=(
+            'https://fapi.binance.com'
+            '/fapi/v1/premiumIndex'
+        ),
+        instrument='BTCUSDT',
+        feature='FundingRate/Published',
+        event_time=exchange,
+        source_metric_at=exchange,
+        received_at=received,
+        payload=payload,
+        provenance={
+            'contract':
+                'binance-usdm-published-funding-rate-v1',
+            'raw_response': json.dumps(
+                raw,
+                sort_keys=True,
+                separators=(',', ':'),
+            ),
+        },
+        clock=lambda: available,
+    )
+
+    assert not is_causally_available(
+        tmp_path / 'r.db',
+        x['id'],
+        available,
+    )
+
+
+@pytest.mark.parametrize(
+    'field,numeric_value,payload_field',
+    [
+        ('markPrice', 60000.0, 'mark_price'),
+        ('indexPrice', 59990.0, 'index_price'),
+        ('lastFundingRate', -0.0001, 'funding_rate'),
+    ],
+)
+def test_published_funding_rate_rejects_numeric_wire_values(
+    tmp_path,
+    field,
+    numeric_value,
+    payload_field,
+):
+    exchange = T + timedelta(seconds=1)
+    received = T + timedelta(seconds=2)
+    available = T + timedelta(seconds=3)
+
+    raw = {
+        'symbol': 'BTCUSDT',
+        'markPrice': '60000.00',
+        'indexPrice': '59990.00',
+        'lastFundingRate': '-0.0001',
+        'nextFundingTime': int(
+            (T + timedelta(hours=8)).timestamp()
+            * 1000
+        ),
+        'time': int(
+            exchange.timestamp() * 1000
+        ),
+    }
+
+    raw[field] = numeric_value
+
+    payload = {
+        'funding_rate': '-0.0001',
+        'mark_price': '60000.00',
+        'index_price': '59990.00',
+        'exchange_at': exchange.isoformat(),
+        'next_funding_at': (
+            T + timedelta(hours=8)
+        ).isoformat(),
+    }
+
+    payload[payload_field] = str(
+        numeric_value
+    )
+
+    x = append_observation(
+        tmp_path / 'r.db',
+        source=(
+            'https://fapi.binance.com'
+            '/fapi/v1/premiumIndex'
+        ),
+        instrument='BTCUSDT',
+        feature='FundingRate/Published',
+        event_time=exchange,
+        source_metric_at=exchange,
+        received_at=received,
+        payload=payload,
+        provenance={
+            'contract':
+                'binance-usdm-published-funding-rate-v1',
+            'raw_response': json.dumps(
+                raw,
+                sort_keys=True,
+                separators=(',', ':'),
+            ),
+        },
+        clock=lambda: available,
+    )
+
+    assert not is_causally_available(
+        tmp_path / 'r.db',
+        x['id'],
+        available,
+    )
+
+
+@pytest.mark.parametrize(
+    'delta',
+    [
+        timedelta(hours=-1),
+        timedelta(seconds=0),
+    ],
+)
+def test_published_funding_rate_rejects_nonfuture_next_funding(
+    tmp_path,
+    delta,
+):
+    exchange = T + timedelta(seconds=1)
+    received = T + timedelta(seconds=2)
+    available = T + timedelta(seconds=3)
+    next_funding = exchange + delta
+
+    raw = {
+        'symbol': 'BTCUSDT',
+        'markPrice': '60000.00',
+        'indexPrice': '59990.00',
+        'lastFundingRate': '-0.0001',
+        'nextFundingTime': int(
+            next_funding.timestamp() * 1000
+        ),
+        'time': int(
+            exchange.timestamp() * 1000
+        ),
+    }
+
+    payload = {
+        'funding_rate': '-0.0001',
+        'mark_price': '60000.00',
+        'index_price': '59990.00',
+        'exchange_at': exchange.isoformat(),
+        'next_funding_at':
+            next_funding.isoformat(),
+    }
+
+    x = append_observation(
+        tmp_path / 'r.db',
+        source=(
+            'https://fapi.binance.com'
+            '/fapi/v1/premiumIndex'
+        ),
+        instrument='BTCUSDT',
+        feature='FundingRate/Published',
+        event_time=exchange,
+        source_metric_at=exchange,
+        received_at=received,
+        payload=payload,
+        provenance={
+            'contract':
+                'binance-usdm-published-funding-rate-v1',
+            'raw_response': json.dumps(
+                raw,
+                sort_keys=True,
+                separators=(',', ':'),
+            ),
+        },
+        clock=lambda: available,
+    )
+
+    assert not is_causally_available(
+        tmp_path / 'r.db',
+        x['id'],
+        available,
+    )
+
+
+@pytest.mark.parametrize(
+    'field,value',
+    [
+        ('estimatedSettlePrice', 59995.0),
+        ('interestRate', 0.0001),
+        ('estimatedSettlePrice', 'NaN'),
+        ('interestRate', 'NaN'),
+        ('estimatedSettlePrice', '0'),
+        ('estimatedSettlePrice', '-1'),
+    ],
+)
+def test_published_funding_rate_rejects_invalid_optional_wire_values(
+    tmp_path,
+    field,
+    value,
+):
+    exchange = T + timedelta(seconds=1)
+    received = T + timedelta(seconds=2)
+    available = T + timedelta(seconds=3)
+
+    raw = {
+        'symbol': 'BTCUSDT',
+        'markPrice': '60000.00',
+        'indexPrice': '59990.00',
+        'estimatedSettlePrice': '59995.00',
+        'lastFundingRate': '-0.0001',
+        'interestRate': '0.0001',
+        'nextFundingTime': int(
+            (T + timedelta(hours=8)).timestamp()
+            * 1000
+        ),
+        'time': int(
+            exchange.timestamp() * 1000
+        ),
+    }
+
+    raw[field] = value
+
+    payload = {
+        'funding_rate': '-0.0001',
+        'mark_price': '60000.00',
+        'index_price': '59990.00',
+        'exchange_at': exchange.isoformat(),
+        'next_funding_at': (
+            T + timedelta(hours=8)
+        ).isoformat(),
+    }
+
+    x = append_observation(
+        tmp_path / 'r.db',
+        source=(
+            'https://fapi.binance.com'
+            '/fapi/v1/premiumIndex'
+        ),
+        instrument='BTCUSDT',
+        feature='FundingRate/Published',
+        event_time=exchange,
+        source_metric_at=exchange,
+        received_at=received,
+        payload=payload,
+        provenance={
+            'contract':
+                'binance-usdm-published-funding-rate-v1',
+            'raw_response': json.dumps(
+                raw,
+                sort_keys=True,
+                separators=(',', ':'),
+            ),
+        },
+        clock=lambda: available,
+    )
+
+    assert not is_causally_available(
+        tmp_path / 'r.db',
+        x['id'],
+        available,
+    )

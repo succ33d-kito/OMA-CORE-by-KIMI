@@ -157,7 +157,8 @@ def append_observation(path, *, source, instrument, feature, event_time,
         raise ValueError('duplicate dependency')
     if deps and not derived:
         raise ValueError('raw observation cannot declare unchecked dependencies')
-    available = now.isoformat() if feature == 'Price/OHLCV' and not derived else None
+    raw_causal_features = {'Price/OHLCV', 'FundingRate/Published'}
+    available = now.isoformat() if feature in raw_causal_features and not derived else None
     if derived:
         values = [known.get(x, {}).get('available_at') for x in deps]
         available = max([now, *map(_utc, values)]).isoformat() if deps and all(values) else None
@@ -178,7 +179,7 @@ def append_observation(path, *, source, instrument, feature, event_time,
             if admitted < now:
                 raise ValueError('clock moved backwards during ledger admission')
             item['recorded_at'] = admitted.isoformat()
-            if feature == 'Price/OHLCV' and not derived:
+            if feature in raw_causal_features and not derived:
                 item['available_at'] = admitted.isoformat()
             now = admitted
         if existing:
@@ -226,6 +227,151 @@ def _price_closed(item):
     return item['payload'] == dict(normalized, open_time_ms=opened, close_time_ms=int(row[6]))
 
 
+
+def _published_funding_rate(item):
+    """Published premiumIndex rate snapshot; never a payment or cashflow."""
+    p = item['provenance']
+
+    if (
+        item['source'] != 'https://fapi.binance.com/fapi/v1/premiumIndex'
+        or item['instrument'] != 'BTCUSDT'
+        or item['feature'] != 'FundingRate/Published'
+        or item['derived']
+        or item['dependencies']
+    ):
+        return False
+
+    if p.get('contract') != 'binance-usdm-published-funding-rate-v1':
+        return False
+
+    raw = json.loads(p['raw_response'])
+
+    allowed = {
+        'symbol',
+        'markPrice',
+        'indexPrice',
+        'estimatedSettlePrice',
+        'lastFundingRate',
+        'interestRate',
+        'nextFundingTime',
+        'time',
+    }
+
+    if (
+        type(raw) is not dict
+        or set(raw) - allowed
+        or raw.get('symbol') != 'BTCUSDT'
+    ):
+        return False
+
+    required_numeric_strings = (
+        'markPrice',
+        'indexPrice',
+        'lastFundingRate',
+    )
+
+    optional_numeric_strings = (
+        'estimatedSettlePrice',
+        'interestRate',
+    )
+
+    numeric = {}
+
+    for key in required_numeric_strings:
+        if key not in raw or type(raw[key]) is not str:
+            return False
+
+        try:
+            value = float(raw[key])
+        except (TypeError, ValueError, OverflowError):
+            return False
+
+        if not isfinite(value):
+            return False
+
+        numeric[key] = value
+
+    for key in optional_numeric_strings:
+        if key not in raw or raw[key] is None:
+            continue
+
+        if type(raw[key]) is not str:
+            return False
+
+        try:
+            value = float(raw[key])
+        except (TypeError, ValueError, OverflowError):
+            return False
+
+        if not isfinite(value):
+            return False
+
+        numeric[key] = value
+
+    if numeric['markPrice'] <= 0 or numeric['indexPrice'] <= 0:
+        return False
+
+    if (
+        'estimatedSettlePrice' in numeric
+        and numeric['estimatedSettlePrice'] <= 0
+    ):
+        return False
+
+    if type(raw.get('time')) is not int or raw['time'] < 0:
+        return False
+
+    exchange = datetime.fromtimestamp(
+        raw['time'] / 1000,
+        timezone.utc,
+    )
+
+    if (
+        'nextFundingTime' in raw
+        and raw['nextFundingTime'] is not None
+    ):
+        if (
+            type(raw['nextFundingTime']) is not int
+            or raw['nextFundingTime'] < 0
+        ):
+            return False
+
+        next_funding = datetime.fromtimestamp(
+            raw['nextFundingTime'] / 1000,
+            timezone.utc,
+        )
+
+        if next_funding <= exchange:
+            return False
+
+    received = _utc(item['received_at'])
+
+    if exchange > received:
+        return False
+
+    if (
+        _utc(item['event_time']) != exchange
+        or _utc(item['source_metric_at']) != exchange
+    ):
+        return False
+
+    expected = {
+        'funding_rate': str(raw['lastFundingRate']),
+        'mark_price': str(raw['markPrice']),
+        'index_price': str(raw['indexPrice']),
+        'exchange_at': exchange.isoformat(),
+        'next_funding_at': (
+            datetime.fromtimestamp(
+                raw['nextFundingTime'] / 1000,
+                timezone.utc,
+            ).isoformat()
+            if raw.get('nextFundingTime') is not None
+            else None
+        ),
+    }
+
+    return item['payload'] == expected
+
+
 def is_causally_available(path, observation_id, decision_at):
     """Only verified persisted observations qualify. UNKNOWN always fails closed."""
     try:
@@ -256,7 +402,11 @@ def snapshot_causally_available(known, observation_id, decision_at):
                 if any(known[x]['instrument'] != item['instrument'] for x in deps):
                     return False
                 return available == max([_utc(item['computed_at']), *[_utc(known[x]['available_at']) for x in deps]])
-            return item['feature'] == 'Price/OHLCV' and _price_closed(item)
+            if item['feature'] == 'Price/OHLCV':
+                return _price_closed(item)
+            if item['feature'] == 'FundingRate/Published':
+                return _published_funding_rate(item)
+            return False
         return check(observation_id, set())
     except (ValueError, TypeError, KeyError, IndexError, AttributeError, StopIteration, sqlite3.Error, OverflowError):
         return False
