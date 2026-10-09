@@ -208,3 +208,33 @@ simulated exit fills require a separate post-intent evidence contract; this
 checkpoint supplies none. Existing pending, fill, open-position and lifecycle
 contracts and the execution engine remain unchanged.
 EDGE=NOT_DEMONSTRATED, REGIME_VALIDATED=NO, MECHANICS_VALIDATED=NO, POLICY_WINNER=NONE.
+
+### CP-7K: causal simulated PAPER exit fill
+
+`SimulatedPaperExitFill(exit_intent, quote)` is a frozen/slotted simulation-only
+contract. Its sole inputs are exact, integrity-verified PaperExitIntent and exact
+MarketObservation. The quote must match the position instrument and PILOT role,
+with known exchange_at, positive ordered BID/ASK, valid observation/raw commitment
+references and materialized fields consistent with wire under existing book checks.
+Exchange, receipt and availability must each be strictly after exit_intent.available_at;
+equality is ineligible. Entry or prior quotes cannot be fallback evidence.
+
+Model `POST_EXIT_INTENT_NEXT_OBSERVED_QUOTE_V0` selects the earliest eligible
+observation among supplied verified MarketCycles, ordered by available_at,
+received_at, exchange_at and observation_id. The selector returns None when no
+quote qualifies, tolerates identical replays and rejects conflicting cycle or
+observation identities. Callers supply cycles from verified loaders; object checks
+do not independently authenticate capture or certify complete stream coverage.
+
+SELL exits use observed BID and BUY exits use observed ASK, never midpoint,
+OHLC close or invented slippage. exit_quantity_base equals the existing
+PaperOpenPosition.filled_quantity_base exactly: full-close quantity only, no
+partial-exit semantics or notional reconversion. Kind is SIMULATED_PAPER_EXIT_FILL;
+side, price, quantity, evidence/raw references and exchange/receipt/availability
+timestamps derive from the intent and quote and are bound by exit_fill_id.
+
+The simulated fill does not itself close or mutate inventory, establish venue
+execution, realized/unrealized PnL, Outcome or learning. Closed-position state
+and PnL require separate future contracts. No broker actions or legacy simulation
+imports are introduced. Existing contracts remain unchanged.
+EDGE=NOT_DEMONSTRATED, REGIME_VALIDATED=NO, MECHANICS_VALIDATED=NO, POLICY_WINNER=NONE.
