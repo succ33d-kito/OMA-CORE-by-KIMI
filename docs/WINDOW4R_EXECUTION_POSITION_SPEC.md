@@ -183,3 +183,28 @@ only. Future exit intent and simulated exit fill require separate contracts.
 Pending contracts, their lifecycle/exit/reallocation, execution engine and fill
 semantics remain unchanged. No outcomes, learning or broker actions are introduced.
 EDGE=NOT_DEMONSTRATED, REGIME_VALIDATED=NO, MECHANICS_VALIDATED=NO, POLICY_WINNER=NONE.
+
+### CP-7J: simulated PAPER exit intention
+
+`PaperExitIntent(lifecycle)` is a frozen/slotted simulated PAPER intent only.
+Its sole input is an exact, integrity-verified PaperPositionLifecycle. Only
+TIMEOUT / EXPLICIT_THESIS_EXPIRY supports construction: explicit thesis expiry
+is a previously frozen causal predicate. TRACKED and OBSERVATION_RISK reject;
+MISSING_CAUSAL_BOOK never authorizes disposal of inventory. A TIMEOUT assessment
+may still exist when a book is missing, but only explicit expiry supports intent.
+
+All fields derive from the assessment: position_ref, lifecycle_assessment_ref,
+side, reason, mode=PAPER, kind=SIMULATED_PAPER_EXIT_INTENT, actionable=False,
+available_at and exit_intent_id. BUY entry derives SELL exit; SELL entry derives
+BUY exit. available_at equals lifecycle.assessed_at, when the intention becomes
+known, not venue submission, broker acknowledgement or fill time. Existing
+sealing rules bind the complete assessment-to-original-decision chain and give
+the same identity on identical replay, including timezone-equivalent assessment.
+
+The intent does not execute, fill, close inventory, establish exit price or PnL,
+establish Outcome or authorize learning. No price, quantity, fee, funding,
+execution result, close timestamp or venue identifier can be supplied. Future
+simulated exit fills require a separate post-intent evidence contract; this
+checkpoint supplies none. Existing pending, fill, open-position and lifecycle
+contracts and the execution engine remain unchanged.
+EDGE=NOT_DEMONSTRATED, REGIME_VALIDATED=NO, MECHANICS_VALIDATED=NO, POLICY_WINNER=NONE.
