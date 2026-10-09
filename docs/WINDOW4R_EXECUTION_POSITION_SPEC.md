@@ -159,3 +159,27 @@ holdings. CP-7G's supplied-cycle scope and nominal USD=USDT assumption remain.
 Fees, funding, realized PnL, exits, learning and execution accreditation are not
 established. EDGE remains NOT_DEMONSTRATED, REGIME_VALIDATED and
 MECHANICS_VALIDATED remain NO, and POLICY_WINNER remains NONE.
+
+### CP-7I: causal PAPER lifecycle assessment
+
+`PaperPositionLifecycle(position, world, assessed_at)` is a causal observation
+of simulated PAPER inventory. Exact, integrity-verified PaperOpenPosition and
+WorldState contracts are required, with matching role/universe, a unique original
+thesis and instrument market, and `position.available_at <= world.as_of <= assessed_at`.
+Existing books are checked against their wire and world cutoff before assessment.
+Worlds must come from verified loaders; these checks do not authenticate capture.
+The entry quote is not automatically later evidence: it must belong to an eligible
+WorldState. Equality at open availability is allowed by the inclusive boundary.
+
+Precedence: explicit expiry at/before assessed_at yields TIMEOUT /
+EXPLICIT_THESIS_EXPIRY; otherwise missing book yields OBSERVATION_RISK /
+MISSING_CAUSAL_BOOK; otherwise TRACKED /
+TRACKED_NO_SUPPORTED_INVALIDATION_EVALUATOR. No price direction or PnL selects state.
+TRACKED is not a hold recommendation or strengthened/validated thesis; TIMEOUT is
+not exit authorization; OBSERVATION_RISK is not position loss.
+
+The assessment does not close inventory. PAPER_OPEN remains simulated inventory
+only. Future exit intent and simulated exit fill require separate contracts.
+Pending contracts, their lifecycle/exit/reallocation, execution engine and fill
+semantics remain unchanged. No outcomes, learning or broker actions are introduced.
+EDGE=NOT_DEMONSTRATED, REGIME_VALIDATED=NO, MECHANICS_VALIDATED=NO, POLICY_WINNER=NONE.
