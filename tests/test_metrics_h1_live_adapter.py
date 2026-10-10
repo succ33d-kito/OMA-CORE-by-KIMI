@@ -5,6 +5,7 @@ import hashlib
 import json
 from pathlib import Path
 import socket
+from urllib.parse import urlencode
 
 import pytest
 from core.scientific import metrics_h1_activation as activation
@@ -36,7 +37,7 @@ class Transport:
         self.calls.append((url,kwargs))
         if self.error: raise self.error
         key=next(k for k,v in adapter.METRIC_ENDPOINTS.items() if url.endswith(v))
-        return self.status, self.final or url, self.raw[key]
+        return self.status, self.final or url + '?' + urlencode(kwargs['params']), self.raw[key]
 
 
 def capture(tmp_path, transport=None, clock=None, **changes):

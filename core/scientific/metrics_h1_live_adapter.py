@@ -17,6 +17,7 @@ import hashlib
 import json
 import os
 from pathlib import Path
+from urllib.parse import urlencode
 
 from core.market_mechanics.binance_live_adapter import METRIC_ENDPOINTS, _period_end, normalize_bundle
 from . import metrics_h1_activation as activation
@@ -124,7 +125,9 @@ def capture_bundle(*, capture_directory, slot, expected_source_period_end,
             raise ValueError('exact response bytes required')
         received = sample()
         _write(raw_dir/(key+'.json'), raw)
-        if type(status) is not int or not 200 <= status < 300 or final_url != url:
+        # Requests preserves the encoded query in response.url. Authenticate it
+        # exactly; never strip query parameters or accept a different endpoint.
+        if type(status) is not int or not 200 <= status < 300 or final_url != url + '?' + urlencode(params):
             raise ValueError('HTTP status/source rejected; no fallback')
         selected[key] = _select(key, raw, slot, design)
         materials[endpoint] = base64.b64encode(raw).decode('ascii')
