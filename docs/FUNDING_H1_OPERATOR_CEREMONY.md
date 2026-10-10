@@ -1,13 +1,29 @@
 # 47W3-2 — Operator activation ceremony
 
-Status: BLOCKED_ENVIRONMENT / UNQUALIFIED / UNPUBLISHED.
-Baseline: 426a38ab3721507404663ceb9666628ded66b0b0.
+Status: QUALIFIED / PUBLISHED_WORK_BRANCH.
+Implementation baseline: 426a38ab3721507404663ceb9666628ded66b0b0.
+Publication commit: ded4fcf0061c8f8c945c45f842b9ebc1e26139ff.
 Branch: work/post-cp7l-prep-20261009.
+
+Final local Windows qualification:
+- operator ceremony focused: 15 passed
+- activation regression: 20 passed
+- wrapper/installer regression: 19 passed
+- runtime regression: 25 passed
+- Funding regression: 119 passed
+- Funding task absent
+- Funding real state absent
+- activation residue absent
+- Price task unchanged
+
+The earlier BLOCKED_ENVIRONMENT result below is retained as historical
+provenance from the restricted Work sandbox and is superseded by the
+successful local qualification above.
 
 The existing three-file draft was recovered and hardened. All qualified upstream
 Funding modules, wrapper, installer and frozen design remain unchanged.
 
-## Implemented boundary (not dynamically qualified)
+## Implemented boundary (qualified)
 
 PLAN samples UTC internally. No public state path or now parameter is accepted.
 The canonical root is %USERPROFILE%\Documents\O-C data\prospective\funding-h1-v1.
@@ -42,7 +58,7 @@ Before future real activation independently verify: Funding task absent, Funding
 state/residue absent, and Price task XML identity unchanged. Python does not query
 or change the scheduler. SCHEDULER_GUARD_LOCAL_VERIFICATION_REQUIRED=YES.
 
-## Qualification and stop
+## Historical restricted-sandbox qualification
 
 Static compile, AST authority/import checks, exact design digest/blob and file-set
 checks passed. No scheduler/network/ledger/learning calls were introduced.
