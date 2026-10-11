@@ -58,7 +58,16 @@ def _select(key, raw, slot, design):
         raise ValueError('expected bounded nonempty endpoint rows')
     matched = []
     for row in rows:
-        if type(row) is not dict or row.get('symbol') != design['instrument']:
+        if type(row) is not dict:
+            raise ValueError('endpoint row must be object')
+        symbol = row.get('symbol')
+        if key == 'taker':
+            # Binance USD-M takerlongshortRatio may omit symbol in response.
+            # Instrument identity remains authenticated by the exact request
+            # parameters and final URL. If symbol is present, it must agree.
+            if symbol is not None and symbol != design['instrument']:
+                raise ValueError('endpoint instrument mismatch')
+        elif symbol != design['instrument']:
             raise ValueError('endpoint instrument mismatch')
         if type(row.get('timestamp')) is not int or row['timestamp'] < 0:
             raise ValueError('invalid provider timestamp')

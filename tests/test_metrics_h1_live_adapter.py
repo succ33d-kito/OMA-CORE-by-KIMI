@@ -26,7 +26,12 @@ def rows(key):
     stamp = END - (300000 if key=='taker' else 0)
     fields = {'sumOpenInterest':'100','sumOpenInterestValue':'10000'} if key=='oi' else {'buySellRatio':'1.4'} if key=='taker' else {'longShortRatio':'1.2'}
     # Desired period is deliberately NOT last; adjacent periods must not win.
-    return [dict(symbol='BTCUSDT',timestamp=stamp,**fields), dict(symbol='BTCUSDT',timestamp=stamp+300000,**fields)]
+    base = dict(timestamp=stamp, **fields)
+    adjacent = dict(timestamp=stamp+300000, **fields)
+    if key != 'taker':
+        base['symbol'] = 'BTCUSDT'
+        adjacent['symbol'] = 'BTCUSDT'
+    return [base, adjacent]
 
 
 class Transport:
