@@ -1,4 +1,5 @@
 """Immutable, provider-neutral evidence snapshots and typed temporal links."""
+from contextlib import closing
 from dataclasses import dataclass
 from datetime import datetime, timezone
 import json
@@ -61,7 +62,7 @@ class Edge:
 class EvidenceGraph:
     def __init__(self, path):
         self.path = str(path)
-        with sqlite3.connect(self.path) as db:
+        with closing(sqlite3.connect(self.path)) as db, db:
             db.execute('CREATE TABLE IF NOT EXISTS graph_nodes (id TEXT PRIMARY KEY, payload TEXT NOT NULL)')
             db.execute('CREATE TABLE IF NOT EXISTS graph_edges (id TEXT PRIMARY KEY, payload TEXT NOT NULL)')
 
@@ -76,7 +77,7 @@ class EvidenceGraph:
 
     def append(self, nodes=(), edges=()):
         """All-or-nothing append; no placeholders for unknown references."""
-        with sqlite3.connect(self.path) as db:
+        with closing(sqlite3.connect(self.path)) as db, db:
             for node in nodes:
                 self._insert(db, 'graph_nodes', node.to_dict())
             known = {row[0]: json.loads(row[1]) for row in db.execute('SELECT * FROM graph_nodes')}
@@ -104,7 +105,7 @@ class EvidenceGraph:
 
     def as_of(self, at):
         cutoff = utc(at)
-        with sqlite3.connect(self.path) as db:
+        with closing(sqlite3.connect(self.path)) as db, db:
             nodes = [json.loads(r[0]) for r in db.execute('SELECT payload FROM graph_nodes ORDER BY id')]
             edges = [json.loads(r[0]) for r in db.execute('SELECT payload FROM graph_edges ORDER BY id')]
         nodes = [n for n in nodes if n['available_at'] <= cutoff]
