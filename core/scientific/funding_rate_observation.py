@@ -21,6 +21,7 @@ from .prospective_receipts import (
 
 FEATURE = "FundingRate/Published"
 CONTRACT = "binance-usdm-published-funding-rate-v1"
+ROLE_PROVENANCE_CONTRACT = "funding-dataset-role-auth-v1"
 INSTRUMENT = "BTCUSDT"
 SEMANTIC_STATUS = "PUBLISHED_RATE_NOT_CASHFLOW"
 
@@ -133,6 +134,10 @@ def append_verified_funding_rate_observation(
             SEMANTIC_STATUS,
         "capture_schema":
             CAPTURE_SCHEMA,
+        "dataset_role":
+            observation.dataset_role.value,
+        "dataset_role_contract":
+            ROLE_PROVENANCE_CONTRACT,
         "capture_receipt_id":
             receipt.receipt_id,
         "capture_provenance_sha256":

@@ -16,6 +16,8 @@ import json
 from pathlib import Path
 
 from .metrics_snapshot_gate import metrics_snapshot_available
+from .execution_observation import EvidenceKind, ExecutionReceipt
+from .nuisance_pilot_contracts import DatasetRole
 
 from .prospective_receipts import (
     observation_hash,
@@ -34,6 +36,86 @@ BTC_CAUSAL_FEATURES = (
     "MarketMetrics/GlobalPositioning",
     "MarketMetrics/TakerBuySellRatio",
 )
+
+
+def _role_bearing_feature(feature):
+    return (
+        feature.startswith("MarketMetrics/")
+        or feature == "FundingRate/Published"
+    )
+
+
+def _funding_role_authenticated(item, dataset_role):
+    if dataset_role != "PILOT":
+        return False
+
+    try:
+        provenance = (
+            json.loads(item.provenance_json)
+            if hasattr(item, "provenance_json")
+            else item["provenance"]
+        )
+
+        if (
+            provenance.get("dataset_role") != "PILOT"
+            or provenance.get("dataset_role_contract")
+            != "funding-dataset-role-auth-v1"
+        ):
+            return False
+
+        source = (
+            item.source
+            if hasattr(item, "source")
+            else item["source"]
+        )
+
+        received_at = (
+            item.received_at
+            if hasattr(item, "received_at")
+            else _utc(item["received_at"])
+        )
+
+        available_at = (
+            item.available_at
+            if hasattr(item, "available_at")
+            else _utc(item["available_at"])
+        )
+
+        receipt = ExecutionReceipt(
+            kind=EvidenceKind.MARK_FUNDING,
+            source=source,
+            receipt_id=provenance["capture_receipt_id"],
+            provenance_sha256=
+                provenance["capture_provenance_sha256"],
+            response_json=provenance["raw_response"],
+            dataset_role=DatasetRole.PILOT,
+            request_started_at=_utc(
+                provenance["capture_request_started_at"]
+            ),
+            received_at=_utc(
+                provenance["capture_received_at"]
+            ),
+            available_at=_utc(
+                provenance["capture_available_at"]
+            ),
+            fee_account_reference=None,
+        )
+
+        return (
+            receipt.identity
+            == provenance.get("capture_identity")
+            and receipt.received_at == received_at
+            and receipt.available_at <= available_at
+        )
+
+    except (
+        ValueError,
+        TypeError,
+        KeyError,
+        AttributeError,
+        OverflowError,
+    ):
+        return False
 
 
 def _utc(value):
@@ -146,8 +228,25 @@ class CausalObservationSnapshot:
         for item in self.observations:
             if self.dataset_role is not None:
                 provenance = json.loads(item.provenance_json)
-                if not item.feature.startswith('MarketMetrics/') or provenance.get('dataset_role') != self.dataset_role:
-                    raise ValueError('observation role unavailable or incompatible')
+                role_valid = (
+                    (
+                        item.feature.startswith("MarketMetrics/")
+                        and provenance.get("dataset_role")
+                        == self.dataset_role
+                    )
+                    or (
+                        item.feature == "FundingRate/Published"
+                        and _funding_role_authenticated(
+                            item,
+                            self.dataset_role,
+                        )
+                    )
+                )
+
+                if not role_valid:
+                    raise ValueError(
+                        'observation role unavailable or incompatible'
+                    )
             if item.instrument != self.instrument:
                 raise ValueError("cross-instrument observation")
             if item.feature not in self.requested_features:
@@ -310,15 +409,51 @@ def load_causal_snapshot(
             continue
 
         if dataset_role is not None:
-            # Only Metrics currently commits role through its complete admission
-            # envelope. No inference from legacy source names or capture paths.
-            if not item['feature'].startswith('MarketMetrics/') or item.get('provenance', {}).get('dataset_role') != dataset_role:
+            # Role-specific views consume only observations whose admission
+            # provenance carries a role authenticated by their source boundary.
+            # Price/OHLCV remains excluded: its current capture contract has no
+            # authenticated dataset role.
+            if item['feature'].startswith('MarketMetrics/'):
+                if (
+                    item.get('provenance', {}).get('dataset_role')
+                    != dataset_role
+                ):
+                    continue
+
+            elif item['feature'] == 'FundingRate/Published':
+                if not _funding_role_authenticated(
+                    item,
+                    dataset_role,
+                ):
+                    continue
+
+            else:
+                # Price/OHLCV currently has no authenticated dataset role.
                 continue
 
         candidate = _candidate(
             item,
             cutoff,
         )
+
+        if (
+            candidate is not None
+            and item['feature'] == 'FundingRate/Published'
+        ):
+            provenance = item.get('provenance', {})
+
+            # Historical Funding evidence predates dataset-role provenance and
+            # remains valid in unscoped mode. Once an observation claims any
+            # role metadata, however, the complete role attestation becomes
+            # mandatory even for an unscoped snapshot.
+            if (
+                'dataset_role' in provenance
+                or 'dataset_role_contract' in provenance
+            ) and not _funding_role_authenticated(
+                item,
+                'PILOT',
+            ):
+                continue
 
         if candidate is not None and item['feature'] in ('Price/OHLCV', 'FundingRate/Published'):
             # A persisted timestamp/hash is not provider/semantic evidence.
