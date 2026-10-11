@@ -7,6 +7,7 @@ import sqlite3
 
 KINDS = {'source', 'event', 'hypothesis', 'evidence', 'market_state', 'decision', 'outcome', 'knowledge_candidate'}
 RELATIONS = {
+    'derived_feature_from': ({'evidence', 'market_state'}, {'source', 'evidence', 'market_state'}),
     'observes': ({'source'}, {'event'}),
     'motivates': ({'event'}, {'hypothesis'}),
     'derived_from': ({'evidence', 'market_state'}, {'source', 'event'}),
