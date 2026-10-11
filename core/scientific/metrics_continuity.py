@@ -57,7 +57,16 @@ def _verify_success(path, config, slot, attempt, result, now):
             raise ValueError('invalid raw response')
         matches = []
         for row in rows:
-            if type(row) is not dict or row.get('symbol') != config['instrument'] or type(row.get('timestamp')) is not int:
+            if type(row) is not dict or type(row.get('timestamp')) is not int:
+                raise ValueError('raw scope mismatch')
+            symbol = row.get('symbol')
+            if key == 'taker':
+                # Binance USD-M takerlongshortRatio may omit symbol.
+                # Scope remains authenticated by the frozen request parameters
+                # and receipt metadata. If symbol is present, it must agree.
+                if symbol is not None and symbol != config['instrument']:
+                    raise ValueError('raw scope mismatch')
+            elif symbol != config['instrument']:
                 raise ValueError('raw scope mismatch')
             if _period_end(row['timestamp'], start_label=key=='taker') == slot:
                 matches.append(row)

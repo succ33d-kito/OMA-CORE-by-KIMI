@@ -19,7 +19,9 @@ def state(tmp_path):
 def capture(state,slot=S):
     def transport(url,*,params,**kwargs):
         key=next(k for k,v in live.METRIC_ENDPOINTS.items() if url.endswith(v))
-        row={'symbol':'BTCUSDT','timestamp':int(slot.timestamp()*1000)-(300000 if key=='taker' else 0)}
+        row={'timestamp':int(slot.timestamp()*1000)-(300000 if key=='taker' else 0)}
+        if key != 'taker':
+            row['symbol'] = 'BTCUSDT'
         row.update({'sumOpenInterest':'100','sumOpenInterestValue':'10000'} if key=='oi' else {'buySellRatio':'1.4'} if key=='taker' else {'longShortRatio':'1.2'})
         return 200,url+'?symbol=BTCUSDT&period=5m&limit=5',json.dumps([row]).encode()
     return live.run_once(state[0],repo_root=state[1],transport=transport,clock=lambda:slot+timedelta(seconds=180))
