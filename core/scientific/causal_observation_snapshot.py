@@ -18,6 +18,10 @@ from pathlib import Path
 from .metrics_snapshot_gate import metrics_snapshot_available
 from .execution_observation import EvidenceKind, ExecutionReceipt
 from .nuisance_pilot_contracts import DatasetRole
+from .price_role_attestation import (
+    price_role_authenticated,
+    verified_price_role_attestation,
+)
 
 from .prospective_receipts import (
     observation_hash,
@@ -153,9 +157,10 @@ class CausalObservation:
     available_at: datetime
     payload_json: str
     provenance_json: str
+    role_attestation_json: str | None = None
 
     def to_dict(self):
-        return {
+        result = {
             "id": self.id,
             "source": self.source,
             "instrument": self.instrument,
@@ -167,6 +172,78 @@ class CausalObservation:
             "payload": json.loads(self.payload_json),
             "provenance": json.loads(self.provenance_json),
         }
+
+        if self.role_attestation_json is not None:
+            result["role_attestation"] = json.loads(
+                self.role_attestation_json
+            )
+
+        return result
+
+
+def _price_projection_row(item):
+    """Reconstruct the exact raw Price envelope committed by the attestation."""
+
+    payload = json.loads(item.payload_json)
+    available = item.available_at.isoformat()
+
+    return {
+        "id": item.id,
+        "source": item.source,
+        "instrument": item.instrument,
+        "feature": item.feature,
+        "event_time": item.event_time.isoformat(),
+        "source_metric_at":
+            item.source_metric_at.isoformat(),
+        "received_at": item.received_at.isoformat(),
+        "available_at": available,
+        "computed_at": None,
+        "payload": payload,
+        "payload_hash": observation_hash(payload),
+        "provenance": json.loads(
+            item.provenance_json
+        ),
+        "dependencies": [],
+        "derived": False,
+        "recorded_at": available,
+    }
+
+
+def _projected_price_role_authenticated(
+    item,
+    dataset_role,
+    cutoff,
+):
+    if item.role_attestation_json is None:
+        return False
+
+    try:
+        attestation = json.loads(
+            item.role_attestation_json
+        )
+
+        price = _price_projection_row(item)
+
+        known = {
+            price["id"]: price,
+            attestation["id"]: attestation,
+        }
+
+        return price_role_authenticated(
+            known,
+            price,
+            dataset_role,
+            cutoff,
+        )
+
+    except (
+        ValueError,
+        TypeError,
+        KeyError,
+        AttributeError,
+        OverflowError,
+    ):
+        return False
 
 
 @dataclass(frozen=True, slots=True)
@@ -226,6 +303,15 @@ class CausalObservationSnapshot:
             )
 
         for item in self.observations:
+            if item.role_attestation_json is not None:
+                if (
+                    self.dataset_role is None
+                    or item.feature != "Price/OHLCV"
+                ):
+                    raise ValueError(
+                        "Price role attestation outside scoped Price observation"
+                    )
+
             if self.dataset_role is not None:
                 provenance = json.loads(item.provenance_json)
                 role_valid = (
@@ -239,6 +325,14 @@ class CausalObservationSnapshot:
                         and _funding_role_authenticated(
                             item,
                             self.dataset_role,
+                        )
+                    )
+                    or (
+                        item.feature == "Price/OHLCV"
+                        and _projected_price_role_authenticated(
+                            item,
+                            self.dataset_role,
+                            cutoff,
                         )
                     )
                 )
@@ -302,7 +396,12 @@ class CausalObservationSnapshot:
         }
 
 
-def _candidate(item, cutoff):
+def _candidate(
+    item,
+    cutoff,
+    *,
+    role_attestation=None,
+):
     if item.get("available_at") is None:
         return None
 
@@ -356,6 +455,11 @@ def _candidate(item, cutoff):
         provenance_json=_canonical(
             item["provenance"]
         ),
+        role_attestation_json=(
+            _canonical(role_attestation)
+            if role_attestation is not None
+            else None
+        ),
     )
 
 
@@ -408,11 +512,13 @@ def load_causal_snapshot(
         ):
             continue
 
+        role_attestation = None
+
         if dataset_role is not None:
-            # Role-specific views consume only observations whose admission
-            # provenance carries a role authenticated by their source boundary.
-            # Price/OHLCV remains excluded: its current capture contract has no
-            # authenticated dataset role.
+            # Role-specific views consume only observations whose role is
+            # authenticated by their source-specific boundary. Price remains
+            # raw evidence; its separate derived attestation is authority
+            # metadata and is never promoted to a market feature.
             if item['feature'].startswith('MarketMetrics/'):
                 if (
                     item.get('provenance', {}).get('dataset_role')
@@ -427,13 +533,26 @@ def load_causal_snapshot(
                 ):
                     continue
 
+            elif item['feature'] == 'Price/OHLCV':
+                role_attestation = (
+                    verified_price_role_attestation(
+                        rows,
+                        item,
+                        dataset_role,
+                        cutoff,
+                    )
+                )
+
+                if role_attestation is None:
+                    continue
+
             else:
-                # Price/OHLCV currently has no authenticated dataset role.
                 continue
 
         candidate = _candidate(
             item,
             cutoff,
+            role_attestation=role_attestation,
         )
 
         if (
