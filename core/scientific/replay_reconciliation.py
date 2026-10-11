@@ -44,7 +44,7 @@ def _compare(first, second, features):
     }))
 
 
-def reconcile_causal_replay(ledger, *, instrument, as_of, features=BTC_CAUSAL_FEATURES):
+def reconcile_causal_replay(ledger, *, instrument, as_of, features=BTC_CAUSAL_FEATURES, dataset_role=None):
     """Two executions, same explicit contract, separate fresh graph stores.
 
     Source ledger remains read-only. Valid later evidence cannot alter historical
@@ -56,7 +56,7 @@ def reconcile_causal_replay(ledger, *, instrument, as_of, features=BTC_CAUSAL_FE
     with TemporaryDirectory(prefix='oma-replay-reconciliation-') as directory:
         root = Path(directory)
         first = replay_causal_state(ledger,root/'a'/'graph.db',instrument=instrument,
-                                    as_of=as_of,features=features)
+                                    as_of=as_of,features=features,dataset_role=dataset_role)
         second = replay_causal_state(ledger,root/'b'/'graph.db',instrument=instrument,
-                                     as_of=as_of,features=features)
+                                     as_of=as_of,features=features,dataset_role=dataset_role)
         return _compare(first,second,features)

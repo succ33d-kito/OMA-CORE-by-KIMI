@@ -18,6 +18,7 @@ def main(argv=None):
     parser.add_argument('--as-of',required=True)
     parser.add_argument('--output',required=True)
     parser.add_argument('--feature',action='append')
+    parser.add_argument('--role',choices=('PILOT','DISCOVERY','CONFIRMATION'))
     args=parser.parse_args(argv)
     ledger=Path(args.ledger).resolve(strict=True)
     output=Path(args.output)
@@ -28,7 +29,7 @@ def main(argv=None):
     if cutoff.tzinfo is None or cutoff.utcoffset() is None:
         raise ValueError('aware cutoff required')
     kwargs={} if args.feature is None else {'features':tuple(args.feature)}
-    result=reconcile_causal_replay(ledger,instrument=args.instrument,as_of=cutoff,**kwargs)
+    result=reconcile_causal_replay(ledger,instrument=args.instrument,as_of=cutoff,dataset_role=args.role,**kwargs)
     # Exclusive creation protects existing evidence; interrupted writes remain
     # visibly incomplete JSON and must never be interpreted as certificates.
     with output.open('xb') as handle:

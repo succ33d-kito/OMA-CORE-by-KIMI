@@ -103,9 +103,12 @@ class CausalReplayCertificate:
 
     subgraph_sha256: str
 
+    dataset_role: str | None = None
     replay_id: str = field(init=False)
 
     def __post_init__(self):
+        if self.dataset_role is not None and self.dataset_role not in ("PILOT", "DISCOVERY", "CONFIRMATION"):
+            raise ValueError("unsupported dataset role")
         if (
             not self.instrument
             or self.as_of.tzinfo is None
@@ -159,6 +162,7 @@ class CausalReplayCertificate:
         payload = {
             "schema":
                 REPLAY_SCHEMA,
+            **({"dataset_role": self.dataset_role} if self.dataset_role is not None else {}),
             "instrument":
                 self.instrument,
             "as_of":
@@ -197,6 +201,7 @@ class CausalReplayCertificate:
         return {
             "schema":
                 REPLAY_SCHEMA,
+            **({"dataset_role": self.dataset_role} if self.dataset_role is not None else {}),
             "replay_id":
                 self.replay_id,
             "instrument":
@@ -235,6 +240,7 @@ def replay_causal_state(
     instrument,
     as_of,
     features=BTC_CAUSAL_FEATURES,
+    dataset_role=None,
 ):
     """Reconstruct one causal state and return its deterministic certificate."""
 
@@ -243,6 +249,7 @@ def replay_causal_state(
         instrument=instrument,
         as_of=as_of,
         features=features,
+        dataset_role=dataset_role,
     )
 
     latent = project_latent_context(
@@ -287,6 +294,7 @@ def replay_causal_state(
     )
 
     return CausalReplayCertificate(
+        dataset_role=dataset_role,
         instrument=
             snapshot.instrument,
         as_of=

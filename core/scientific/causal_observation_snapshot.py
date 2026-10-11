@@ -94,9 +94,12 @@ class CausalObservationSnapshot:
     requested_features: tuple[str, ...]
     observations: tuple[CausalObservation, ...]
     missing_features: tuple[str, ...]
+    dataset_role: str | None = None
     snapshot_id: str = field(init=False)
 
     def __post_init__(self):
+        if self.dataset_role is not None and self.dataset_role not in ("PILOT", "DISCOVERY", "CONFIRMATION"):
+            raise ValueError("unsupported dataset role")
         if not self.instrument:
             raise ValueError("instrument required")
 
@@ -141,6 +144,10 @@ class CausalObservationSnapshot:
             )
 
         for item in self.observations:
+            if self.dataset_role is not None:
+                provenance = json.loads(item.provenance_json)
+                if not item.feature.startswith('MarketMetrics/') or provenance.get('dataset_role') != self.dataset_role:
+                    raise ValueError('observation role unavailable or incompatible')
             if item.instrument != self.instrument:
                 raise ValueError("cross-instrument observation")
             if item.feature not in self.requested_features:
@@ -151,6 +158,7 @@ class CausalObservationSnapshot:
         commitment = {
             "schema":
                 "causal-observation-snapshot-v1",
+            **({"dataset_role": self.dataset_role} if self.dataset_role is not None else {}),
             "instrument":
                 self.instrument,
             "as_of":
@@ -176,6 +184,7 @@ class CausalObservationSnapshot:
         return {
             "schema":
                 "causal-observation-snapshot-v1",
+            **({"dataset_role": self.dataset_role} if self.dataset_role is not None else {}),
             "snapshot_id":
                 self.snapshot_id,
             "instrument":
@@ -257,10 +266,13 @@ def load_causal_snapshot(
     instrument,
     as_of,
     features=BTC_CAUSAL_FEATURES,
+    dataset_role=None,
 ):
     """Return latest unambiguous raw observation per feature as-of cutoff."""
 
     cutoff = _utc(as_of)
+    if dataset_role is not None and dataset_role not in ("PILOT", "DISCOVERY", "CONFIRMATION"):
+        raise ValueError("unsupported dataset role")
 
     if not instrument:
         raise ValueError("instrument required")
@@ -296,6 +308,12 @@ def load_causal_snapshot(
             or item.get("feature") not in grouped
         ):
             continue
+
+        if dataset_role is not None:
+            # Only Metrics currently commits role through its complete admission
+            # envelope. No inference from legacy source names or capture paths.
+            if not item['feature'].startswith('MarketMetrics/') or item.get('provenance', {}).get('dataset_role') != dataset_role:
+                continue
 
         candidate = _candidate(
             item,
@@ -360,6 +378,7 @@ def load_causal_snapshot(
         instrument=instrument,
         as_of=cutoff,
         requested_features=features,
+        dataset_role=dataset_role,
         observations=tuple(selected),
         missing_features=missing,
     )
