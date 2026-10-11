@@ -15,6 +15,8 @@ from datetime import datetime, timezone
 import json
 from pathlib import Path
 
+from .metrics_snapshot_gate import metrics_snapshot_available
+
 from .prospective_receipts import (
     observation_hash,
     observation_snapshot,
@@ -304,6 +306,10 @@ def load_causal_snapshot(
             # A persisted timestamp/hash is not provider/semantic evidence.
             # Reuse the existing raw source contract before causal projection.
             if not snapshot_causally_available(rows, item['id'], cutoff):
+                continue
+
+        if candidate is not None and item['feature'].startswith('MarketMetrics/'):
+            if not metrics_snapshot_available(rows, item['id'], cutoff):
                 continue
 
         if candidate is not None:
