@@ -9,7 +9,7 @@ LIVE remains isolated at d9e0f72; no deployment promotion.
 | 48H-I | DONE code and real Metrics capture observed; operational recovery is not a universal deployment certificate |
 | 48J | DONE: atomic six-row observations_v2 admission |
 | 48K | WAITING: actual continuity 0/81 at 2026-10-11T16:44:41Z; 11 success, 4 failed, zero invalid; no repairs |
-| 49A-B | PARTIAL overall integration: causal snapshot/context/graph, replay, reconciliation and CLI exist; broad Event/WorldState integration must not be inferred from those modules |
+| 49A-B | COMPLETE within the scoped causal-observation/replay contracts: authenticated role-aware snapshot/context/graph, deterministic replay, reconciliation and CLI. Broad Event/WorldState integration must not be inferred from this status |
 | 50A-B | PARTIAL primitives exist, including regime_observation.py; past-only integrated features and testable hypotheses still require dedicated gates |
 | 51A-B | PARTIAL experimental contracts exist; no new discovery/ablation performed |
 | 51C-D | NOT VALIDATED; Binance 2025 secondary temporal confirmation, Kraken sealed pending explicit gate |
@@ -45,3 +45,48 @@ must remain unavailable for role-specific research.
 
 EDGE=NOT_DEMONSTRATED; REGIME_VALIDATED=NO; MECHANICS_VALIDATED=NO;
 OMA_CORE_V1_COMPLETE=NO; REAL_CAPITAL_AUTHORIZED=NO.
+
+
+## 49A / 49B closeout update
+
+Subsequent work after the original checkpoint closed the remaining dataset-role
+provenance boundaries.
+
+Funding gained explicit role provenance tied to its exact capture identity.
+Prospective Price retained its frozen roleless capture contract and gained a
+separate create-only role authority chain:
+
+`PriceRoleActivation -> pre-capture authorization -> frozen Price capture
+-> exact PriceRoleAttestation`.
+
+Role-aware causal snapshots now admit authenticated Price only under its exact
+dataset role. Legacy Price remains unscoped only. The attestation is authority
+metadata and is not projected as an economic market feature.
+
+Explicit end-to-end regression coverage verifies:
+
+- authenticated PILOT Price enters role-scoped replay;
+- independent replay reconciliation returns MATCH with the same Price identity;
+- requesting the Price under a different dataset role keeps it missing;
+- an attestation unavailable at the reconstruction cutoff remains missing.
+
+The complete development suite immediately before this closeout was:
+
+`2378 passed, 4 skipped, 3 existing fixture warnings`.
+
+A final full-suite qualification must be run after this closeout documentation
+and regression test are included before the closeout commit is published.
+
+Therefore, within their explicitly scoped contracts:
+
+`49A=COMPLETE`
+`49B=COMPLETE`
+
+These statements do not change:
+
+`METRICS_OPERATIONAL_READINESS_81H=NO`
+`REGIME_VALIDATED=NO`
+`MECHANICS_VALIDATED=NO`
+`EDGE=NOT_DEMONSTRATED`
+`OMA_CORE_V1_COMPLETE=NO`
+`REAL_CAPITAL_AUTHORIZED=NO`
