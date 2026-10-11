@@ -182,11 +182,11 @@ def test_later_available_observation_cannot_leak_into_past_snapshot(
         "FundingRate/Published",
     )
 
-    assert len(present.observations) == 1
-    assert present.missing_features == ()
+    assert present.observations == ()
+    assert present.missing_features == ("FundingRate/Published",)
 
 
-def test_same_feature_same_metric_time_from_two_sources_is_ambiguous(
+def test_unverified_sources_do_not_become_ambiguous_causal_evidence(
     tmp_path,
 ):
     ledger = tmp_path / "scientific.db"
@@ -209,16 +209,12 @@ def test_same_feature_same_metric_time_from_two_sources_is_ambiguous(
                 S + timedelta(minutes=1, seconds=n),
         )
 
-    with pytest.raises(
-        ValueError,
-        match="ambiguous latest observation",
-    ):
-        load_causal_snapshot(
-            ledger,
-            instrument="BTCUSDT",
-            as_of=S + timedelta(minutes=2),
-            features=("FundingRate/Published",),
-        )
+    snapshot = load_causal_snapshot(
+        ledger, instrument="BTCUSDT", as_of=S + timedelta(minutes=2),
+        features=("FundingRate/Published",),
+    )
+    assert snapshot.observations == ()
+
 
 
 def test_corrupt_observation_chain_fails_closed(

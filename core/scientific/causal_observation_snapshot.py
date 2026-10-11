@@ -18,6 +18,7 @@ from pathlib import Path
 from .prospective_receipts import (
     observation_hash,
     observation_snapshot,
+    snapshot_causally_available,
 )
 
 
@@ -298,6 +299,12 @@ def load_causal_snapshot(
             item,
             cutoff,
         )
+
+        if candidate is not None and item['feature'] in ('Price/OHLCV', 'FundingRate/Published'):
+            # A persisted timestamp/hash is not provider/semantic evidence.
+            # Reuse the existing raw source contract before causal projection.
+            if not snapshot_causally_available(rows, item['id'], cutoff):
+                continue
 
         if candidate is not None:
             grouped[candidate.feature].append(

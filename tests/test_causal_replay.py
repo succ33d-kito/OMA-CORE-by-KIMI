@@ -196,7 +196,7 @@ def test_later_evidence_cannot_change_earlier_replay(
     assert before.replay_id == after.replay_id
 
 
-def test_later_cutoff_can_legitimately_see_later_evidence(
+def test_later_cutoff_cannot_legitimize_unverified_funding(
     state,
     tmp_path,
 ):
@@ -245,7 +245,7 @@ def test_later_cutoff_can_legitimately_see_later_evidence(
         early.observation_ids
     )
 
-    assert funding["id"] in (
+    assert funding["id"] not in (
         later.observation_ids
     )
 
@@ -256,7 +256,7 @@ def test_later_cutoff_can_legitimately_see_later_evidence(
 
     assert (
         "FundingRate/Published"
-        not in later.missing_features
+        in later.missing_features
     )
 
 

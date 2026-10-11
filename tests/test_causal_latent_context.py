@@ -137,7 +137,7 @@ def test_levels_and_taker_ratio_are_not_silently_reinterpreted(
     )
 
 
-def test_funding_rate_maps_without_imputation(
+def test_unverified_funding_is_not_mapped(
     state,
     tmp_path,
 ):
@@ -176,15 +176,15 @@ def test_funding_rate_maps_without_imputation(
 
     assert (
         projection.context.funding_rate
-        == -0.000125
+        is None
     )
 
     assert (
         "funding_rate"
-        in projection.context.available_axes
+        in projection.context.unknown_axes
     )
 
-    assert funding["id"] in (
+    assert funding["id"] not in (
         projection.used_observation_ids
     )
 
@@ -221,13 +221,9 @@ def test_malformed_direct_payload_fails_closed(
         ),
     )
 
-    with pytest.raises(
-        ValueError,
-        match="invalid numeric payload",
-    ):
-        project_latent_context(
-            snapshot
-        )
+    assert snapshot.observations == ()
+    assert project_latent_context(snapshot).context.funding_rate is None
+
 
 
 def test_projection_is_deterministic(
