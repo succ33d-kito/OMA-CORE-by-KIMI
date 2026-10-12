@@ -39,7 +39,8 @@ def env(tmp_path,monkeypatch):
         return capture_price_receipt(e.session,ledger,monotonic=lambda:e.t.timestamp(),**kwargs)
     e.capture = capture
     e.run = lambda slot=S,**kwargs:runner.attempt_slot(e.root,slot,repo_root=REPO,
-        clock=e.clock,capture=kwargs.pop('capture',e.capture),**kwargs)
+        clock=e.clock,capture=kwargs.pop('capture',e.capture),
+        sleeper=kwargs.pop('sleeper',lambda seconds:setattr(e,'t',e.t+timedelta(seconds=seconds))),**kwargs)
     return e
 
 

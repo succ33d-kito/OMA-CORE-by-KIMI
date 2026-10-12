@@ -1,10 +1,12 @@
-"""One-shot PILOT Price orchestration. No activation, catch-up or implicit retry."""
+"""PILOT Price orchestration with explicit in-process, same-window retries."""
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 import json
+import time
 
 from core.market_mechanics.binance_live_adapter import capture_price_receipt
 from . import price_role_attestation as roles
+from .capture_clock import ClockHealthError
 from .price_role_activation import load_activation
 from .metrics_h1_activation import _reject_aliases
 from .funding_h1_runtime import _process_lock
@@ -14,6 +16,7 @@ SCHEMA = "price-role-h1-runner-v1"
 LEAF = "price-role-h1-v1"
 STATUSES = {"STARTED", "AUTHORIZED", "CAPTURE_STARTED", "CAPTURED", "ATTESTED", "SUCCESS",
             "CAPTURE_FAILED", "ATTESTATION_FAILED", "CONFLICT", "MISSED_SLOT"}
+NETWORK_SCHEMA = "price-role-h1-network-v1"
 TERMINAL = ("CONFLICT", "MISSED_SLOT", "CAPTURE_FAILED")
 
 
@@ -89,6 +92,37 @@ def _record(root, config, slot, status, at, **details):
     return body
 
 
+def _network_record(root, config, slot, index, status, started_at, at, **details):
+    path = _directory(root, slot) / "network" / f"{index:04d}-{status}.json"
+    _reject_aliases(path)
+    body = dict(schema=NETWORK_SCHEMA, activation_id=config["activation_id"],
+                dataset_role="PILOT", slot=slot.isoformat(), attempt_index=index,
+                status=status, started_at=utc(started_at).isoformat(), at=utc(at).isoformat(), **details)
+    body["record_id"] = observation_hash(body)
+    # No overwriting or resuming a network attempt, even with identical content.
+    roles._exclusive_json(path, body)
+    return body
+
+
+def _network_records(root, config, slot):
+    directory = _directory(root, slot) / "network"
+    _reject_aliases(directory)
+    records = []
+    for path in sorted(directory.glob("*.json")):
+        body = _read(path)
+        index = body.get("attempt_index")
+        status = body.get("status")
+        if (body.get("schema") != NETWORK_SCHEMA or type(index) is not int or index < 1
+                or status not in ("STARTED", "FAILED", "SUCCESS", "CONFLICT")
+                or path.name != f"{index:04d}-{status}.json"
+                or body.get("activation_id") != config["activation_id"]
+                or body.get("dataset_role") != "PILOT" or body.get("slot") != slot.isoformat()
+                or utc(body["at"]) < utc(body["started_at"])):
+            raise ValueError("network attempt identity or timing mismatch")
+        records.append(body)
+    return records
+
+
 def _prices(known, slot):
     return [r for r in known.values() if r["feature"] == "Price/OHLCV" and utc(r["event_time"]) == slot]
 
@@ -112,8 +146,8 @@ def _verify_pair(known, price, auth, config, at):
     return att
 
 
-def attempt_slot(state, slot, *, repo_root, session=None, clock=now, capture=capture_price_receipt):
-    """Single network attempt; existing raw may only recover its preauthorized attestation.
+def attempt_slot(state, slot, *, repo_root, session=None, clock=now, capture=capture_price_receipt, sleeper=time.sleep):
+    """Explicit same-process retries; existing raw only recovers its preauthorized attestation.
 
     Injection points are for deterministic tests. Production CLI supplies the frozen
     callable and actual clock, never a timestamp argument or synthetic envelope.
@@ -126,10 +160,10 @@ def attempt_slot(state, slot, *, repo_root, session=None, clock=now, capture=cap
     lock = runtime / "slot.lock"
     _reject_aliases(lock)
     with _process_lock(lock):
-        return _attempt(root, config, slot, target, deadline, repo_root, session, clock, capture)
+        return _attempt(root, config, slot, target, deadline, repo_root, session, clock, capture, sleeper)
 
 
-def _attempt(root, config, slot, target, deadline, repo_root, session, clock, capture):
+def _attempt(root, config, slot, target, deadline, repo_root, session, clock, capture, sleeper):
     previous = utc(config["not_before"])
     def sample():
         nonlocal previous
@@ -146,6 +180,9 @@ def _attempt(root, config, slot, target, deadline, repo_root, session, clock, ca
             raise ValueError("attempt identity mismatch")
         if utc(old["at"]) > at:
             raise ValueError("Price role clock moved backwards across attempt")
+    network_records = _network_records(root, config, slot)
+    if any(utc(r["at"]) > at for r in network_records):
+        raise ValueError("clock precedes network evidence")
     def record(status, **details):
         return _record(root, config, slot, status, sample(), **details)
     for status in TERMINAL:
@@ -166,12 +203,12 @@ def _attempt(root, config, slot, target, deadline, repo_root, session, clock, ca
     if not prices:
         if (directory / "SUCCESS.json").exists() or (directory / "CAPTURED.json").exists():
             return record("CONFLICT", reason="PERSISTED_RAW_MISSING")
+        if (directory / "CAPTURE_STARTED.json").exists() or network_records:
+            return record("CAPTURE_FAILED", reason="INTERRUPTED_CAPTURE_NO_RETRY")
         if at > deadline or slot < utc(config["not_before"]).replace(minute=0, second=0, microsecond=0):
             return record("MISSED_SLOT", reason="NO_CAPTURE_BEFORE_DEADLINE")
         if at < target:
             return {"status":"WAITING", "slot":slot.isoformat(), "target":target.isoformat()}
-        if (directory / "CAPTURE_STARTED.json").exists():
-            return record("CAPTURE_FAILED", reason="INTERRUPTED_CAPTURE_NO_RETRY")
         record("STARTED")
         if auth is None:
             auth = roles.authorize_capture(root, repo_root=repo_root, expected_event_time=slot)
@@ -181,20 +218,65 @@ def _attempt(root, config, slot, target, deadline, repo_root, session, clock, ca
         if sample() > deadline:
             return record("MISSED_SLOT", reason="NO_CAPTURE_BEFORE_DEADLINE")
         record("CAPTURE_STARTED", authorization_id=auth["authorization_id"])
-        try:
-            returned = capture(session, root / "observations.db", expected_event_time=slot,
-                               capture_deadline=deadline, clock=sample)
-        except Exception:
-            # An interrupted return may still have committed raw. Never recapture.
-            known = _rows(root)
-            prices = _prices(known, slot)
-            if not prices:
-                return record("CAPTURE_FAILED", reason="CAPTURE_EXCEPTION_NO_RETRY")
-        else:
-            known = _rows(root)
-            prices = _prices(known, slot)
-            if len(prices) != 1 or returned != prices[0]:
-                return record("CONFLICT", reason="CAPTURE_RESULT_NOT_EXACT_PERSISTED_RAW")
+        index = 0
+        while True:
+            started = sample()
+            if started > deadline or (index and started >= deadline):
+                return record("CAPTURE_FAILED", reason="RETRY_WINDOW_EXHAUSTED")
+            index += 1
+            _network_record(root, config, slot, index, "STARTED", started, started,
+                            authorization_id=auth["authorization_id"])
+            try:
+                returned = capture(session, root / "observations.db", expected_event_time=slot,
+                                   capture_deadline=deadline, clock=sample)
+            except Exception as exc:
+                # Inspect persistence before deciding whether any retry is permissible.
+                try:
+                    known = _rows(root)
+                    prices = _prices(known, slot)
+                except Exception as ledger_exc:
+                    completed = sample()
+                    _network_record(root, config, slot, index, "FAILED", started, completed,
+                        completed_at=completed.isoformat(), exception_type=type(exc).__name__,
+                        exception_message=str(exc), failure_kind="LEDGER_UNVERIFIABLE",
+                        raw_present_after_failure=None,
+                        remaining_window_seconds=max(0.0, (deadline-completed).total_seconds()),
+                        ledger_exception_type=type(ledger_exc).__name__, ledger_exception_message=str(ledger_exc))
+                    return record("CONFLICT", reason="LEDGER_UNVERIFIABLE_AFTER_CAPTURE")
+                completed = sample()
+                _network_record(root, config, slot, index, "FAILED", started, completed,
+                    completed_at=completed.isoformat(), exception_type=type(exc).__name__,
+                    exception_message=str(exc), failure_kind="CLOCK" if isinstance(exc, ClockHealthError) else "CAPTURE_EXCEPTION",
+                    raw_present_after_failure=bool(prices),
+                    remaining_window_seconds=max(0.0, (deadline-completed).total_seconds()))
+                if len(prices) > 1:
+                    return record("CONFLICT", reason="MULTIPLE_RAW_PRICES")
+                if prices:
+                    break  # Exact raw is validated below; never recapture persisted raw.
+                remaining = (deadline-completed).total_seconds()
+                if remaining <= 0:
+                    return record("CAPTURE_FAILED", reason="RETRY_WINDOW_EXHAUSTED")
+                sleeper(min(20.0, remaining))
+                resumed = sample()
+                if resumed <= completed:
+                    raise ValueError("retry wait did not advance clock")
+                # Recheck under the slot lock in case an external writer changed evidence.
+                known = _rows(root)
+                prices = _prices(known, slot)
+                if prices:
+                    break
+            else:
+                known = _rows(root)
+                prices = _prices(known, slot)
+                completed = sample()
+                if len(prices) != 1 or returned != prices[0]:
+                    _network_record(root, config, slot, index, "CONFLICT", started, completed,
+                                    completed_at=completed.isoformat(), reason="CAPTURE_RESULT_NOT_EXACT_PERSISTED_RAW")
+                    return record("CONFLICT", reason="CAPTURE_RESULT_NOT_EXACT_PERSISTED_RAW")
+                _network_record(root, config, slot, index, "SUCCESS", started, completed,
+                                completed_at=completed.isoformat(), raw_id=prices[0]["id"])
+                break
+
     if len(prices) != 1:
         return record("CONFLICT", reason="MULTIPLE_RAW_PRICES")
     price = prices[0]
@@ -248,11 +330,25 @@ def status(state, *, repo_root, clock=now):
     attempts = []
     for path in sorted((root / "attempts").glob("*/*.json")):
         attempts.append(_read(path))
+    network = []
+    for directory in sorted((root / "attempts").glob("*")):
+        if directory.is_dir():
+            slot = datetime.strptime(directory.name, "%Y%m%dT%H0000Z").replace(tzinfo=timezone.utc)
+            network.extend(_network_records(root, config, slot))
+    numbered_slots = {r["slot"] for r in network}
+    legacy = [r for r in attempts if r["status"] == "CAPTURE_STARTED" and r["slot"] not in numbered_slots]
+    activity = network + [r for r in attempts if r["slot"] not in numbered_slots
+                             and r["status"] in ("CAPTURE_STARTED", "CAPTURE_FAILED", "CAPTURED")]
+    latest = max(activity, key=lambda r:utc(r["at"])) if activity else None
     heartbeat = root / "runtime" / "heartbeat.json"
     _reject_aliases(heartbeat)
     return {"schema":SCHEMA, "state":str(root), "activation_id":config["activation_id"],
         "dataset_role":config["dataset_role"], "ledger_integrity":"PASS" if (root/"observations.db").exists() else "EMPTY",
         "verified_pairs":sorted(valid,key=lambda r:r["slot"]), "invalid_raw_ids":invalid,
         "attested_hours":len(valid), "attempt_records":attempts, "network_executed":False, "state_initialized":False,
+        "status_command_network_executed":False,
+        "runtime_network_attempts":sum(r["status"] == "STARTED" for r in network)+len(legacy),
+        "legacy_uninstrumented_network_attempts":len(legacy), "network_attempt_records":network,
+        "last_network_attempt_status":None if latest is None else latest["status"],
         "runtime_liveness":"UNVERIFIED", "heartbeat_is_evidence":False,
         "heartbeat":json.loads(heartbeat.read_text()) if heartbeat.exists() else None}
