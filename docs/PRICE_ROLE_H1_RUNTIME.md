@@ -1,9 +1,10 @@
 # 51-R1 â€” prospective PILOT Price H1 runtime
 
 ## Boundary
-Implementation complete; full qualification BLOCKED by Windows Code Integrity.
-Not yet deployment-ready or published. No real activation, scheduler installation, HTTP
-capture or LIVE edits are performed by this implementation mission.
+Implementation complete; hybrid qualification PASS and publication COMPLETE.
+Validated code SHA: `82c3796389df9b9bbe1b32fc89d32e18b63196c7`.
+The 51-R1 mission performed no real activation, scheduler installation, HTTP
+capture or LIVE edits. Operational deployment is a separate authorized mission.
 
 PRICE_ROLE_AWARE_RUNTIME_IMPLEMENTED=YES
 PRICE_ROLE_AWARE_RUNTIME_DEPLOYED=NO
@@ -141,31 +142,38 @@ No trading, outcomes, holdout access or experiments. Real 81H accumulation and 5
 readiness remain unproven; the mission ends before real activation.
 
 
-## Qualification checkpoint - 2026-10-12 (publication blocked)
+## Qualification closeout - 2026-10-12 (hybrid PASS; published)
 - Base HEAD: `1bd4ca6f76fe5a62ee450547be6a68d44c105d65`.
-- Branch: `manual/51-price-role-runtime-20261012`.
-- 42 new deterministic tests plus directly related regressions: **88 passed**.
-- `py_compile`: all six new Python files PASS (temporary external bytecode only).
-- Installer syntax PASS; installer NOT executed.
-- git diff --check / staged diff --check: PASS.
-- All five frozen files content-identical to baseline; no existing source edited.
-- Full pytest: **7 errors during collection, 9.44s**; no full-suite PASS.
-- Isolated `import pandas` reproduces failure without importing new modules.
-- Installed pandas metadata: 3.0.6. Windows Code Integrity events 3077/3033 identify
-  `C:/Users/KiTO/Documents/OMA-CORE/.venv/Lib/site-packages/pandas/_libs/tslibs/timestamps.cp311-win_amd64.pyd`
-  as failing Enterprise signing requirements / policy
-  `{0283ac0f-fff1-49ae-ada1-8a933130cad6}`.
-- No policy bypass, DLL replacement, environment repair or LIVE edit attempted.
-- Real target state absent; new scheduler task absent. Existing Price/Metrics/Funding
-  tasks observed Running; none changed. LIVE clean at
-  `d9e0f72ec0e1eb897a240a6ecd5820403de039e5`.
-- No commits or push: eight additive files staged and preserved for continuation.
-- Remote ref for this new branch absent at final read-only ls-remote check.
+- Published branch: `manual/51-price-role-runtime-20261012`.
+- Final validated code SHA: `82c3796389df9b9bbe1b32fc89d32e18b63196c7`.
+- Windows Python 3.11.9: all **88 focal tests passed**, including critical Windows
+  process-lock, path and operator-boundary coverage. PowerShell parser PASS.
+- Linux platform-neutral full suite: **2242 passed, 0 failed, 0 errors,
+  193 classified skips, 3 warnings, 182.85 seconds** on Ubuntu 24.04.5,
+  Python 3.11.17 / pytest 9.1.1, with dependency versions pinned and test network
+  access disabled. All 42 new tests passed on both platforms.
+- The 181 Windows-contract cases were explicitly partitioned by node ID after
+  independent Windows execution: **179 passed, 2 expected environment skips**
+  (pythonw already present; actual symlink privilege unavailable, with reparse
+  rejection regression passing). The other 12 Linux skips are existing historical
+  paper-experiment tests requiring live Binance OHLCV. They provide no validation
+  evidence here and are not critical paths for 51-R1.
+- Identical collected population: 2435 cases. No critical 51-R1 path relies solely
+  on a platform skip. No source/test changes or mocked Windows publication
+  semantics were used to make Linux pass.
+- CI evidence: https://github.com/succ33d-kito/OMA-CORE-by-KIMI/actions/runs/38280461464
+- Audit branch: `validation/51r1-linux-ci-20261012`, SHA
+  `f10f0b3fde1b9dc07ca5d55ba8a777919900774e`.
+- The eight canonical files are blob-identical to the files validated in CI.
+- Compile, staged diff check and five frozen-surface comparisons: PASS.
+- Windows full-suite collection remains blocked by Smart App Control policy
+  `VerifiedAndReputableDesktop`, `{0283AC0F-FFF1-49AE-ADA1-8A933130CAD6}`,
+  rejecting pandas' native timestamps module. This is NOT Windows full-suite PASS.
+  Smart App Control remains enabled and unchanged; no security policy was weakened.
+- LIVE remained untouched and clean at `d9e0f72ec0e1eb897a240a6ecd5820403de039e5`.
+- Qualification/publication are complete; real activation and deployment were NOT
+  part of 51-R1. Real 81H coverage and Experiment 51 readiness remain unproven.
 
-Resume after the authorized Windows administrator/environment owner resolves the
-application-control block through the approved process. First verify isolated
-pandas import with the qualified interpreter; then rerun full DEV pytest with
-`-q -rs -p no:cacheprovider --basetemp <new external temp directory> --tb=short`.
-Do not omit pandas tests or substitute an unqualified interpreter to manufacture
-PASS. After qualification create bounded commits and publish only this branch.
-Real activation and task installation still need separate user authorization.
+The authorized 51-R2 operational mission supersedes the earlier DEV-based deployment
+example above: pin a separate operational checkout to the validated code SHA and
+run only from that immutable checkout. This closeout changes documentation only.
