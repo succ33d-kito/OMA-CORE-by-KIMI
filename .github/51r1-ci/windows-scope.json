@@ -1,0 +1,907 @@
+{
+  "tests/test_capture_reliability.py::test_keep_awake_all_exit_paths[normal]": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_capture_reliability.py::test_keep_awake_all_exit_paths[early]": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_capture_reliability.py::test_keep_awake_all_exit_paths[exception]": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_capture_reliability.py::test_keep_awake_all_exit_paths[interrupt]": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_causal_dataset_role.py::test_role_isolation_and_empty_identity": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_causal_dataset_role.py::test_role_propagates_to_both_replays": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_causal_dataset_role.py::test_invalid_role_fails_closed[pilot]": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_causal_dataset_role.py::test_invalid_role_fails_closed[]": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_causal_dataset_role.py::test_invalid_role_fails_closed[False]": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_causal_dataset_role.py::test_invalid_role_fails_closed[42]": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_causal_dataset_role.py::test_cli_role_and_unscoped_compatibility": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_causal_evidence_graph.py::test_snapshot_and_context_append_as_temporal_market_state": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_causal_evidence_graph.py::test_every_observation_has_exact_lineage_edge": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_causal_evidence_graph.py::test_source_visibility_respects_original_availability": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_causal_evidence_graph.py::test_bridge_is_idempotent_and_reproducible": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_causal_evidence_graph.py::test_forged_latent_projection_is_rejected_before_write": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_causal_evidence_graph.py::test_graph_payload_preserves_unknown_and_unconsumed_semantics": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_causal_latent_context.py::test_global_positioning_maps_directly_to_long_short_ratio": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_causal_latent_context.py::test_levels_and_taker_ratio_are_not_silently_reinterpreted": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_causal_latent_context.py::test_unverified_funding_is_not_mapped": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_causal_latent_context.py::test_projection_is_deterministic": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_causal_mechanics.py::test_authenticated_metrics_preserve_levels_and_ratios": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_causal_observation_snapshot.py::test_metrics_projection_is_visible_only_after_ledger_availability": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_causal_observation_snapshot.py::test_missing_is_preserved_not_imputed": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_causal_observation_snapshot.py::test_snapshot_is_deterministic_and_read_only": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_causal_observation_snapshot.py::test_corrupt_observation_chain_fails_closed": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_causal_replay.py::test_same_ledger_and_cutoff_produce_same_replay_certificate": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_causal_replay.py::test_replay_does_not_modify_source_ledger": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_causal_replay.py::test_same_replay_graph_is_idempotent": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_causal_replay.py::test_later_evidence_cannot_change_earlier_replay": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_causal_replay.py::test_later_cutoff_cannot_legitimize_unverified_funding": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_causal_replay.py::test_unrelated_graph_content_does_not_change_certificate": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_causal_replay.py::test_corrupt_observation_ledger_fails_closed": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_install_metrics_h1_task.py::test_plan_executes_real_readonly_check_without_scheduler": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_install_metrics_h1_task.py::test_existing_task_not_replaced": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_install_metrics_h1_task.py::test_missing_state_no_initialization": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_install_metrics_h1_task.py::test_missing_windowless_interpreter_rejected": {
+    "platform": "Windows 3.11.9",
+    "result": "EXPECTED_ENVIRONMENT_SKIP",
+    "skip_reason": "test interpreter includes pythonw"
+  },
+  "tests/test_install_metrics_h1_task.py::test_registration_uses_frozen_settings_without_start": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_continuity.py::test_success_recomputed_read_only": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_continuity.py::test_corruption_rejected_without_mutation[attempt.json]": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_continuity.py::test_corruption_rejected_without_mutation[result.json]": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_continuity.py::test_corruption_rejected_without_mutation[capture/receipt.json]": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_continuity.py::test_corruption_rejected_without_mutation[capture/available.json]": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_continuity.py::test_corruption_rejected_without_mutation[capture/raw/oi.json]": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_continuity.py::test_corruption_rejected_without_mutation[capture/raw/top_account.json]": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_continuity.py::test_corruption_rejected_without_mutation[capture/raw/top_position.json]": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_continuity.py::test_corruption_rejected_without_mutation[capture/raw/global.json]": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_continuity.py::test_corruption_rejected_without_mutation[capture/raw/taker.json]": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_continuity.py::test_rehashed_receipt_cannot_override_contract[dataset_role-CONFIRMATION]": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_continuity.py::test_rehashed_receipt_cannot_override_contract[source_period_end-2026-10-11T14:00:00+00:00]": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_continuity.py::test_rehashed_receipt_cannot_override_contract[normalized_metrics-value2]": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_continuity.py::test_rehashed_receipt_cannot_override_contract[provider-https://evil.example]": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_continuity.py::test_availability_without_result_is_incomplete": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_continuity.py::test_failed_with_leftover_valid_capture_never_counts": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_continuity.py::test_missing_deadline_and_no_backfill": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_continuity.py::test_future_result_not_available_at_past_time": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_continuity.py::test_81_success_gate_and_gap_breaks_current_streak": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_continuity.py::test_naive_clock_rejected": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_h1_activation.py::test_naive_rejected_before_writes": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_h1_activation.py::test_success_frozen_config_only_no_network": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_h1_activation.py::test_existing_root_preserved[False]": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_h1_activation.py::test_existing_root_preserved[True]": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_h1_activation.py::test_reactivation_cannot_shift_slot_or_role": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_h1_activation.py::test_unknown_role_creates_nothing": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_h1_activation.py::test_residue_preserved": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_h1_activation.py::test_precommit_failure_no_final_root[initialize]": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_h1_activation.py::test_precommit_failure_no_final_root[validate]": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_h1_activation.py::test_precommit_failure_no_final_root[publish]": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_h1_activation.py::test_staged_tamper_is_independently_rejected": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_h1_activation.py::test_partial_write_is_cleaned": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_h1_activation.py::test_cleanup_failure_visible_and_blocks_next_call": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_h1_activation.py::test_racing_destination_never_overwritten": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_h1_activation.py::test_no_read_after_publication": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_h1_activation.py::test_ancestor_reparse_rejected": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_h1_activation.py::test_actual_symlink_rejected_when_supported": {
+    "platform": "Windows 3.11.9",
+    "result": "EXPECTED_ENVIRONMENT_SKIP",
+    "skip_reason": "Windows symlink privilege unavailable; reparse regression covered"
+  },
+  "tests/test_metrics_h1_execution_wrapper.py::test_check_is_read_only_and_not_liveness": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_h1_execution_wrapper.py::test_run_passes_exact_state_and_explicit_transport": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_h1_execution_wrapper.py::test_run_requires_explicit_network_flag": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_h1_execution_wrapper.py::test_tampered_config_never_runs[role]": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_h1_execution_wrapper.py::test_tampered_config_never_runs[hash]": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_h1_execution_wrapper.py::test_tampered_config_never_runs[unknown]": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_h1_execution_wrapper.py::test_no_timestamp_or_role_override": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_h1_http_transport.py::test_fake_e2e_real_requests_five_calls": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_h1_live_adapter.py::test_exact_bundle_and_independent_commitments": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_h1_live_adapter.py::test_start_window[180-True]": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_h1_live_adapter.py::test_start_window[299.999-True]": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_h1_live_adapter.py::test_runner_integration_no_retry_or_ledger": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_h1_live_adapter.py::test_failure_integration_and_future_slot": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_h1_operator_ceremony.py::test_exact_plan_creates_only_config_and_cannot_replay": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_h1_runner.py::test_config_load_and_no_initialization": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_h1_runner.py::test_mutated_capture_config_rejected[target_offset_seconds-0]": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_h1_runner.py::test_mutated_capture_config_rejected[deadline_offset_seconds-301]": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_h1_runner.py::test_mutated_capture_config_rejected[same_slot_retry-ONE]": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_h1_runner.py::test_other_config_corruption[malformed]": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_h1_runner.py::test_other_config_corruption[source]": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_h1_runner.py::test_other_config_corruption[role]": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_h1_runner.py::test_other_config_corruption[root]": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_h1_runner.py::test_other_config_corruption[identity]": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_h1_runner.py::test_other_config_corruption[extra]": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_h1_runner.py::test_boundaries[-60-NOT_ACTIVE]": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_h1_runner.py::test_boundaries[0-BEFORE_TARGET]": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_h1_runner.py::test_boundaries[179.999-BEFORE_TARGET]": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_h1_runner.py::test_boundaries[180-SUCCESS]": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_h1_runner.py::test_boundaries[180.000001-SUCCESS]": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_h1_runner.py::test_boundaries[299.999999-SUCCESS]": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_h1_runner.py::test_boundaries[300-MISSED_SLOT]": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_h1_runner.py::test_boundaries[301-MISSED_SLOT]": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_h1_runner.py::test_boundaries[7200-MISSED_SLOT]": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_h1_runner.py::test_naive_time_rejected": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_h1_runner.py::test_selection_never_backlogs": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_h1_runner.py::test_once_only_and_next_slot[False]": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_h1_runner.py::test_once_only_and_next_slot[True]": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_h1_runner.py::test_incomplete_is_never_resumed": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_h1_runner.py::test_invalid_success_fails_without_receipt[source_period_end-value0]": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_h1_runner.py::test_invalid_success_fails_without_receipt[slot-value1]": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_h1_runner.py::test_invalid_success_fails_without_receipt[capture_receipt_id-]": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_h1_runner.py::test_invalid_success_fails_without_receipt[raw_bundle_sha256-not-a-hash]": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_h1_runner.py::test_invalid_success_fails_without_receipt[status-True]": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_h1_runner.py::test_invalid_success_fails_without_receipt[available_at-value5]": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_h1_runner.py::test_invalid_success_fails_without_receipt[available_at-value6]": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_h1_runner.py::test_invalid_success_fails_without_receipt[available_at-value7]": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_h1_runner.py::test_invalid_success_fails_without_receipt[extra-PnL]": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_h1_runner.py::test_nonobject_success_fails": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_h1_runner.py::test_completion_deadline_inclusive_and_no_late_success": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_h1_runner.py::test_deadline_elapsed_during_setup_no_dispatch": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_h1_runner.py::test_clock_regression_preserves_incomplete": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_h1_runner.py::test_swallowed_callback_clock_regression_still_fails_closed": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_h1_runner.py::test_racing_directory_no_capture": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_h1_runner.py::test_no_network_or_ledger_surface_and_activation_unchanged": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_h1_runtime.py::test_runtime_metadata_only_before_target": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_h1_runtime.py::test_bad_poll_no_runtime_directory[0]": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_h1_runtime.py::test_bad_poll_no_runtime_directory[-1]": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_h1_runtime.py::test_bad_poll_no_runtime_directory[5.1]": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_h1_runtime.py::test_bad_poll_no_runtime_directory[True]": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_h1_runtime.py::test_bad_poll_no_runtime_directory[nan]": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_h1_runtime.py::test_bad_poll_no_runtime_directory[inf]": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_h1_runtime.py::test_lock_excludes_competitor_and_releases": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_h1_runtime.py::test_restart_regression_rejected_without_heartbeat_rewrite": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_h1_runtime.py::test_midrun_regression_fails_closed": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_h1_runtime.py::test_pre_requested_stop_no_capture": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_h1_runtime.py::test_failed_slot_does_not_stop_future_slot": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_h1_runtime.py::test_restart_does_not_retry_completed_slot": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_h1_runtime.py::test_malformed_heartbeat_and_pending_fail_closed": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_observation_admission.py::test_atomic_success_admits_exactly_six_shared_bundle_rows": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_observation_admission.py::test_identical_readmission_is_idempotent": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_observation_admission.py::test_sql_failure_rolls_back_all_six_rows": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_observation_admission.py::test_corrupt_capture_never_reaches_ledger": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_observation_admission.py::test_future_unavailable_capture_is_rejected": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_observation_admission.py::test_late_historical_admission_is_rejected": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_observation_admission.py::test_existing_semantic_conflict_fails_closed": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_observation_admission.py::test_evidence_mutation_between_projection_and_admission_rejected": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_observation_admission.py::test_ledger_corruption_after_preflight_is_rejected_inside_transaction": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_observation_bundle.py::test_complete_projection_deterministic_and_no_admission": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_observation_bundle.py::test_missing_member_never_partial_projection[result.json]": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_observation_bundle.py::test_missing_member_never_partial_projection[capture/available.json]": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_observation_bundle.py::test_missing_member_never_partial_projection[capture/raw/oi.json]": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_observation_bundle.py::test_corrupt_member_never_projects": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_observation_bundle.py::test_future_evidence_not_projected": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_observation_bundle.py::test_mutation_during_verification_rejected": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_snapshot_gate.py::test_complete_bundle_and_requested_subset": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_snapshot_gate.py::test_one_inconsistent_member_excludes_entire_bundle[missing]": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_snapshot_gate.py::test_one_inconsistent_member_excludes_entire_bundle[role]": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_snapshot_gate.py::test_one_inconsistent_member_excludes_entire_bundle[availability]": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_snapshot_gate.py::test_one_inconsistent_member_excludes_entire_bundle[payload]": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_snapshot_gate.py::test_one_inconsistent_member_excludes_entire_bundle[source]": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_snapshot_gate.py::test_one_inconsistent_member_excludes_entire_bundle[contract]": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_snapshot_gate.py::test_one_inconsistent_member_excludes_entire_bundle[metadata]": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_replay_reconciliation.py::test_independent_replays_match_deterministically_without_ledger_writes": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_replay_reconciliation.py::test_mismatch_preserves_diagnostics_and_blocks_success[subgraph_sha256-different]": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_replay_reconciliation.py::test_mismatch_preserves_diagnostics_and_blocks_success[missing_features-value1]": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_replay_reconciliation.py::test_mismatch_preserves_diagnostics_and_blocks_success[latent_unknown_axes-value2]": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_replay_reconciliation.py::test_mismatch_preserves_diagnostics_and_blocks_success[unconsumed_features-value3]": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_replay_reconciliation.py::test_mismatch_preserves_diagnostics_and_blocks_success[snapshot_id-different]": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_replay_reconciliation.py::test_mismatch_preserves_diagnostics_and_blocks_success[market_state_id-different]": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_replay_reconciliation.py::test_verified_later_evidence_preserves_historical_certificate": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_replay_reconciliation.py::test_corrupt_chain_produces_no_certificate": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_replay_reconciliation.py::test_feature_iterator_is_frozen_for_both_replays": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_replay_reconciliation_cli.py::test_real_export_and_no_overwrite": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_replay_reconciliation_cli.py::test_mismatch_is_exported_with_nonzero_exit": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_replay_reconciliation_cli.py::test_reconstruction_error_produces_no_output": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_replay_reconciliation_cli.py::test_naive_cutoff_rejected_before_output": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  }
+}

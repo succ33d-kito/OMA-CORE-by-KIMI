@@ -37,10 +37,13 @@ The evidence claim remains: **authorization strictly precedes earliest persisted
 Price capture evidence**. Code also orders authorization before the capture call,
 without claiming external proof of a stronger network-start timestamp.
 
-Unlike the legacy retry loop, v1 deliberately allows **one network capture attempt
-per slot** (two HTTP requests inside the frozen callable). No failed/ambiguous
-attempt is retried. This conservative operational restriction does not change
-Price's frozen causal/timing semantics.
+51-R2.1 allows explicit retries only inside one uninterrupted slot execution.
+Authorization and CAPTURE_STARTED are each created once. After a capture exception,
+inspect the ledger immediately: exact existing raw proceeds to attestation without
+network; conflicting/unverifiable raw fails closed. With no raw and time remaining,
+wait min(20 seconds, remaining window), recheck clock/ledger, and retry the same
+frozen callable. No retry starts at or after S+125s; no historical retry or backfill.
+The strict RTT <= 2s and all frozen admission/clock gates remain unchanged.
 
 ## Immutable failures and recovery
 Create-only, hash-checked records under `attempts/<UTC slot>/` retain schema,
@@ -49,7 +52,8 @@ be silently overwritten. States: STARTED, AUTHORIZED, CAPTURE_STARTED, CAPTURED,
 ATTESTED, SUCCESS, CAPTURE_FAILED, ATTESTATION_FAILED, CONFLICT, MISSED_SLOT.
 
 - Authorization but no capture marker/raw: capture may proceed within live window.
-- CAPTURE_STARTED without raw: terminal CAPTURE_FAILED; uncertain request is not retried.
+- Restart with CAPTURE_STARTED without raw: terminal CAPTURE_FAILED; uncertain request is not retried.
+- In-process capture exceptions: explicit numbered failures and bounded same-slot retry only.
 - Raw with valid preauthorization, no attestation: recover that exact raw only,
   without another Price capture; preserve original failure records.
 - Raw without valid prior authorization: terminal CONFLICT; no later authorization.
@@ -132,7 +136,7 @@ $report.attempt_records | Where-Object status -eq 'SUCCESS' | Select-Object -Las
 ```
 
 Missing first success is not permission to retry history. Inspect the immutable
-failure and await the next future slot. Do not change/move the DEV checkout used
+failure and await the next future slot. Do not change/move the operational checkout used
 by a running task without a separately reviewed operational procedure.
 
 ## Scientific limits
@@ -177,3 +181,34 @@ readiness remain unproven; the mission ends before real activation.
 The authorized 51-R2 operational mission supersedes the earlier DEV-based deployment
 example above: pin a separate operational checkout to the validated code SHA and
 run only from that immutable checkout. This closeout changes documentation only.
+
+## 51-R2.1 operational reliability correction (2026-10-12)
+At 18:00Z the role-aware v1 runner permanently recorded CAPTURE_FAILED with
+CAPTURE_EXCEPTION_NO_RETRY; no raw Price or attestation was persisted. The legacy
+collector reportedly rejected its first request on clock health and succeeded at
+18:00:29 on its explicit retry. This is an operational reliability correction,
+not Edge tuning: no outcome/trading information was used and no predictive rule
+changed. This change was made before the first accepted real role-authenticated
+Price observation. The 18:00Z v1 failure remains terminal and byte-preserved.
+
+Per-call create-only records live in `attempts/<slot>/network/NNNN-STARTED.json`
+and `NNNN-FAILED|SUCCESS|CONFLICT.json`, separately versioned
+`price-role-h1-network-v1`. Each failure records actual start/completion, exception
+type and message, failure kind, raw presence (null if ledger cannot be verified),
+and remaining window. Network SUCCESS means exact persisted return; only slot
+SUCCESS means the raw/authorization/attestation chain passed. A crash may leave
+STARTED without a terminal network record; it is never permission to retry after
+restart. Existing `price-role-h1-runner-v1` records remain readable and unchanged.
+
+Status is read-only: `status_command_network_executed=false` describes this command.
+`network_executed=false` remains as a compatibility alias for that same meaning.
+`runtime_network_attempts`, `legacy_uninstrumented_network_attempts`,
+`last_network_attempt_status`, and `network_attempt_records` describe recorded
+runtime activity. Counts describe attempted invocations, not proof that every
+HTTP request reached the provider; old CAPTURE_STARTED markers lack detailed
+network records. No new activation or historical attestation is permitted.
+
+Deployment uses a NEW detached operational worktree at the validated hotfix SHA,
+reuses the exact existing PILOT activation/state, and changes only the role-aware
+task action/working directory. Preserve the old operational checkout as incident
+provenance. No LIVE edits, clock-limit changes, state deletion, backfill or repair.
