@@ -1,0 +1,38 @@
+name: Experiment 51 PRE isolated hybrid validation
+on:
+  push:
+    branches: [manual/51-pre-readiness-prereg-20261012]
+permissions:
+  contents: read
+jobs:
+  full-suite:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Reproduce qualified public dependency versions
+        run: |
+          python -m pip install --index-url https://pypi.org/simple -r requirements.txt -c .github/51pre-validation-requirements.txt
+          python -m pip install --index-url https://pypi.org/simple -r .github/51pre-validation-requirements.txt
+          python --version
+          python -m pip freeze
+          uname -a
+      - name: Compile additive preparation modules
+        run: python -m py_compile core/scientific/experiment51_readiness.py core/scientific/experiment51_preparation.py scripts/check_experiment51_readiness.py tests/test_experiment51_readiness.py
+      - name: Full suite without network
+        shell: bash
+        run: |
+          set -o pipefail
+          sudo unshare --net -- env PYTHONPATH="$PWD/.github/51pre-ci" "$(which python)" -m pytest -p platform_scope -q -rs -p no:cacheprovider --tb=short --junitxml="$RUNNER_TEMP/51pre-results.xml" 2>&1 | tee "$RUNNER_TEMP/51pre-pytest.log"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: 51pre-validation-results
+          path: |
+            ${{ runner.temp }}/51pre-results.xml
+            ${{ runner.temp }}/51pre-pytest.log
