@@ -28,7 +28,7 @@ jobs:
         shell: bash
         run: |
           set -o pipefail
-          sudo unshare --net -- "$(which python)" -m pytest -q -rs -p no:cacheprovider --tb=short --junitxml="$RUNNER_TEMP/51r1-results.xml" 2>&1 | tee "$RUNNER_TEMP/51r1-pytest.log"
+          sudo unshare --net -- env PYTHONPATH="$PWD/.github/51r1-ci" "$(which python)" -m pytest -p platform_scope -q -rs -p no:cacheprovider --tb=short --junitxml="$RUNNER_TEMP/51r1-results.xml" 2>&1 | tee "$RUNNER_TEMP/51r1-pytest.log"
       - uses: actions/upload-artifact@v4
         if: always()
         with:
