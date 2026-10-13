@@ -77,9 +77,50 @@ These additional action rules are not implemented here. No OI/positioning direct
 Experiment 51 is NOT ready or executed. Regime/Mechanics validation: NO.
 Policy winner: NONE. Edge: NOT DEMONSTRATED. Real capital: NOT AUTHORIZED.
 
-## Qualification
+## Qualification and checkpoint
 
-Focal tests: 47 passed. Related contracts before the final explicit eligibility
-guard: 287 passed; final full CI qualification is recorded in the checkpoint.
-Windows-specific existing partition: 179 passed, 2 expected skips (pythonw branch
-and unavailable symlink privilege). No collectors or real outcome access.
+Implementation SHA: `65e5377ef977ebe0d143f9e6ac819fbc29a739ae`.
+Branch: `manual/51-event-direction-v1-20261013`.
+
+- Final focal: 47 passed in 5.14s.
+- Related contracts before final explicit eligibility guard: 287 passed in 19.87s.
+  The final implementation is covered by the full isolated CI below.
+- Existing Windows partition: 179 passed, 2 skipped in 36.30s. Skips: pythonw
+  branch and unavailable symlink privilege (reparse regression covered).
+- Full isolated Linux suite: 2326 passed, 194 skipped, 3 warnings in 203.63s.
+  The 194 skips comprise 181 Windows partition nodes, one Windows-only readiness
+  fixture (passed in local related tests), and 12 OHLCV-dependent tests with no
+  network/data available. Three existing pytest fixture deprecation warnings.
+- Compile and git diff --check: PASS. No security policy changed.
+- CI: https://github.com/succ33d-kito/OMA-CORE-by-KIMI/actions/runs/38352713051
+  Job 115148512447: success. Suite executed with network namespace disabled.
+- LIVE and operational Price checkout status stayed clean. No prospective
+  runtime, ledger, collector, holdout or preregistration file was modified.
+
+Adversarial review: explicit kernel eligibility now gates P0 action even if
+agreement exists; directional Event + missing Price has its own regression.
+Wrong role, future evidence, late first formation, conflicting replay, tampering,
+interrupted publication, wrong horizon/rule and silent population filtering are
+covered. Public assertions are curator claims, not independently established truth.
+
+EVENT_DIRECTION_V1_IMPLEMENTED=YES
+EVENT_DIRECTION_V1_QUALIFIED=YES
+EVENT_POPULATION_BOUND=NO
+P0_DIRECTION_RULE_FROZEN=YES
+P0_DIRECTION_RULE_IMPLEMENTED=YES
+P0_DIRECTION_RULE_QUALIFIED=YES
+DERIVED_SNAPSHOTS_BOUND=NO
+EXPERIMENT_51_READY=FALSE
+EXPERIMENT_51_EXECUTED=NO
+REGIME_VALIDATED=NO
+MECHANICS_VALIDATED=NO
+POLICY_WINNER=NONE
+EDGE=NOT_DEMONSTRATED
+REAL_CAPITAL_AUTHORIZED=NO
+
+Population binding capability is qualified on synthetic fixtures only; no real
+EventDirection authority was activated and no historical PILOT records relabelled.
+Remaining operational dependency: activate a separate authority before future
+receipts, attest before D, and bind a causally valid bounded cohort. Additional
+PR/PM/PRM and derived-snapshot integration remains outside this cut. Do not infer
+scientific validity, profitability or readiness from engineering tests.
