@@ -1,7 +1,7 @@
 name: Experiment 51 PRE isolated hybrid validation
 on:
   push:
-    branches: [manual/51-pre-readiness-prereg-20261012]
+    branches: [manual/51-pre-readiness-prereg-20261012, manual/51-event-direction-v1-20261013]
 permissions:
   contents: read
 jobs:
@@ -23,7 +23,7 @@ jobs:
           python -m pip freeze
           uname -a
       - name: Compile additive preparation modules
-        run: python -m py_compile core/scientific/experiment51_readiness.py core/scientific/experiment51_preparation.py scripts/check_experiment51_readiness.py tests/test_experiment51_readiness.py
+        run: python -m py_compile core/scientific/experiment51_readiness.py core/scientific/experiment51_preparation.py scripts/check_experiment51_readiness.py tests/test_experiment51_readiness.py core/scientific/event_direction_v1.py core/scientific/experiment51_p0.py tests/test_event_direction_v1.py
       - name: Full suite without network
         shell: bash
         run: |
