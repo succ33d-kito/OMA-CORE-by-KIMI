@@ -111,10 +111,10 @@ def _context(store, receipt_id, role):
 
 class EventDirectionAuthority:
     """First attestation is final; interrupted publication is never repaired."""
-    def __init__(self,path):
+    def __init__(self,path,*,read_only=False):
         if not Path(path).is_file():
             raise ValueError('explicit prospective activation required')
-        self._journal=events.RealEventStore(path)
+        self._journal=events.RealEventStore(path,read_only=read_only)
         rows=self._journal._rows()
         if not rows or rows[0]['kind']!='direction_authority' or rows[0]['data'].get('rule_hash')!=RULE_HASH:
             raise ValueError('invalid direction authority')

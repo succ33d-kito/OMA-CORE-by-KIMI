@@ -79,8 +79,13 @@ class RealEventStore:
     Source scope and semantic completeness are ex-ante operator assertions. HTTPS
     authenticates the endpoint, not the truth of the article or shock attribution.
     """
-    def __init__(self, path):
+    def __init__(self, path, *, read_only=False):
         self.__path = Path(path)
+        self.__read_only = read_only
+        if read_only:
+            with sqlite3.connect(self.__path.resolve().as_uri() + "?mode=ro", uri=True) as con:
+                self._read(con)
+            return
         self.__path.parent.mkdir(parents=True, exist_ok=True)
         with sqlite3.connect(self.__path) as con:
             con.execute("CREATE TABLE IF NOT EXISTS event_journal(seq INTEGER PRIMARY KEY, body TEXT NOT NULL, hash TEXT NOT NULL)")
@@ -96,6 +101,8 @@ class RealEventStore:
         return records, previous
 
     def _append(self, kind, data, validate):
+        if self.__read_only:
+            raise ValueError("read-only Event journal")
         with sqlite3.connect(self.__path) as con:
             con.execute("BEGIN IMMEDIATE")
             rows, previous = self._read(con)
@@ -108,7 +115,7 @@ class RealEventStore:
             con.execute("INSERT INTO event_journal(body,hash) VALUES (?,?)", (body, digest((previous, body))))
 
     def _rows(self):
-        with sqlite3.connect(self.__path) as con:
+        with sqlite3.connect(self.__path.resolve().as_uri() + "?mode=ro", uri=True) as con:
             return self._read(con)[0]
 
     def authorize_source(self, source, version, url, kind):
@@ -126,6 +133,8 @@ class RealEventStore:
 
     def capture(self, source, revision_id, role):
         """Read complete UTF-8 HTTP entity (max 4 MiB); never accept caller timestamps/content."""
+        if self.__read_only:
+            raise ValueError("read-only Event journal")
         identifiers((source, revision_id))
         closed(role, DatasetRole)
         rows = self._rows()
