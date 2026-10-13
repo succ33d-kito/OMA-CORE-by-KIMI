@@ -125,6 +125,8 @@ class RealEventStore:
         if parsed.scheme != "https" or not parsed.hostname or parsed.username or parsed.password or parsed.fragment:
             raise ValueError("credential-free HTTPS document URL required")
         def check(rows, at):
+            if any(r["kind"] == "discovery_binding" for r in rows):
+                raise ValueError("source scope frozen by discovery authority")
             if any(r["kind"] == "receipt" for r in rows):
                 raise ValueError("source set frozen after first capture")
             if any(r["kind"] == "source" and r["data"]["source"] == source for r in rows):
@@ -142,6 +144,8 @@ class RealEventStore:
         if authorized is None:
             raise ValueError("source unauthorized")
         config = authorized["data"]
+        if "discovery_authority" in config:
+            raise ValueError("scoped discovery poll required")
         with urlopen(config["url"], timeout=10) as response:
             if response.status != 200 or response.geturl() != config["url"]:
                 raise ValueError("unexpected source response/redirect")
@@ -186,6 +190,11 @@ class RealEventStore:
         rows = self._rows()
         item = next(r for r in rows if r["kind"] == "receipt" and r["data"]["receipt_id"] == receipt_id)
         p = item["data"]
+        if any(r["kind"] == "discovery_binding" for r in rows) and "discovery_proof" not in p:
+            raise ValueError("discovery proof required in scoped source journal")
+        if "discovery_proof" in p:
+            from .event_discovery import verify_receipt_proof
+            verify_receipt_proof(self.__path, item, rows)
         if hashlib.sha256(p["content"].encode("utf-8")).hexdigest() != p["content_hash"]:
             raise ValueError("content integrity failure")
         ready = next((r for r in rows if r["kind"] == "ready" and r["data"]["receipt_id"] == receipt_id), None)
