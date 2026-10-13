@@ -109,6 +109,54 @@ truth. Current Event/PILOT authority is neither modified nor relabelled.
 
 ## Qualification and current evidence
 
-Results and immutable final checkpoint are recorded below after validation.
+Implementation checkpoint: 49e46613bdf42b9c60b8c715bef25d1b08a86850.
+Branch: manual/51-derived-policies-bindings-20261013.
+Baseline: 41ad18ddac1ef3cfc57136b6fdb1b1889afd46cf.
+
+Qualification completed:
+- New focal tests: 94 passed (52.18s).
+- Directly related tests: 338 passed (135.14s).
+- Windows contract partition: 179 passed, 2 environment skips (63.35s):
+  interpreter name includes pythonw; symlink privilege unavailable.
+- Linux network-isolated CI: 2439 passed, 197 skipped, 3 warnings (192.85s).
+  https://github.com/succ33d-kito/OMA-CORE-by-KIMI/actions/runs/38471466765
+  Skips comprise 181 Windows partition nodes, four Windows-only activation
+  fixtures (including three new tests passed locally), and 12 unavailable
+  network/OHLCV tests. These counts are overlapping suites, not additive coverage.
+- Compilation of seven new Python files and git diff --check: PASS.
+
+Engineering qualification: Regime/Taker causal adapters; PR/PM/PRM rules;
+identical CS4 support for all three comparisons; official binding; outcome
+firewall; DISCOVERY sealed runner. All qualified by tests, not by real
+predictive outcomes. Confirmation execution remains a separate future boundary.
+
+Read-only operational observation: 2026-10-13T22:14:59.903457+00:00.
+Event authority ACTIVE, PILOT; source journal absent; zero post-activation
+receipts, attestations, bound events and P0-eligible opportunities.
+Price: 28 valid H1, current/longest streak 28, last slot 22:00 UTC,
+ledger integrity PASS. Metrics: 54 valid H1, current streak 6, longest 12,
+last slot 22:00 UTC. Metrics capture coverage does not prove causal admission.
+No runtime liveness assertion is made. LIVE and Price runtime Git trees clean.
+
+PRICE_81H_CAUSAL_READY=NO. REGIME_REAL_READY=NO. METRICS_REAL_READY=NO.
+MECHANICS_REAL_READY=NO. DERIVED_SNAPSHOTS_BOUND=NO.
+EVENT_POPULATION_BOUND=NO. DISCOVERY_ACTIVATION_READY=NO.
+DISCOVERY_ACTIVATED=NO. EXPERIMENT_51_READY=FALSE.
+
+Remaining blockers: real post-activation event evidence; authenticated 81H
+Price window; admitted atomic Metrics and derived-state population; explicit
+future DISCOVERY authorization and separate role-scoped authority/controls;
+fixed future phase, official population binding and frozen sample-size gates.
+No PILOT evidence is relabelled DISCOVERY. No real experiment was run.
+The nested legacy coverage report retains its older static rule blocker;
+this checkpoint and v2 engineering flags establish current code qualification.
+
+Preregistration canonical hash unchanged:
+7121a21d711064ee8bdc94f7269e65f006674684f65cbd715ea2044a7ba51de8.
+No collectors, protected runtime code, holdouts or prospective evidence were
+modified by this cut. No outcome results were inspected. The next minimal
+operational cut is acquiring and authenticating a first legitimate Event
+receipt under the existing PILOT authority, without manufacturing direction.
+
 EXPERIMENT_51_EXECUTED=NO. REGIME_VALIDATED=NO. MECHANICS_VALIDATED=NO.
 POLICY_WINNER=NONE. EDGE=NOT_DEMONSTRATED. REAL_CAPITAL_AUTHORIZED=NO.
