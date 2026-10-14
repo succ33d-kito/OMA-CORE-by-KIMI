@@ -2,7 +2,8 @@
 
 Baseline: b99c788173fda685dcf98eb44142c81305bd4085.
 Branch: manual/51-metrics-real-admission-20261014.
-Status: implementation and local qualification complete; full isolated CI PENDING.
+Status: chronology correction QUALIFIED; local validation and full isolated CI PASS.
+Implementation SHA: d90609c10b9a29e6175ef6fb7253a9b6dd5f91f5.
 No real admission authority is activated by this change.
 
 ## Reproduction
@@ -65,8 +66,34 @@ real capture, outcome inspection or scientific promotion was performed.
 - Publication adversarial suite: 23 passed; with snapshot gate: 31 passed.
   Explicit Windows cases added to CI scope.
 - Compile: PASS. Diff check: PASS (Git CRLF normalization warnings only).
-- Full isolated CI: PENDING. No local WSL distribution / active Docker Linux engine.
-  Existing GitHub CI requires publishing this candidate before it can qualify it.
+- Full isolated CI: PASS, 2486 passed, 220 skipped, 3 warnings in 207.62s.
+  Run: https://github.com/succ33d-kito/OMA-CORE-by-KIMI/actions/runs/38604086602
+  Exact tested SHA: d90609c10b9a29e6175ef6fb7253a9b6dd5f91f5.
+  Linux network namespace disabled network during the full suite.
+  Skips include the explicit Windows partition (23 new publication cases tested
+  locally) and existing unavailable-data/platform cases. No skips were added for
+  failing chronology assertions. Warnings include the existing deprecated
+  class-scoped pytest fixture; GitHub actions also emit Node deprecations.
+  Owner explicitly authorized candidate publication before CI qualification.
+
+## Mandatory qualification checkpoint
+METRICS_CHRONOLOGY_DEFECT_REPRODUCED=YES
+METRICS_CHRONOLOGY_FIX_IMPLEMENTED=YES
+METRICS_CHRONOLOGY_FIX_QUALIFIED=YES
+SIX_OR_ZERO_PRESERVED=YES
+DURABLE_PUBLICATION_RECEIPT_REQUIRED=YES
+POST_COMMIT_PUBLICATION_TIME=YES
+MISSING_PUBLICATION_FAILS_CLOSED=YES
+CAUSAL_GATE_REQUIRES_PUBLICATION=YES
+REPLAY_PRESERVES_PUBLICATION_CHRONOLOGY=YES
+HISTORICAL_ROWS_REWRITTEN=NO
+RETROACTIVE_PUBLICATION_RECEIPTS=NO
+REAL_METRICS_STATE_MUTATED=NO
+
+This checkpoint qualifies the chronology correction only. A prospective admission
+operator/authority and runtime still require their own implementation and
+qualification before activation. No task, collector, real ledger or authority was
+changed during candidate publication and CI verification.
 
 Historical rows rewritten: NO. Retroactive receipts: NO. Real Metrics state mutated: NO.
 METRICS_REAL_READY=NO; MECHANICS_REAL_READY=NO; EXPERIMENT_51_EXECUTED=NO.
