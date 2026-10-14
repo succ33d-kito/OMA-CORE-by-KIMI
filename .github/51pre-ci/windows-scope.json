@@ -1018,5 +1018,160 @@
     "platform": "Windows 3.11.9",
     "result": "PASS",
     "skip_reason": null
+  },
+  "tests/test_metrics_admission_operator.py::test_activation_internal_exclusive_and_no_backdate": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_admission_operator.py::test_corrupt_or_conflicting_authority_fails_closed[dataset_role]": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_admission_operator.py::test_corrupt_or_conflicting_authority_fails_closed[capture_contract_hash]": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_admission_operator.py::test_corrupt_or_conflicting_authority_fails_closed[admission_contract_hash]": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_admission_operator.py::test_corrupt_or_conflicting_authority_fails_closed[durable_publication_contract_hash]": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_admission_operator.py::test_corrupt_or_conflicting_authority_fails_closed[source_state_binding]": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_admission_operator.py::test_corrupt_or_conflicting_authority_fails_closed[observations_v2_binding]": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_admission_operator.py::test_corrupt_or_conflicting_authority_fails_closed[authority_id]": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_admission_operator.py::test_corrupt_or_conflicting_authority_fails_closed[contract_hash]": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_admission_operator.py::test_corrupt_or_conflicting_authority_fails_closed[runtime_commit]": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_admission_operator.py::test_wrong_role_and_production_fixture_rejected": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_admission_operator.py::test_pre_authority_complete_capture_never_admitted": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_admission_operator.py::test_complete_future_capture_publication_taker_mechanics_idempotent": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_admission_operator.py::test_empty_scan_and_readonly_status": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_admission_operator.py::test_invalid_capture_never_admitted[FAILED]": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_admission_operator.py::test_invalid_capture_never_admitted[MISSED_SLOT]": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_admission_operator.py::test_invalid_capture_never_admitted[INCOMPLETE]": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_admission_operator.py::test_invalid_capture_never_admitted[INVALID]": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_admission_operator.py::test_invalid_capture_never_admitted[corrupt_raw]": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_admission_operator.py::test_invalid_capture_never_admitted[missing_raw]": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_admission_operator.py::test_invalid_capture_never_admitted[partial_values]": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_admission_operator.py::test_failure_after_claim_is_terminal_no_retry": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_admission_operator.py::test_publication_failure_does_not_repair": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_admission_operator.py::test_duplicate_claim_and_journal_tamper_fail_closed": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_admission_operator.py::test_late_publication_no_timely_mechanics": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_admission_operator.py::test_post_authority_later_hour_admitted_without_backdating": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_admission_operator.py::test_transaction_failure_has_no_publication_or_partial_rows": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_admission_operator.py::test_conflicting_existing_rows_are_not_upgraded": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_admission_operator.py::test_later_completed_capture_can_be_reinspected": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_admission_operator.py::test_receipt_request_boundary_not_economic_period": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_admission_operator.py::test_qualified_admission_age_limit_is_preserved": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
   }
 }
