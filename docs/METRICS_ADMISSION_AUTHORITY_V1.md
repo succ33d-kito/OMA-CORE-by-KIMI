@@ -1,4 +1,4 @@
-# Metrics Admission Authority v1 — recovery and qualification
+# Metrics Admission Authority v1 â€” recovery and qualification
 
 Baseline: 88ee365b827939800f611a24a17a20c06e932b9f.
 Branch: manual/51-metrics-real-admission-20261014.
@@ -62,10 +62,89 @@ runtime; both operations occur only after full CI PASS.
   Only its 31 Windows-fixture cases were added to the hybrid CI manifest.
 - PowerShell test now uses shutil.which('pwsh') or powershell, normal import;
   no security/execution policy was changed.
-- Full isolated CI: pending candidate publication. Real activation: pending CI.
+- Full isolated CI: PASS. Real activation and scheduled smoke: PASS (below).
 
 Adversarial checks: pre-authority exclusion; no receipt retrofit; immutable
 activation/role/bindings; no network; repeated scans; actual late availability;
 commit before publication; missing proof rejection; exact duplicate preservation;
 conflicting rows fail closed; test/production separation. Qualified chronology
 regressions remain passing. No outcomes, holdouts or preregistration edits.
+
+
+## Qualified operational checkpoint — 2026-10-15 Africa/Lagos
+
+Implementation/runtime SHA: bcc8705aa2c02e65b60b2fa798b6e039c48fc8b3.
+Full isolated CI: https://github.com/succ33d-kito/OMA-CORE-by-KIMI/actions/runs/38654925380
+Workflow conclusion SUCCESS for that exact SHA: 2488 passed, 252 skipped,
+3 warnings in 131.40s. Hybrid skips include independently executed Windows cases;
+no failed tests were hidden. Existing pytest fixture and Node deprecations remain.
+Compile, PowerShell parser, staged diff-check and frozen preregistration hash PASS.
+Preregistration: 7121a21d711064ee8bdc94f7269e65f006674684f65cbd715ea2044a7ba51de8.
+
+The automatic review rejected an initial manifest-generation command because it
+would infer PASS from collection alone. It did not execute. The accepted update
+instead parsed the actual 34-pass JUnit execution and registered only 31 applicable
+Windows cases. No security/execution policy was changed.
+
+Authority: e27b978486346d59d3022937ffeee5c75e5e1143dbe20cb8a2160abf9e7292aa.
+Activation: 2026-10-14T23:38:51.131998+00:00 (2026-10-15 00:38:51 Africa/Lagos).
+Role: PILOT. Environment: PROSPECTIVE.
+Capture hash: 0925788583bb25885dc41dd8d1ad136db20a0f249cbe04b78866be1ebebf0c91.
+Admission hash: 1dbebecd9dbfcd98fd11fe7ec523f7fb024fc849d7128a9e4b1c6a375a0b8c2a.
+Publication hash: 43a60407fd92e0e2aa1566f295ab2d1f136f17981b05cff3eaf25c73d92a9f6c.
+Contract hash: d9bde76f1aed374e847ed514ea32ab31cfe100ee3c93b8453614d7f2cc6f6125.
+
+Runtime: C:/Users/KiTO/Documents/OMA-CORE-RUNTIME-METRICS51, detached and clean.
+Interpreter: C:/Users/KiTO/Documents/OMA-CORE/.venv/Scripts/python.exe.
+Script: runtime/scripts/metrics_admission.py; cwd: runtime.
+Source binding: C:/Users/KiTO/Documents/O-C data/prospective/metrics-h1-v1.
+Admission root: C:/Users/KiTO/Documents/O-C data/prospective/metrics-admission-v1.
+Observations binding: admission root/observations.sqlite (not yet created).
+Authority and attempts journal exist; no historical observation/publication written.
+
+Task: OMA-CORE-Experiment51-Metrics-Admission; Enabled; Ready; PT5M;
+IgnoreNew; PT4M execution limit. Last run 2026-10-14T23:40:05Z, result 0.
+Next scheduled run observed: 2026-10-14T23:44:00Z.
+Manual smoke and scheduled invocation both NO_ELIGIBLE_BUNDLES.
+Last worker completion: 2026-10-14T23:40:10.466015+00:00.
+Frozen Metrics capture task definition compared byte-for-byte with its pre-install
+XML export: unchanged. Price and SEC runtime/state were read only.
+
+At 2026-10-14T23:40:43Z: 71 valid Metrics captures, current streak 0, longest 12,
+23 FAILED, zero MISSED/INCOMPLETE/INVALID. All 71 valid captures PRE_AUTHORITY.
+POST_AUTHORITY_VALID_CAPTURES=0
+POST_AUTHORITY_ATOMIC_BUNDLES_ADMITTED=0
+LATEST_ADMITTED_METRICS_SLOT=null
+LATEST_ADMITTED_BUNDLE_ID=null
+TAKER_REAL_INPUTS_AVAILABLE=0
+MECHANICS_REAL_PATH_ARMED=YES
+MECHANICS_REAL_PATH_OBSERVED=NO
+METRICS_REAL_READY=NO
+MECHANICS_REAL_READY=NO
+
+Independent read-only status at 2026-10-14T23:35:27Z: Price 48 total valid H1,
+current contiguous 0, longest 48, ledger integrity PASS; 81H/Regime readiness NO.
+SEC: DOCUMENT_FETCH_FAILURE, latest recorded poll 2026-10-14T23:27:15Z,
+new documents 1, Event receipts 0, journal integrity PASS. SEC task Enabled/Ready,
+last task result 1. This remains a separate operational issue, not remediated here.
+
+RECOVERED_LOCAL_WORK=YES
+LAST_REJECTED_EDIT_WAS_PRESENT=NO
+METRICS_CHRONOLOGY_FIX_QUALIFIED=YES
+METRICS_ADMISSION_V1_IMPLEMENTED=YES
+METRICS_ADMISSION_V1_QUALIFIED=YES
+METRICS_ADMISSION_AUTHORITY_ACTIVE=YES
+METRICS_ADMISSION_RUNTIME_ACTIVE=YES
+DISCOVERY_ACTIVATED=NO
+EXPERIMENT_51_READY=FALSE
+EXPERIMENT_51_EXECUTED=NO
+REGIME_VALIDATED=NO
+MECHANICS_VALIDATED=NO
+POLICY_WINNER=NONE
+EDGE=NOT_DEMONSTRATED
+REAL_CAPITAL_AUTHORIZED=NO
+
+Result: qualified pipeline armed, waiting for genuinely future SUCCESS evidence.
+No waiting for an artificial PASS, no real receipt manufactured, no retrospective
+admission. Pending: future complete capture/publication, timely common support,
+81H Price and Event evidence. SEC/Price operational failures remain separate.
