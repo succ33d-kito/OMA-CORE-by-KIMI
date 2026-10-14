@@ -903,5 +903,120 @@
     "platform": "Windows 3.11.9",
     "result": "PASS",
     "skip_reason": null
+  },
+  "tests/test_metrics_publication.py::test_delayed_final_validation_is_unavailable_at_earlier_decision": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_publication.py::test_post_commit_available_and_replay_identity": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_publication.py::test_duplicate_is_exact_immutable_and_preserves_rows": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_publication.py::test_forged_publication_rejected[five]": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_publication.py::test_forged_publication_rejected[seven]": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_publication.py::test_forged_publication_rejected[ids]": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_publication.py::test_forged_publication_rejected[bundle]": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_publication.py::test_forged_publication_rejected[role]": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_publication.py::test_forged_publication_rejected[hash]": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_publication.py::test_forged_publication_rejected[backdate]": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_publication.py::test_forged_publication_rejected[ledger]": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_publication.py::test_forged_publication_rejected[extra]": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_publication.py::test_corrupt_persisted_receipt_fails_closed": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_publication.py::test_conflicting_duplicate_never_overwrites": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_publication.py::test_no_timestamp_argument_and_caller_clock_cannot_backdate": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_publication.py::test_crash_after_commit_is_not_repaired_on_restart": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_publication.py::test_transaction_failure_zero_rows_zero_publications": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_publication.py::test_delayed_publication_blocks_mechanics_and_pm": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_publication.py::test_later_append_does_not_change_historical_eligibility": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_publication.py::test_historical_v1_bytes_unchanged_no_retrofit": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_publication.py::test_forged_publication_cannot_enter_public_gate": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_publication.py::test_raw_capture_alone_never_authorizes_rows": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
+  },
+  "tests/test_metrics_publication.py::test_pm_prm_enforce_raw_cutoff_even_when_mechanics_precedes_decision": {
+    "platform": "Windows 3.11.9",
+    "result": "PASS",
+    "skip_reason": null
   }
 }

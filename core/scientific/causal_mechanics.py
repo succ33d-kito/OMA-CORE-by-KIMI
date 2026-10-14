@@ -54,7 +54,7 @@ def build_causal_mechanics(ledger, *, dataset_role, cutoff, regime_id=None):
         "dependencies": dependencies, "missing_features": list(snapshot.missing_features),
         "unknown_dimensions": {key:None for key in UNSUPPORTED},
         "semantic_status": "DESCRIPTIVE_ONLY_NOT_VALIDATED",
-        "input_available_at": max((known[i]["available_at"] for i in dependencies), default=None)}
+        "input_available_at": max([v["available_at"] for v in values.values()] + ([regime["available_at"]] if regime else []), default=None)}
     result = json.loads(json.dumps(result, allow_nan=False))
     return {**result, "mechanics_id": observation_hash(result)}
 

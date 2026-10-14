@@ -6,7 +6,9 @@ from .causal_regime import FEATURE as REGIME, validate_causal_regime
 from .causal_mechanics import FEATURE as MECHANICS, validate_causal_mechanics
 from .price_role_activation import ROLES
 from .regime_observation import _utc
-from .prospective_receipts import observation_snapshot, observation_hash
+from .prospective_receipts import observation_hash
+from .metrics_publication import observation_snapshot, publication_for
+from .metrics_snapshot_gate import metrics_snapshot_available
 
 
 def replay_derived_features(ledger, *, dataset_role, as_of, graph_path):
@@ -31,6 +33,12 @@ def replay_derived_features(ledger, *, dataset_role, as_of, graph_path):
             return
         visited.add(identity)
         row = known[identity]
+        if row['feature'].startswith('MarketMetrics/'):
+            if not metrics_snapshot_available(known, identity, cutoff):
+                raise ValueError('Metrics publication unavailable')
+            publication = publication_for(known, row['provenance']['bundle_id'])
+            row = {**row, 'available_at': max(_utc(row['available_at']), _utc(publication['published_at'])).isoformat(),
+                   'provenance': {**row['provenance'], 'durable_publication': publication}}
         if row["available_at"] is None or _utc(row["available_at"]) > cutoff:
             raise ValueError("graph dependency unavailable")
         kind = "market_state" if row["feature"] in (REGIME,MECHANICS) else "evidence" if row["derived"] else "source"

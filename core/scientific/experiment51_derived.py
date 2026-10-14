@@ -8,7 +8,7 @@ from .decision_rule import IntentAction
 from .nuisance_pilot_contracts import InputType, InputStatus, digest
 from .policy_kernel import PolicyKernel
 from .common_support import CommonSupportRegistry
-from .prospective_receipts import observation_snapshot
+from .metrics_publication import observation_snapshot
 from .causal_regime import validate_causal_regime
 from .causal_mechanics import validate_causal_mechanics
 from .metrics_snapshot_gate import metrics_snapshot_available

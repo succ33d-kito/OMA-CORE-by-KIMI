@@ -11,12 +11,17 @@ from .metrics_observation_bundle import VerifiedMetricsBundle
 from .prospective_receipts import canonical_observation, observation_hash, _utc
 
 
+from .metrics_publication import publication_for
+
+
 def metrics_snapshot_available(rows, identity, as_of):
     try:
         item=rows[identity]; p=item['provenance']; cutoff=_utc(as_of)
         if p['contract']!=ADMISSION_CONTRACT or item['feature'] not in EXPECTED_FEATURES:
             return False
         bundle_id=p['bundle_id']
+        publication = publication_for(rows, bundle_id)
+        if _utc(publication['published_at']) > cutoff: return False
         members=[x for x in rows.values() if x.get('provenance',{}).get('bundle_id')==bundle_id]
         if len(members)!=6 or {x['feature'] for x in members}!=EXPECTED_FEATURES:
             return False

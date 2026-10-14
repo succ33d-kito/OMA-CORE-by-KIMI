@@ -1,3 +1,4 @@
+from unittest.mock import patch
 from datetime import timedelta
 
 import pytest
@@ -24,15 +25,16 @@ from tests.test_metrics_continuity import (
 def admit_metrics(state, ledger):
     capture(state)
 
-    return admit_verified_metrics_bundle(
-        ledger,
-        state[0],
-        S,
-        repo_root=state[1],
-        now=S + timedelta(minutes=5),
-        clock=lambda:
-            S + timedelta(minutes=5),
-    )
+    with patch('core.scientific.metrics_publication._now', return_value=S + timedelta(minutes=5)):
+        return admit_verified_metrics_bundle(
+            ledger,
+            state[0],
+            S,
+            repo_root=state[1],
+            now=S + timedelta(minutes=5),
+            clock=lambda:
+                S + timedelta(minutes=5),
+        )
 
 
 def metrics_snapshot(state, tmp_path):

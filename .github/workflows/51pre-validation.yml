@@ -1,7 +1,7 @@
 name: Experiment 51 PRE isolated hybrid validation
 on:
   push:
-    branches: [manual/51-pre-readiness-prereg-20261012, manual/51-event-direction-v1-20261013, manual/51-event-activation-20261013, manual/51-derived-policies-bindings-20261013, manual/51-real-event-path-20261013]
+    branches: [manual/51-pre-readiness-prereg-20261012, manual/51-event-direction-v1-20261013, manual/51-event-activation-20261013, manual/51-derived-policies-bindings-20261013, manual/51-real-event-path-20261013, manual/51-metrics-real-admission-20261014]
 permissions:
   contents: read
 jobs:
@@ -23,7 +23,7 @@ jobs:
           python -m pip freeze
           uname -a
       - name: Compile additive preparation modules
-        run: python -m py_compile core/scientific/experiment51_readiness.py core/scientific/experiment51_preparation.py scripts/check_experiment51_readiness.py tests/test_experiment51_readiness.py core/scientific/event_direction_v1.py core/scientific/experiment51_p0.py tests/test_event_direction_v1.py core/scientific/real_event_receipt.py core/scientific/event_direction_operator.py scripts/event_direction_operator.py tests/test_event_direction_operator.py core/scientific/experiment51_derived.py core/scientific/experiment51_sealed.py core/scientific/experiment51_readiness_v2.py scripts/check_experiment51_readiness_v2.py tests/test_experiment51_derived.py tests/test_experiment51_sealed.py tests/test_experiment51_readiness_v2.py core/scientific/event_discovery.py scripts/sec_event_discovery.py tests/test_event_discovery.py
+        run: python -m py_compile core/scientific/experiment51_readiness.py core/scientific/experiment51_preparation.py scripts/check_experiment51_readiness.py tests/test_experiment51_readiness.py core/scientific/event_direction_v1.py core/scientific/experiment51_p0.py tests/test_event_direction_v1.py core/scientific/real_event_receipt.py core/scientific/event_direction_operator.py scripts/event_direction_operator.py tests/test_event_direction_operator.py core/scientific/experiment51_derived.py core/scientific/experiment51_sealed.py core/scientific/experiment51_readiness_v2.py scripts/check_experiment51_readiness_v2.py tests/test_experiment51_derived.py tests/test_experiment51_sealed.py tests/test_experiment51_readiness_v2.py core/scientific/event_discovery.py scripts/sec_event_discovery.py tests/test_event_discovery.py core/scientific/metrics_publication.py core/scientific/metrics_observation_admission.py core/scientific/metrics_snapshot_gate.py core/scientific/causal_observation_snapshot.py core/scientific/causal_mechanics.py core/scientific/derived_causal_replay.py core/scientific/experiment51_derived.py tests/test_metrics_publication.py
       - name: Full suite without network
         shell: bash
         run: |

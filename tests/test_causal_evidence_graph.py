@@ -1,3 +1,4 @@
+from unittest.mock import patch
 from datetime import timedelta
 
 from core.intelligence_graph import (
@@ -29,15 +30,16 @@ def build_case(state, tmp_path):
 
     capture(state)
 
-    admit_verified_metrics_bundle(
-        ledger,
-        state[0],
-        S,
-        repo_root=state[1],
-        now=S + timedelta(minutes=5),
-        clock=lambda:
-            S + timedelta(minutes=5),
-    )
+    with patch('core.scientific.metrics_publication._now', return_value=S + timedelta(minutes=5)):
+        admit_verified_metrics_bundle(
+            ledger,
+            state[0],
+            S,
+            repo_root=state[1],
+            now=S + timedelta(minutes=5),
+            clock=lambda:
+                S + timedelta(minutes=5),
+        )
 
     snapshot = load_causal_snapshot(
         ledger,

@@ -2,7 +2,7 @@ from copy import deepcopy
 from datetime import timedelta
 import pytest
 from core.scientific.metrics_snapshot_gate import metrics_snapshot_available
-from core.scientific.prospective_receipts import observation_snapshot
+from core.scientific.metrics_publication import observation_snapshot
 from core.scientific import causal_observation_snapshot as fabric
 from tests.test_causal_replay import prepare_ledger
 from tests.test_metrics_continuity import state,S

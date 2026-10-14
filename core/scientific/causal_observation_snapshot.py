@@ -10,12 +10,13 @@ It authenticates the observations_v2 hash chain through observation_snapshot()
 and exposes only raw observations causally available at an explicit cutoff.
 """
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from datetime import datetime, timezone
 import json
 from pathlib import Path
 
 from .metrics_snapshot_gate import metrics_snapshot_available
+from .metrics_publication import observation_snapshot, publication_for
 from .execution_observation import EvidenceKind, ExecutionReceipt
 from .nuisance_pilot_contracts import DatasetRole
 from .price_role_attestation import (
@@ -25,7 +26,6 @@ from .price_role_attestation import (
 
 from .prospective_receipts import (
     observation_hash,
-    observation_snapshot,
     snapshot_causally_available,
 )
 
@@ -583,6 +583,11 @@ def load_causal_snapshot(
         if candidate is not None and item['feature'].startswith('MarketMetrics/'):
             if not metrics_snapshot_available(rows, item['id'], cutoff):
                 continue
+            publication = publication_for(rows, item['provenance']['bundle_id'])
+            candidate = replace(candidate,
+                available_at=max(candidate.available_at, _utc(publication['published_at'])),
+                provenance_json=_canonical({**json.loads(candidate.provenance_json),
+                    'durable_publication': publication}))
 
         if candidate is not None:
             grouped[candidate.feature].append(

@@ -28,7 +28,7 @@ from .prospective_receipts import (
 )
 
 
-ADMISSION_CONTRACT = "metrics-observations-v2-admission-v1"
+ADMISSION_CONTRACT = "metrics-observations-v2-admission-v2"
 BUNDLE_SCHEMA = "metrics-h1-verified-bundle-v1"
 CAPTURE_CONTRACT = "metrics-h1-capture-v1"
 PROVIDER = "https://fapi.binance.com"
@@ -352,6 +352,7 @@ def admit_verified_metrics_bundle(
     observation_snapshot(ledger)
 
     con = _observation_db(ledger)
+    con.execute("PRAGMA synchronous=FULL")
 
     try:
         con.execute("BEGIN IMMEDIATE")
@@ -463,12 +464,16 @@ def admit_verified_metrics_bundle(
                 )
 
             con.rollback()
+            from .metrics_publication import observation_snapshot as published_snapshot, publication_for
+            published_rows, _ = published_snapshot(ledger)
+            publication = publication_for(published_rows, bundle.bundle_id)
 
             return {
                 "status": "ALREADY_ADMITTED",
                 "bundle_id": bundle.bundle_id,
                 "row_count": 6,
-                "ledger_available_at": next(iter(availability)),
+                "ledger_available_at": publication["published_at"],
+                "publication": publication,
                 "observation_ids": sorted(candidate_ids),
             }
 
@@ -532,10 +537,13 @@ def admit_verified_metrics_bundle(
     finally:
         con.close()
 
+    from .metrics_publication import _publish_committed
+    publication = _publish_committed(ledger, bundle.bundle_id)
     return {
         "status": "ADMITTED",
         "bundle_id": bundle.bundle_id,
         "row_count": 6,
-        "ledger_available_at": admitted_at.isoformat(),
+        "ledger_available_at": publication["published_at"],
+        "publication": publication,
         "observation_ids": sorted(candidate_ids),
     }
