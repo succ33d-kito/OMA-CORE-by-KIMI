@@ -1,3 +1,20 @@
+# Current project authority — 2026-10-15
+
+Read [OMA-CORE + StarNet roadmap](../../docs/OMA_CORE_STARNET_ROADMAP_2026-10-15.md)
+for current evidence, priorities, gates and main-integration debt.
+Scientific baseline: 46c1f0986bdb5f02bc95fa428defda83b2f4f390.
+Main d84a383463242b24a502edfeab6a440b26bd406d is 37 scientific commits behind.
+Experiment 51 not executed; Edge not demonstrated; real capital not authorized.
+Immediate priorities: file-I/O diagnosis; preserve Price; separately authorize
+minimum proven recovery; common causal readiness; frozen Experiment 51.
+No main integration or runtime change follows from this documentation.
+
+## Historical snapshot — retained verbatim, NOT current instructions
+
+The following June-era counts, priorities and restrictions describe their original
+session only. Do not resume the old smoke run or infer its defects remain open
+without current evidence. The dated authority above supersedes this snapshot.
+
 # Current Priorities
 
 ## Priority 1 — 7-Day Smoke Run (ACTIVE)
