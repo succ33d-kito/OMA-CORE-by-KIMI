@@ -1,9 +1,12 @@
 # Experiment 51 — SEC contract V2 revision (append-only supersession)
 
-Status: **IMPLEMENTED AND TESTED, NOT ACTIVATED**
+Status: **V2 ACTIVE IN THE JOURNAL — RUNTIME DEPLOYMENT PENDING**
 Date: 2026-10-15
 Branch: `manual/51-sec-user-agent-revision-20261015`
 Base: `156784ff4fe3a756c1b60df7cde50436249245ee`
+Final User-Agent: `OMA-CORE/51-Event-Discovery-v1 (prospective research; contact: mazonmalda@gmail.com)`
+Active contract hash (V2): `1260c5ed85f27bfdcc7267d67dedd328f2f56675c9e1e1e1e71360a8e2139efd`
+Supersession record: `112c3bd9eb655a18bd2b607d2604cabc98d843de0a14f6004105a55985cdb83f` (2026-10-15T21:47:41.998969+00:00)
 
 ## 1. Proven root cause
 
@@ -43,7 +46,8 @@ New symbols in `core/scientific/event_discovery.py`:
 | Symbol | Meaning |
 |---|---|
 | `CONTRACT` / `CONTRACT_HASH` | **unchanged** (`831c49f0…`); V1 stays frozen and authoritative for history |
-| `CONTRACT_V2` | `dict(CONTRACT, user_agent=USER_AGENT_V2_PENDING)` |
+| `CONTRACT_V2` | `dict(CONTRACT, user_agent=USER_AGENT_V2)` — hashes to `1260c5ed…39efd` |
+| `CONTACT_APPROVED` / `USER_AGENT_V2` | owner-authorised public contact and the frozen final User-Agent |
 | `CONTRACT_V2_HASH` | digest of V2 |
 | `CONTRACT_CHAIN` | `{V1_HASH: CONTRACT, V2_HASH: CONTRACT_V2}` — the only admissible contracts |
 | `SUPERSESSION_KIND` | journal record kind `authority_supersession` |
@@ -102,10 +106,13 @@ C:\Users\KiTO\AppData\Local\Python\pythoncore-3.11-64\python.exe -m pytest `
   -q -p no:cacheprovider --basetemp="$env:TMP\bt"
 ```
 
-Observed: `35 passed` (new revision suite), `47 passed` (existing SEC suite), `28 passed`
-(receipts); `git diff --check` clean. Preservation was additionally verified **read-only against the
-live journal**: frozen `authority_id`, `baseline_hash`, `discovery_id` and `first_seen` all match,
-contract V1 still admitted by the chain, zero supersessions present.
+Observed with the FINAL User-Agent: `35 passed` (revision suite), `47 passed` (existing SEC suite),
+`28 passed` (receipts); `git diff --check` clean. The final User-Agent was additionally validated
+over the network **before** activation with the production timeout and redirect policy: document
+`200 OK` (nginx, `text/html`) and feed `200 OK` (`application/rss+xml`), no `Location` header.
+Preservation was verified **read-only against the live journal** before and after activation:
+frozen `authority_id`, `baseline_hash`, `discovery_id`, `first_seen` all match, contract V1 still
+admitted by the chain, and the historical failure rows untouched.
 
 Test coverage of the required properties: old hash unchanged, new hash differs, User-Agent the only
 behavioural difference, no new baseline, identical `discovery_id`, identical `first_seen`, untouched
@@ -114,21 +121,37 @@ non-prospective, redirects still rejected, off-scope still rejected, parser sema
 no automatic EventDirection, no automatic P0, plus supersession cannot mutate the old authority,
 duplicate a discovery, recreate a baseline or delete a failure.
 
-## 6. Activation (owner decision — NOT performed)
+## 6. Activation — applied (append-only), runtime deployment pending
 
-Blocked on an owner-approved public contact string. The placeholder
-`CONTACT_VALUE_PENDING_OWNER_APPROVAL` is deliberately non-activatable: the exact User-Agent must be
-frozen in the revised contract commitment before activation.
+Applied on 2026-10-15T21:47:41.998969+00:00 with the owner-approved contact frozen in V2:
+
+```
+ROOT_AUTHORITY_ID         = 911c62049403922a473c28438bc0825594243fa498543770ed16e0f85ca87ac2
+SUPERSESSION_RECORD_ID    = 112c3bd9eb655a18bd2b607d2604cabc98d843de0a14f6004105a55985cdb83f
+SUPERSESSION_ACTIVATED_AT = 2026-10-15T21:47:41.998969+00:00
+ACTIVE_CONTRACT_HASH      = 1260c5ed85f27bfdcc7267d67dedd328f2f56675c9e1e1e1e71360a8e2139efd
+REBASELINE_PERFORMED      = NO
+```
+
+Exactly one `authority_supersession` row was appended under the poll lock. The original authority,
+baseline (25 / `a58047c2…`), the single discovery (`bf5ed0f5…`), `first_seen`, and every
+`document_failure` row are unchanged. The old code path still loads the journal
+(`contract_hash = 831c49f0…`), so the revision is backward-compatible for readers.
+
+**Outstanding operational step (not authorised in this cut):** the scheduled SEC task executes
+`OMA-CORE-RUNTIME-SEC51`, whose worktree is at `6a9bdca` and therefore still contains the **pre-V2**
+module (`A06EEEC0…`). Until that runtime carries the V2 code, its natural polls keep using the V1
+User-Agent; the supersession only takes effect once the runtime is deployed from this branch. That
+deployment is a runtime change and requires explicit owner authorisation.
 
 ```python
-# 1. freeze the approved contact into CONTRACT_V2 (new hash, new code commit)
-# 2. then, once and only once, from an authorised operator context:
+# applied once, from an authorised operator context:
 from core.scientific.event_discovery import SourceDiscoveryAuthorityV1
 SourceDiscoveryAuthorityV1.supersede(r'<state root>')
 ```
 
 `supersede()` appends exactly one record, keeps the original authority auditable, and never
-rebaselines. After activation, the next **natural** scheduled poll is the first one to use V2; the
+rebaselines. After deployment, the next **natural** scheduled poll is the first one to use V2; the
 poller must not be invoked manually.
 
 ## 7. Follow-ups (not part of this cut)

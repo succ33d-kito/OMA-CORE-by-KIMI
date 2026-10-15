@@ -83,8 +83,11 @@ def test_user_agent_is_the_only_behavioral_contract_difference():
     assert v1['redirects']=='reject-all' and v2['redirects']=='reject-all'
 
 
-def test_pending_contact_is_explicitly_non_activatable():
-    assert d.CONTACT_PENDING in d.CONTRACT_V2['user_agent']
+def test_approved_contact_is_frozen_in_v2():
+    assert d.CONTACT_APPROVED=='mazonmalda@gmail.com'
+    assert d.CONTRACT_V2['user_agent']==('OMA-CORE/51-Event-Discovery-v1 '
+        '(prospective research; contact: mazonmalda@gmail.com)')
+    assert 'PENDING' not in d.CONTRACT_V2['user_agent']
     assert d.CONTRACT_V2['user_agent']!=d.CONTRACT['user_agent']
 
 

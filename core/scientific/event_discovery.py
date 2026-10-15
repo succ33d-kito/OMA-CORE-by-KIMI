@@ -37,15 +37,15 @@ CONTRACT = dict(schema=SCHEMA, scope=SCOPE, role='PILOT', endpoint=ENDPOINT,
 CONTRACT_HASH = digest(CONTRACT)
 
 # --- Additive contract revision V2 (append-only supersession; V1 stays frozen) ---
-# The ONLY behavioural difference is the User-Agent. The live value MUST NOT be
-# frozen until the owner approves an exact public contact string; until then the
-# revision carries an explicitly non-activatable placeholder.
+# The ONLY behavioural difference is the User-Agent: the proven SEC HTTP 403 was
+# caused by a User-Agent without contact information. The contact below is frozen
+# with explicit owner authorisation and must not be altered without a new revision.
 SUPERSESSION_KIND = 'authority_supersession'
 REVISION_REASON = 'SEC_HTTP_403_CONTACT_USER_AGENT'
-CONTACT_PENDING = 'CONTACT_VALUE_PENDING_OWNER_APPROVAL'
-USER_AGENT_V2_PENDING = ('OMA-CORE/51-Event-Discovery-v2 (prospective research; '
-                         'contact: ' + CONTACT_PENDING + ')')
-CONTRACT_V2 = dict(CONTRACT, user_agent=USER_AGENT_V2_PENDING)
+CONTACT_APPROVED = 'mazonmalda@gmail.com'
+USER_AGENT_V2 = ('OMA-CORE/51-Event-Discovery-v1 (prospective research; '
+                 'contact: ' + CONTACT_APPROVED + ')')
+CONTRACT_V2 = dict(CONTRACT, user_agent=USER_AGENT_V2)
 CONTRACT_V2_HASH = digest(CONTRACT_V2)
 CONTRACT_CHAIN = {CONTRACT_HASH: CONTRACT, CONTRACT_V2_HASH: CONTRACT_V2}
 _HEX = '0123456789abcdef'
