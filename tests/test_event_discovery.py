@@ -28,7 +28,7 @@ def setup(tmp_path,monkeypatch):
     activate(tmp_path/'operator',tmp_path/'source.sqlite',role=DatasetRole.PILOT)
     state['now']+=timedelta(seconds=1)
     authority=d.SourceDiscoveryAuthorityV1.activate(tmp_path/'discovery',tmp_path/'operator',role=DatasetRole.PILOT)
-    def fetch(url,*,feed):
+    def fetch(url,*,feed,**kwargs):
         state['calls'].append(url)
         state['now']+=timedelta(milliseconds=1)
         if state['error'] and (feed or state.get('doc_error')): raise state['error']
@@ -234,9 +234,9 @@ def test_interrupted_watermark_never_rebaselines(setup,monkeypatch):
 
 def test_discover_all_before_document_denial(setup,monkeypatch):
     a,s=setup;poll(a,s,'old');original=d._fetch
-    def denied(url,*,feed):
+    def denied(url,*,feed,**kwargs):
         if not feed: raise HTTPError(url,429,'rate',{},None)
-        return original(url,feed=feed)
+        return original(url,feed=feed,**kwargs)
     monkeypatch.setattr(d,'_fetch',denied)
     result=poll(a,s,'old','a','b')
     assert result['new_documents']==2 and result['receipts']==0

@@ -36,6 +36,41 @@ CONTRACT = dict(schema=SCHEMA, scope=SCOPE, role='PILOT', endpoint=ENDPOINT,
     redirects='reject-all', user_agent=USER_AGENT)
 CONTRACT_HASH = digest(CONTRACT)
 
+# --- Additive contract revision V2 (append-only supersession; V1 stays frozen) ---
+# The ONLY behavioural difference is the User-Agent. The live value MUST NOT be
+# frozen until the owner approves an exact public contact string; until then the
+# revision carries an explicitly non-activatable placeholder.
+SUPERSESSION_KIND = 'authority_supersession'
+REVISION_REASON = 'SEC_HTTP_403_CONTACT_USER_AGENT'
+CONTACT_PENDING = 'CONTACT_VALUE_PENDING_OWNER_APPROVAL'
+USER_AGENT_V2_PENDING = ('OMA-CORE/51-Event-Discovery-v2 (prospective research; '
+                         'contact: ' + CONTACT_PENDING + ')')
+CONTRACT_V2 = dict(CONTRACT, user_agent=USER_AGENT_V2_PENDING)
+CONTRACT_V2_HASH = digest(CONTRACT_V2)
+CONTRACT_CHAIN = {CONTRACT_HASH: CONTRACT, CONTRACT_V2_HASH: CONTRACT_V2}
+_HEX = '0123456789abcdef'
+
+
+def supersession_record(*, previous_authority_id, previous_contract_hash,
+                        contract=CONTRACT_V2, reason=REVISION_REASON):
+    """Build (never write) an append-only revision record for an activated authority.
+
+    The superseding authorisation continues the SAME logical source and the SAME
+    journal. It cannot rebaseline, renumber or reinterpret history.
+    """
+    if type(contract) is not dict or contract not in CONTRACT_CHAIN.values() \
+            or digest(contract) not in CONTRACT_CHAIN:
+        raise ValueError('unknown contract revision')
+    for value in (previous_authority_id, previous_contract_hash):
+        if type(value) is not str or len(value) != 64 or any(c not in _HEX for c in value):
+            raise ValueError('hex digest required')
+    if type(reason) is not str or not reason.strip() or reason != reason.strip():
+        raise ValueError('explicit revision reason required')
+    return dict(previous_authority_id=previous_authority_id,
+                previous_contract_hash=previous_contract_hash,
+                supersedes_authority_id=previous_authority_id,
+                contract=contract, contract_hash=digest(contract), reason=reason)
+
 
 def _guard(*paths):
     if 'pytest' in sys.modules or os.environ.get('PYTEST_CURRENT_TEST'):
@@ -58,12 +93,15 @@ class _NoRedirect(HTTPRedirectHandler):
         raise ValueError('INVALID_SCOPE: redirect rejected')
 
 
-def _fetch(url, *, feed):
+def _fetch(url, *, feed, user_agent=None):
     """One bounded HTTP request; no retries and no redirects, even within host."""
     if not feed:
         time.sleep(1)  # At most one document request per second; no parallel fetches.
+    agent = USER_AGENT if user_agent is None else user_agent
+    if type(agent) is not str or not agent.strip():
+        raise ValueError('explicit user agent required')
     with build_opener(_NoRedirect()).open(Request(url, headers={
-            'User-Agent': USER_AGENT, 'Accept-Encoding': 'identity'}), timeout=20) as response:
+            'User-Agent': agent, 'Accept-Encoding': 'identity'}), timeout=20) as response:
         if response.status != 200 or response.geturl() != url:
             raise ValueError('INVALID_SCOPE: response identity')
         kind = response.headers.get_content_type()
@@ -142,9 +180,37 @@ class SourceDiscoveryAuthorityV1:
             raise ValueError('discovery activation missing')
         self.activation = rows[0]
         config = self.activation['data']
-        if config['contract'] != CONTRACT or digest(config['contract']) != CONTRACT_HASH or config['contract_hash'] != CONTRACT_HASH:
+        activation_contract = config['contract']
+        if (type(activation_contract) is not dict or activation_contract not in CONTRACT_CHAIN.values()
+                or digest(activation_contract) not in CONTRACT_CHAIN
+                or config['contract_hash'] != digest(activation_contract)):
             raise ValueError('discovery contract mismatch')
         self.authority_id = digest(self.activation)
+        # Append-only contract revisions: the activation authority stays immutable and
+        # auditable; each revision must chain from the authority it supersedes.
+        self.authority_ids = [self.authority_id]
+        self.supersessions = []
+        active_authority_id, active_contract_hash = self.authority_id, config['contract_hash']
+        active_contract = activation_contract
+        for row in rows:
+            if row['kind'] != SUPERSESSION_KIND:
+                continue
+            data = row['data']
+            new_contract = data.get('contract')
+            if (data.get('previous_authority_id') != active_authority_id
+                    or data.get('previous_contract_hash') != active_contract_hash
+                    or data.get('supersedes_authority_id') != active_authority_id
+                    or type(new_contract) is not dict or new_contract not in CONTRACT_CHAIN.values()
+                    or digest(new_contract) not in CONTRACT_CHAIN
+                    or data.get('contract_hash') != digest(new_contract)):
+                raise ValueError('supersession chain mismatch')
+            active_authority_id = digest(row)
+            active_contract_hash, active_contract = digest(new_contract), new_contract
+            self.authority_ids.append(active_authority_id)
+            self.supersessions.append(row)
+        self.active_authority_id = active_authority_id
+        self.active_contract_hash = active_contract_hash
+        self.active_contract = active_contract
         self.source_path = Path(config['source_path'])
         _guard(self.source_path, config['operator_root'])
         _, authority, _, _, binding = _open(config['operator_root'], DatasetRole.PILOT)
@@ -153,7 +219,9 @@ class SourceDiscoveryAuthorityV1:
                 or datetime.fromisoformat(binding['at']) >= datetime.fromisoformat(self.activation['at'])):
             raise ValueError('direction/source binding mismatch')
         source_rows = events.RealEventStore(self.source_path, read_only=True)._rows()
-        if not source_rows or source_rows[0]['kind']!='discovery_binding' or source_rows[0]['data']!=dict(path=str(self.path),authority_id=self.authority_id):
+        if (not source_rows or source_rows[0]['kind'] != 'discovery_binding'
+                or source_rows[0]['data'].get('path') != str(self.path)
+                or source_rows[0]['data'].get('authority_id') not in self.authority_ids):
             raise ValueError('source binding missing or conflicting')
         if sum(r['kind'] == 'baseline' for r in rows) > 1:
             raise ValueError('conflicting baseline')
@@ -185,6 +253,30 @@ class SourceDiscoveryAuthorityV1:
                        lambda rows, at: None)
         return cls(root)
 
+    @classmethod
+    def supersede(cls, root, *, contract=CONTRACT_V2, reason=REVISION_REASON):
+        """Revise the ACTIVE contract on the SAME authority and journal (append-only).
+
+        Never rebaselines, never renumbers and never deletes: the previous authority,
+        its baseline, its discoveries and its document failures stay untouched.
+        Live activation is an owner decision and is deliberately not performed here.
+        """
+        current = cls(root)
+        if type(contract) is not dict or contract not in CONTRACT_CHAIN.values() \
+                or digest(contract) not in CONTRACT_CHAIN:
+            raise ValueError('unknown contract revision')
+        if digest(contract) == current.active_contract_hash:
+            raise ValueError('contract already active')
+        record = supersession_record(previous_authority_id=current.active_authority_id,
+                                     previous_contract_hash=current.active_contract_hash,
+                                     contract=contract, reason=reason)
+        with _lock(current.root):
+            fresh = cls(root)
+            if fresh.active_contract_hash != current.active_contract_hash:
+                raise ValueError('concurrent contract revision')
+            fresh._write(SUPERSESSION_KIND, record)
+        return cls(root)
+
     def _write(self, kind, data):
         events.RealEventStore(self.path)._append(kind, data, lambda rows, at: None)
 
@@ -200,7 +292,8 @@ class SourceDiscoveryAuthorityV1:
             attempt_id = digest((self.authority_id, len(starts)))
             self._write('attempt', dict(attempt_id=attempt_id))
             try:
-                raw, received, kind = _fetch(ENDPOINT, feed=True)
+                raw, received, kind = _fetch(ENDPOINT, feed=True,
+                                             user_agent=current.active_contract['user_agent'])
                 items = _parse(raw)
                 if not datetime.fromisoformat(self.activation['at']) < received <= events._now():
                     raise ValueError('INVALID_FEED: noncausal observation')
@@ -240,7 +333,7 @@ class SourceDiscoveryAuthorityV1:
                         pending.append(known)
                     for known in pending:
                         try:
-                            _capture(self, known, feed_row)
+                            _capture(current, known, feed_row)
                         except (ValueError, OSError, UnicodeError) as exc:
                             failure = _failure(exc, document=True)
                             failures.append(failure)
@@ -261,6 +354,9 @@ class SourceDiscoveryAuthorityV1:
         last = next((r for r in reversed(results) if starts and r['data']['attempt_id'] == starts[-1]['data']['attempt_id']), None)
         receipts = inbox(self.root)
         return dict(authority_id=self.authority_id, activated_at=self.activation['at'], contract_hash=CONTRACT_HASH,
+            active_authority_id=self.active_authority_id, active_contract_hash=self.active_contract_hash,
+            contract_revisions=len(self.supersessions),
+            supersedes_authority_id=(self.supersessions[-1]['data']['previous_authority_id'] if self.supersessions else None),
             endpoint_hash=digest(ENDPOINT), role='PILOT', scope=SCOPE, source_path=str(self.source_path),
             baseline_established=baseline is not None, baseline_count=len(baseline['data']['items']) if baseline else 0,
             baseline_hash=digest(baseline) if baseline else None,
@@ -288,8 +384,9 @@ def _capture(authority, discovery, feed_row):
         raise ValueError('document absent from current feed')
     source = events.RealEventStore(authority.source_path)
     existing = source._rows()
-    expected_binding = dict(path=str(authority.path), authority_id=authority.authority_id)
-    if not existing or existing[0]['kind']!='discovery_binding' or existing[0]['data']!=expected_binding:
+    if (not existing or existing[0]['kind'] != 'discovery_binding'
+            or existing[0]['data'].get('path') != str(authority.path)
+            or existing[0]['data'].get('authority_id') not in authority.authority_ids):
         raise ValueError('source discovery binding mismatch')
     url = _url(item['link'])
     name = digest((SCOPE, url))
@@ -298,7 +395,8 @@ def _capture(authority, discovery, feed_row):
         source._append('source', dict(source=name,version=SCHEMA,url=url,content_kind='FULL_DOCUMENT',
             discovery_authority=authority.authority_id, discovery_id=digest(discovery)), lambda rows,at:None)
         source_row = source._rows()[-1]
-    raw, received, kind = _fetch(url, feed=False)
+    raw, received, kind = _fetch(url, feed=False,
+                                 user_agent=authority.active_contract['user_agent'])
     if not datetime.fromisoformat(source_row['at']) < received <= events._now():
         raise ValueError('noncausal document observation')
     content = raw.decode('utf-8', errors='strict')
@@ -324,7 +422,9 @@ def _capture(authority, discovery, feed_row):
 def verify_receipt_proof(source_path, receipt_row, source_rows):
     p=receipt_row['data']; proof=p['discovery_proof']
     authority=SourceDiscoveryAuthorityV1(Path(proof['path']).parent)
-    if authority.path != Path(proof['path']).resolve() or authority.source_path != Path(source_path).resolve() or proof['authority_id']!=authority.authority_id:
+    if (authority.path != Path(proof['path']).resolve()
+            or authority.source_path != Path(source_path).resolve()
+            or proof['authority_id'] not in authority.authority_ids):
         raise ValueError('discovery provenance mismatch')
     rows=authority.journal._rows()
     discovery=next((r for r in rows if r['kind']=='discovery' and digest(r)==proof['discovery_id']),None)
