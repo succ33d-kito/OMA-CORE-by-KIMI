@@ -1,4 +1,4 @@
-# Experiment 51 — admitted derived snapshot binding (Regime + Taker Mechanics)
+﻿# Experiment 51 â€” admitted derived snapshot binding (Regime + Taker Mechanics)
 
 Status: **BINDING IMPLEMENTED AND QUALIFIED (engineering portion)**
 Live derived snapshots: **Mechanics available (5, naturally produced); Regime NOT available**
@@ -11,28 +11,28 @@ Canonical prereg (unchanged): `7121a21d711064ee8bdc94f7269e65f006674684f65cbd715
 
 The causal snapshot infrastructure was already in place and is reused, not duplicated:
 
-* `prospective_receipts.append_observation` — append-only `observations_v2` hash chain; assigns
+* `prospective_receipts.append_observation` â€” append-only `observations_v2` hash chain; assigns
   `computed_at`/`available_at` itself, never from the caller; idempotent for an identical identity,
   **conflict-rejecting** ("conflicting observation; no silent overwrite"); rejects
   `received > now` / `event > received` / `event older than 24h` (no backfill, no backdating).
-* `causal_regime` (`Regime/Role/v2`, contract `causal-role-regime-v2`) — derives from a certified
+* `causal_regime` (`Regime/Role/v2`, contract `causal-role-regime-v2`) â€” derives from a certified
   **81 contiguous role-authenticated H1** price window, requires `computed_at >= cutoff`, validates by
   full reconstruction.
-* `causal_mechanics` (`Mechanics/Descriptive/v1`, contract `causal-descriptive-mechanics-v1`) —
+* `causal_mechanics` (`Mechanics/Descriptive/v1`, contract `causal-descriptive-mechanics-v1`) â€”
   builds from the admitted causal observation snapshot, requires a non-empty dependency set and
   `computed_at >= cutoff`, and validates the exact availability identity
   `available_at == max(computed_at, dependency.available_at)` with
   `event_time <= received_at <= computed_at <= available_at <= cutoff`.
-* `role_price_window` — the `price-81h-role-certificate-v1` window certificate
+* `role_price_window` â€” the `price-81h-role-certificate-v1` window certificate
   (exactly 81 unique, contiguous, role-attested, causally available, conflict-free).
-* `experiment51_derived.derived` — already consumes **IDs**, never computes ad hoc: it validates
+* `experiment51_derived.derived` â€” already consumes **IDs**, never computes ad hoc: it validates
   `regime_id` / `mechanics_id` through the validators, requires the exact terminal slot `S = D-1H`,
   `available_at <= S+5m`, one atomic bundle, and extracts Taker only
   (`MarketMetrics/TakerBuySellRatio`); regime/funding contamination is rejected.
 
 ## 2. What this cut adds (additive)
 
-`core/scientific/derived_snapshot_admission.py` — the prospective admission operator and the explicit
+`core/scientific/derived_snapshot_admission.py` â€” the prospective admission operator and the explicit
 commitment binding:
 
 * **Typed fail-closed outcomes**: `PRICE_HISTORY_NOT_READY`, `METRICS_HISTORY_NOT_READY`,
@@ -41,8 +41,8 @@ commitment binding:
   neutral value, and nothing is written when a prerequisite fails.
 * **Taker-only, atomic-bundle enforcement** for Experiment 51: the six-value bundle must be present
   and regime/funding must be absent from the Taker information set.
-* **Arm binding**: `P0 → ()`, `PR → (REGIME,)`, `PM → (MECHANICS_TAKER,)`,
-  `PRM → (REGIME, MECHANICS_TAKER)`, matching the frozen `RULES`/`families()` semantics.
+* **Arm binding**: `P0 â†’ ()`, `PR â†’ (REGIME,)`, `PM â†’ (MECHANICS_TAKER,)`,
+  `PRM â†’ (REGIME, MECHANICS_TAKER)`, matching the frozen `RULES`/`families()` semantics.
 * `require_admitted_regime` / `require_admitted_taker_mechanics` return the exact persisted rows
   Experiment 51 may consume.
 
@@ -54,21 +54,21 @@ MECHANICS_DERIVED_SCHEMA         = causal-descriptive-mechanics-v1
 REGIME_DERIVATION_RULE_ID        = exp51-regime-role-v2
 REGIME_DERIVATION_RULE_HASH      = a3abeb1ad28f92af921464562fb37da587c0f4b01fd994b6ae81eb8bcab8d368
 MECHANICS_TAKER_DERIVATION_RULE_ID   = exp51-mechanics-taker-v1
-MECHANICS_TAKER_DERIVATION_RULE_HASH = 33adaea7d3f4539ffed8c4f444c6b841ef886b87deab4f77acff21d2038a4e91
-DERIVED_SNAPSHOT_SCHEMA_HASH     = e041b7ada8f75ca7cb8f29a033bad9cddbadbbeb4629eea08157d90de79683da
+MECHANICS_TAKER_DERIVATION_RULE_HASH = e33dee668bc1d5723033a5e44c7a8dcc7cf9af8bc8bb15c4e7a99eb953392dcd
+DERIVED_SNAPSHOT_SCHEMA_HASH     = f3b218c7da8510929a88ab56da041592282503b6aa8fcba624c4c2b47fef8faa
 DERIVED_ADMISSION_RULE_HASH      = cea20f9ed9a60070f53cabe63eda25f007d32a011cd64cc461bc8a85c2319bcc
-BUNDLE_COMMITMENT                = f839f63d391fcd61064be1256b6d4e7755f976456c0fc309c1a37be38e6ddcae
+BUNDLE_COMMITMENT                = 93a8f22e8890e4c7b99dfac3086e05ff6b3b1192541d43e42b33a9713887ac5e
 DERIVED_AVAILABILITY_RULE        = available_at = max(computed_at, max(dependency.available_at));
                                    event_time <= received_at <= computed_at <= available_at <= cutoff
 ```
 
 ## 3. Qualification (TEST evidence only)
 
-`tests/test_derived_snapshot_admission.py` — **30 passed** — covers the 28 required properties plus the
+`tests/test_derived_snapshot_admission.py` â€” **30 passed** â€” covers the 28 required properties plus the
 commitment checks: <81 slots, in-window gap, unauthenticated role, exact window reference, availability
 vs raw input / computation / durable publication, missing Metrics history, Taker-only input, partial
 bundle rejection, unauthenticated Metrics role, exact bundle identities, causal availability identity,
-missing ≠ UNKNOWN, missing ≠ zero, idempotent duplicate, conflicting duplicate, historical publication
+missing â‰  UNKNOWN, missing â‰  zero, idempotent duplicate, conflicting duplicate, historical publication
 rows unchanged, no backdating, future evidence rejected, PR/PM/PRM require the admitted snapshot, P0
 independent, no ad-hoc derivation in evaluation, role/authority/rule-hash mismatches fail closed.
 
@@ -90,7 +90,7 @@ qualified.
   cutoff of the frozen decision rule.
 * **Regime: not available.** No `Regime/Role/v2` snapshot exists in any ledger. The role ledger holds
   57 `Price/OHLCV` rows with 57 attestations (PILOT) and only 52 contiguous pairs; the current
-  role streak is 2 — below the required 81 contiguous slots.
+  role streak is 2 â€” below the required 81 contiguous slots.
 * Historical Metrics publications were re-read only: `mechanics_id` remains `null` in all 17 rows.
   Nothing was rewritten, backfilled or repaired.
 
@@ -107,3 +107,4 @@ No outcome/label inspection, no Experiment 51 execution, no DISCOVERY/CONFIRMATI
 Kraken access, no EventDirection creation, no P0, no event-population binding, no Price/Metrics/SEC
 capture change, no gap repair, no backfill, no rewrite of existing Metrics publications, no prereg
 modification, no `main` merge.
+

@@ -36,7 +36,10 @@ REGIME_FEATURE = causal_regime.FEATURE
 MECHANICS_FEATURE = causal_mechanics.FEATURE
 TAKER_FEATURE = 'MarketMetrics/TakerBuySellRatio'
 EXP51_MECHANICS_INPUTS = (TAKER_FEATURE,)
-BUNDLE_FEATURES = tuple(EXPECTED_FEATURES)
+# Canonical order: EXPECTED_FEATURES is a frozenset whose iteration order depends on
+# PYTHONHASHSEED. Sorting is required for a commitment that is reproducible across
+# processes; without it the schema/rule hashes below would not be stable.
+BUNDLE_FEATURES = tuple(sorted(EXPECTED_FEATURES))
 REGIME_WINDOW_BARS = 81
 
 REGIME_DERIVATION_RULE_ID = 'exp51-regime-role-v2'
@@ -213,6 +216,12 @@ def arm_requirements(arm):
     return ARMS[arm]
 
 
+def derived_snapshot_schema_hash():
+    """Recompute the schema commitment from its components (reproducibility check)."""
+    return digest((REGIME_DERIVED_SCHEMA, MECHANICS_DERIVED_SCHEMA, REGIME_FEATURE,
+                   MECHANICS_FEATURE, WINDOW_SCHEMA, BUNDLE_FEATURES))
+
+
 def verify():
     """Fail-closed verification of the binding against live contracts. No I/O to journals."""
     if REGIME_DERIVED_SCHEMA != 'causal-role-regime-v2' or REGIME_FEATURE != 'Regime/Role/v2':
@@ -223,6 +232,10 @@ def verify():
         raise ValueError('WINDOW_SCHEMA_MISMATCH')
     if len(BUNDLE_FEATURES) != 6 or TAKER_FEATURE not in BUNDLE_FEATURES:
         raise ValueError('BUNDLE_FEATURES_MISMATCH')
+    if list(BUNDLE_FEATURES) != sorted(BUNDLE_FEATURES):
+        raise ValueError('BUNDLE_FEATURES_NOT_CANONICAL')
+    if derived_snapshot_schema_hash() != DERIVED_SNAPSHOT_SCHEMA_HASH:
+        raise ValueError('SCHEMA_HASH_NOT_REPRODUCIBLE')
     if set(EXP51_MECHANICS_INPUTS) != {TAKER_FEATURE}:
         raise ValueError('TAKER_ONLY_INPUT_MISMATCH')
     if tuple(sorted(ARMS)) != ('P0', 'PM', 'PR', 'PRM'):

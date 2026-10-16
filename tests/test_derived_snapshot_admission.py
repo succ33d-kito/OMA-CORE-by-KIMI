@@ -372,3 +372,13 @@ def test_commitment_bundle_is_deterministic_and_complete():
     assert bundle['append_only'] and bundle['backfill'] is False
     assert bundle['historical_rewrite'] is False
     assert 'available_at = max(computed_at' in bundle['derived_availability_rule']
+
+
+def test_bundle_feature_order_is_canonical_and_hash_reproducible():
+    """EXPECTED_FEATURES is a frozenset: without sorting, the schema hash depends on
+    PYTHONHASHSEED and the commitment is not reproducible across processes."""
+    assert dsa.BUNDLE_FEATURES == tuple(sorted(dsa.EXPECTED_FEATURES))
+    assert list(dsa.BUNDLE_FEATURES) == sorted(dsa.BUNDLE_FEATURES)
+    assert len(dsa.BUNDLE_FEATURES) == 6 and dsa.TAKER_FEATURE in dsa.BUNDLE_FEATURES
+    assert dsa.derived_snapshot_schema_hash() == dsa.DERIVED_SNAPSHOT_SCHEMA_HASH
+    assert dsa.verify()['derived_snapshot_schema_hash'] == dsa.DERIVED_SNAPSHOT_SCHEMA_HASH
