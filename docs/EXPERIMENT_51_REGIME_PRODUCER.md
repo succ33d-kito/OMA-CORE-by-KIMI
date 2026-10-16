@@ -83,7 +83,33 @@ independent of Regime.
 Related suites: causal regime/mechanics/window + Experiment 51 derived/sealed +
 policy value commitment = **121 passed**. `git diff --check` clean.
 
-## 7. Explicit non-actions
+## 7. Activation and natural validation (2026-10-16)
+
+* Runtime: `<REGIME_RUNTIME>` (MEDIUM, stdlib only),
+  working directory `OMA-CORE-RUNTIME-REGIME51` (dedicated worktree at `15bd790`).
+  Runtime qualification: compile OK on operator/CLI/binding, import OK, read-only SQLite access to
+  the live role ledger OK (WAL lock respected), stdout JSON OK, `status` exit code 0, stderr empty.
+  No live scientific derivation was performed during qualification.
+* Task: `OMA-CORE-Experiment51-Regime-Derived`, `PT1H`, first boundary 2026-10-16T02:12+01:00,
+  `MultipleInstances=IgnoreNew`, `ExecutionTimeLimit=PT5M`, principal `<LOCAL_OPERATOR>/Interactive/Limited`,
+  action = existing `capture-process.ps1` + `regime/wrapper-config.json`.
+  Rationale: the Price role captures the closed H1 kline a few minutes after the boundary
+  (Mechanics pipeline observations land at slot+04:08); the producer certifies at the deterministic
+  `terminal+5m` cutoff, so a `:12` invocation leaves ~7 minutes of margin over that cutoff, never
+  races Price capture, never modifies the Price task, and keeps the snapshot available well before
+  the `D = terminal+1h` decision.
+* Activation gate: streak was **2** (< 81) and no eligible window existed, so activation could not
+  create a snapshot.
+* First natural invocation `20261016T0112020891209Z-8891f7c0d5f146c8ac431bd25ab1384f` at
+  2026-10-16T01:12:02Z: exit code **0**, stderr **0 bytes**,
+  `STATUS=NOT_READY REASON=PRICE_HISTORY_NOT_READY REGIME_SNAPSHOT_CREATED=false`.
+  Ledger afterwards: `Regime/Role/v2` rows **0**; Price rows 57 → 58 and attestations 57 → 58 purely
+  from the role's own natural capture of the 01:00Z slot. No backfill, no historical write.
+
+Artifacts: `<OPS_DIAGNOSTICS>/51-scheduled-processes/regime/{wrapper-config.json,
+task-definition.xml,activation-receipt.json}` plus the wrapper's stdout/stderr/meta diagnostics.
+
+## 8. Explicit non-actions
 
 No outcome/label inspection, no Experiment 51 execution, no DISCOVERY/CONFIRMATION
 activation, no Kraken access, no Metrics/Mechanics/SEC modification, no EventDirection,
