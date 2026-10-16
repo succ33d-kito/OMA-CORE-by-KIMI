@@ -2,7 +2,7 @@
 
 Branch: `manual/50ab-causal-regime-mechanics-20261011`.
 Base: `85a8ac2ed38f266ad05340853b281be12537244e`.
-DEV only: `C:/Users/KiTO/Documents/OMA-CORE-DEV`.
+DEV only: `<OMA_CORE_DEV>`.
 
 ## Recovery and completed implementation
 The interrupted earlier work stopped during inspection after `0f24bbf`; subsequent

@@ -30,7 +30,7 @@ Read-only LIVE certificate at 2026-10-11T13:16:47.491284Z:
 SUCCESS=9, FAILED=3, INVALID=0, MISSED_SLOT=0, INCOMPLETE=0;
 current_streak=6, longest_streak=6, readiness=NO, research gate=NOT_EVALUATED.
 Heartbeat activation 198b1f473363bd2a97daa9066687da59a74955111781a9caeaa2231279d29930,
-RUNNING, PID 19408, refreshed at 13:16:19Z; task Running. CIM confirmed PID command
+RUNNING, PID <LOCAL_PID>, refreshed at 13:16:19Z; task Running. CIM confirmed PID command
 runs LIVE scripts/run_metrics_h1.py against the separate Metrics state. The actual
 process executable is Python 3.11 pythonw, not assumed to equal the testing venv.
 Runtime heartbeat remains non-evidentiary. Attempts through 13:00 UTC match the

@@ -114,10 +114,10 @@ EVENT_DIRECTION_DATASET_ROLE=PILOT
 RULE_HASH=6a07b7e1d5a1ed2f9a9635de362b50844d5c9092bea52792f3391da3e9045833
 
 State directory:
-`C:/Users/KiTO/Documents/O-C data/prospective/event/experiment51-direction-pilot-20261013`
+`<OMA_DATA_ROOT>/prospective/event/experiment51-direction-pilot-20261013`
 Authority journal: `authority.sqlite` inside that directory.
 Designated future source journal (not created):
-`C:/Users/KiTO/Documents/O-C data/prospective/event/experiment51-source-pilot-20261013.sqlite`
+`<OMA_DATA_ROOT>/prospective/event/experiment51-source-pilot-20261013.sqlite`
 
 POST_ACTIVATION_EVENT_RECEIPTS=0
 EVENT_DIRECTION_ATTESTATIONS=0

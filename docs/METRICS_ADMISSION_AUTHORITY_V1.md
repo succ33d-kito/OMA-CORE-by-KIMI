@@ -94,11 +94,11 @@ Admission hash: 1dbebecd9dbfcd98fd11fe7ec523f7fb024fc849d7128a9e4b1c6a375a0b8c2a
 Publication hash: 43a60407fd92e0e2aa1566f295ab2d1f136f17981b05cff3eaf25c73d92a9f6c.
 Contract hash: d9bde76f1aed374e847ed514ea32ab31cfe100ee3c93b8453614d7f2cc6f6125.
 
-Runtime: C:/Users/KiTO/Documents/OMA-CORE-RUNTIME-METRICS51, detached and clean.
-Interpreter: C:/Users/KiTO/Documents/OMA-CORE/.venv/Scripts/python.exe.
+Runtime: <OMA_CORE_RUNTIME_METRICS51>, detached and clean.
+Interpreter: <QUALIFIED_PYTHON>.
 Script: runtime/scripts/metrics_admission.py; cwd: runtime.
-Source binding: C:/Users/KiTO/Documents/O-C data/prospective/metrics-h1-v1.
-Admission root: C:/Users/KiTO/Documents/O-C data/prospective/metrics-admission-v1.
+Source binding: <OMA_DATA_ROOT>/prospective/metrics-h1-v1.
+Admission root: <OMA_DATA_ROOT>/prospective/metrics-admission-v1.
 Observations binding: admission root/observations.sqlite (not yet created).
 Authority and attempts journal exist; no historical observation/publication written.
 

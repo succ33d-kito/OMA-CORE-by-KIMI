@@ -65,7 +65,7 @@ checks passed. No scheduler/network/ledger/learning calls were introduced.
 
 Focal tests stopped at the first fixture setup error, before a test body ran.
 One unchanged baseline activation run produced 4 passed, then the same error:
-OSError: could not create numbered directory under sandbox AC/Temp/pytest-of-KiTO
+OSError: could not create numbered directory under sandbox AC/Temp/pytest-of-<LOCAL_USER>
 after 10 tries. This run did not report WinError 5 directly.
 ENVIRONMENT_RESTRICTION_CANDIDATE: shared temporary-filesystem failure.
 No retry, alternate test directory, weakened validation or full regression followed.
@@ -80,16 +80,16 @@ runtime, HTTP capture, ledger write or Price task change occurred.
 Run on the operator host outside the restricted sandbox:
 
 ```powershell
-Set-Location -LiteralPath 'C:\Users\KiTO\Documents\OMA-CORE'
-$py = 'C:\Users\KiTO\AppData\Local\Temp\omacore-audit-2d7b1c9f21d54f708738ee2db11823e3\audit-venv\Scripts\python.exe'
+Set-Location -LiteralPath '<OMA_CORE>'
+$py = '<AUDIT_PYTHON>'
 $env:PYTHONDONTWRITEBYTECODE = '1'
 & $py -m pytest tests/test_funding_h1_operator_ceremony.py -q -p no:cacheprovider --tb=short
 if ($LASTEXITCODE -ne 0) { throw 'STOP: focal qualification failed' }
 & $py -m pytest tests/test_funding_h1_activation.py tests/test_funding_h1_operator_ceremony.py tests/test_funding_h1_execution_wrapper.py tests/test_install_funding_h1_task_contract.py tests/test_funding_h1_runtime.py tests/test_funding_h1_live_adapter.py tests/test_funding_h1_runner.py tests/test_funding_continuity.py tests/test_funding_rate_observation.py -q -p no:cacheprovider --tb=short
 if ($LASTEXITCODE -ne 0) { throw 'STOP: regression qualification failed' }
 & $py -c "from pathlib import Path; [compile(Path(p).read_text(),p,'exec') for p in ('scripts/activate_funding_h1.py','tests/test_funding_h1_operator_ceremony.py')]"
-git -c safe.directory=C:/Users/KiTO/Documents/OMA-CORE diff --check
-git -c safe.directory=C:/Users/KiTO/Documents/OMA-CORE status --short
+git -c safe.directory=<OMA_CORE> diff --check
+git -c safe.directory=<OMA_CORE> status --short
 ```
 
 No commit, push or real activation is authorized by these commands.

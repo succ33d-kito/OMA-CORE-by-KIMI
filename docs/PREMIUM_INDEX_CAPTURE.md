@@ -16,6 +16,6 @@ Validation: 11 adapter + 34 ExecutionObservation tests, 45 passed; compile/diff 
 One real request on 2026-10-04 23:53 UTC (October 5 local) succeeded and reopened:
 receipt `900e841921ce62e54f4e2c29d432e02ce33f9b470a72d76abb4f9d2b3f0e4c34`.
 Request 23:53:15.069411Z, received 23:53:16.773862Z, available 23:53:16.795801Z.
-External data: `O-C data/prospective/execution/first-premium-index-2026-10-05`.
+External data: `<OMA_DATA_ROOT>/prospective/execution/first-premium-index-2026-10-05`.
 Local custody and trusted local clock are required; hashes are not signatures.
 Edge/Regime/Mechanics validation: NO. Policy winner: NONE.

@@ -28,7 +28,7 @@ outside this local API boundary. This is not a signed receipt authority.
 Exactly one market request was made to:
 `https://fapi.binance.com/fapi/v1/ticker/bookTicker?symbol=BTCUSDT`.
 The response was HTTP 200, application/json, 150 bytes; raw and receipt metadata
-were preserved outside Git under `O-C data/prospective/execution/first-book-ticker-2026-10-04`.
+were preserved outside Git under `<OMA_DATA_ROOT>/prospective/execution/first-book-ticker-2026-10-04`.
 
 Projection failed with `wrong symbol or unsupported response fields`. The actual
 symbol was correct. The response additionally contained `lastUpdateId`, absent
@@ -58,7 +58,7 @@ HTTP request succeeded, with no retry after response:
   available: `23:50:35.926758Z`, all October 4 UTC.
 - Bid/ask: 86485.00 / 86485.10 USDT/BTC; mid 86485.05; absolute spread 0.10.
 - Reopen, commitments and causal order: PASS. Fees/funding UNKNOWN; slippage NOT_OBSERVED.
-- External directory: `O-C data/prospective/execution/second-book-ticker-2026-10-05-network-authorized`.
+- External directory: `<OMA_DATA_ROOT>/prospective/execution/second-book-ticker-2026-10-05-network-authorized`.
 
 Verdict: REAL_EXECUTION_PIT_OBSERVED. No recurring collector was started here.
 

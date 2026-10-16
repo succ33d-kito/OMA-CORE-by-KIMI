@@ -98,10 +98,10 @@ Run from a MEDIUM context with a clean temporary directory (the shared venv inte
 LOW-labelled and cannot use the default temp directory):
 
 ```powershell
-$env:TMP=$env:TEMP='C:\Users\KiTO\AppData\Local\Temp\oma-pytest'
+$env:TMP=$env:TEMP='<TEST_TEMP>'
 $env:PYTHONDONTWRITEBYTECODE='1'
-$env:PYTHONPATH='C:\Users\KiTO\Documents\OMA-CORE\.venv\Lib\site-packages'
-C:\Users\KiTO\AppData\Local\Python\pythoncore-3.11-64\python.exe -m pytest `
+$env:PYTHONPATH='<OMA_CORE>\.venv\Lib\site-packages'
+<QUALIFIED_PYTHON> -m pytest `
   tests/test_event_discovery_revision.py tests/test_event_discovery.py tests/test_real_event_receipt.py `
   -q -p no:cacheprovider --basetemp="$env:TMP\bt"
 ```

@@ -50,7 +50,7 @@ ready publication remains UNKNOWN. Legacy exact-source behavior remains unchange
 legacy capture cannot bypass a discovery-authorized child source.
 
 Source/admission journal uses the path already bound by EventDirection:
-`O-C data/prospective/event/experiment51-source-pilot-20261013.sqlite`.
+`<OMA_DATA_ROOT>/prospective/event/experiment51-source-pilot-20261013.sqlite`.
 Discovery uses a separate `experiment51-sec-discovery-pilot-20261013/discovery.sqlite`
 and an OS-held poll.lock. Process termination releases the OS lock, not history.
 Overlapping invocation fails before attempting HTTP. Every started poll is visible,
@@ -133,9 +133,9 @@ Source authority activated AFTER qualification:
 - contract_hash: 831c49f02d82112986bdbda352c5f2599e4383a2cafd370fd9ef78e2560772aa
 - endpoint_hash: 5c59ef6d1ff54cd19d40f0909b66f707f55fbe2e942928cea0fd8dfdbc2e5e4c
 - authority/discovery journal:
-  C:/Users/KiTO/Documents/O-C data/prospective/event/experiment51-sec-discovery-pilot-20261013/discovery.sqlite
+  <OMA_DATA_ROOT>/prospective/event/experiment51-sec-discovery-pilot-20261013/discovery.sqlite
 - canonical receipt/admission journal:
-  C:/Users/KiTO/Documents/O-C data/prospective/event/experiment51-source-pilot-20261013.sqlite
+  <OMA_DATA_ROOT>/prospective/event/experiment51-source-pilot-20261013.sqlite
 
 One real baseline poll began 2026-10-13T23:06:47.839295+00:00;
 feed received 2026-10-13T23:06:48.683254+00:00.
@@ -146,9 +146,9 @@ Read-only journal verification: PASS.
 
 Scheduled task verified enabled, Ready:
 OMA-CORE-Experiment51-SEC-Event-Discovery.
-Interpreter: C:/Users/KiTO/Documents/OMA-CORE/.venv/Scripts/python.exe.
-Script: C:/Users/KiTO/Documents/OMA-CORE-RUNTIME-SEC51/scripts/sec_event_discovery.py.
-Working directory: C:/Users/KiTO/Documents/OMA-CORE-RUNTIME-SEC51.
+Interpreter: <QUALIFIED_PYTHON>.
+Script: <OMA_CORE_RUNTIME_SEC51>/scripts/sec_event_discovery.py.
+Working directory: <OMA_CORE_RUNTIME_SEC51>.
 Arguments: -B <script> --root <discovery directory above> poll.
 Runtime detached checkout: 6a9bdca6852a3f78b361e65bc23640cf72f68d0f.
 Interval PT5M, IgnoreNew, execution limit PT4M. Next run at verification:

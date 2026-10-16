@@ -287,7 +287,7 @@ OMA-CORE-Prospective-Funding-H1
 
 Planned state root:
 
-C:\Users\PC\Documents\O-C data\prospective\funding-h1-v1
+<OMA_DATA_ROOT>/prospective/funding-h1-v1
 
 Step 47B does not create this task.
 

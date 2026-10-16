@@ -93,9 +93,9 @@ Only after successful full qualification, publication and separate user approval
 must already exist. Never delete/recreate existing activation to retry a failure.
 
 ```powershell
-$dev = 'C:\Users\KiTO\Documents\OMA-CORE-DEV'
-$py = 'C:\Users\KiTO\Documents\OMA-CORE\.venv\Scripts\python.exe'
-$state = 'C:\Users\KiTO\Documents\O-C data\prospective\price-role-h1-v1'
+$dev = '<OMA_CORE_DEV>'
+$py = '<QUALIFIED_PYTHON>'
+$state = '<OMA_DATA_ROOT>\prospective\price-role-h1-v1'
 $task = 'OMA-CORE-Prospective-Price-Role-H1'
 Set-Location -LiteralPath $dev
 if ((git branch --show-current) -ne 'manual/51-price-role-runtime-20261012') { throw 'Wrong branch' }

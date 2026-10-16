@@ -38,9 +38,9 @@ The task and runtime are machine-local and are not transported by Git.
 
 Paths on this host:
 
-- Python: `C:\Users\KiTO\Documents\O-C data\prospective\runtime\Scripts\python.exe`
-- Ledger: `C:\Users\KiTO\Documents\O-C data\prospective\receipts.db`
-- State: `C:\Users\KiTO\Documents\O-C data\prospective\continuous`
+- Python: `<OMA_DATA_ROOT>\prospective\runtime\Scripts\python.exe`
+- Ledger: `<OMA_DATA_ROOT>\prospective\receipts.db`
+- State: `<OMA_DATA_ROOT>\prospective\continuous`
 
 Start/restart the installed task:
 
@@ -51,7 +51,7 @@ Start-ScheduledTask -TaskName 'OMA-CORE-Prospective-Price-H1'
 Status, with freshly verified ledger, causal gate and anchors:
 
 ```powershell
-& 'C:\Users\KiTO\Documents\O-C data\prospective\runtime\Scripts\python.exe' 'C:\Users\KiTO\Documents\OMA-CORE\scripts\capture_price_h1.py' status --ledger 'C:\Users\KiTO\Documents\O-C data\prospective\receipts.db' --state 'C:\Users\KiTO\Documents\O-C data\prospective\continuous' --json
+& '<OMA_DATA_ROOT>\prospective\runtime\Scripts\python.exe' '<OMA_CORE>\scripts\capture_price_h1.py' status --ledger '<OMA_DATA_ROOT>\prospective\receipts.db' --state '<OMA_DATA_ROOT>\prospective\continuous' --json
 ```
 
 Omit `--json` for human-readable output. `capture_running` checks the OS lock;
@@ -66,7 +66,7 @@ Independent foreground execution uses the same command with `run` instead of
 Reinstall on this host (also starts it):
 
 ```powershell
-& 'C:\Users\KiTO\Documents\OMA-CORE\scripts\install_price_capture_task.ps1' -Python 'C:\Users\KiTO\Documents\O-C data\prospective\runtime\Scripts\python.exe'
+& '<OMA_CORE>\scripts\install_price_capture_task.ps1' -Python '<OMA_DATA_ROOT>\prospective\runtime\Scripts\python.exe'
 ```
 
 On another host create a persistent Python 3.12+ environment, install
